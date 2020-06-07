@@ -1,24 +1,20 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { prettyPrint, createDirectoryStructure } from './model/files';
+
+const newDir = createDirectoryStructure("/Users/darkl/Desktop/muexport/31may2020");
+const root = newDir.root;
+const notes = newDir.createDirectory("liner_notes");
+notes.createFile("hello.txt", "this is a message");
+notes.createFile("hello2.txt", "this is a message");
+newDir.createFile("track1.wav", "...");
+newDir.createFile("track2.wav", "...");
+root.createFile("secrets.txt", "do not dead open inside");
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <pre>{prettyPrint(root)}</pre>
     </div>
   );
 }
