@@ -1,9 +1,6 @@
-const SEPARATOR = '/';
+const SEPARATOR = "/";
 
-type FileNode = {
-    name: string;
-    parent: FileNode | undefined;
-}
+export type FileNode = Directory | File;
 
 export class File {
     readonly name: string;
@@ -21,7 +18,7 @@ export class File {
     }
 
     get extension(): string {
-        return this.name.substring(this.name.indexOf('.'));
+        return this.name.substring(this.name.indexOf("."));
     }
 
     get size(): number {
@@ -30,7 +27,7 @@ export class File {
 }
 
 export class Directory {
-    readonly children: Record<string, FileNode> = {};
+    protected readonly children: Record<string, FileNode> = {};
     readonly name: string;
     readonly parent: Directory | undefined;
 
@@ -47,6 +44,10 @@ export class Directory {
 
     get fileCount(): number {
         return Object.keys(this.children).length;
+    }
+
+    get contents(): FileNode[] {
+        return Object.values(this.children);
     }
 
     get root(): Directory {
@@ -100,11 +101,9 @@ export function createDirectoryStructure(fullName: string): Directory {
     const nameParts = fullName.split(SEPARATOR);
 
     let directory: Directory | undefined = undefined;
-    let root: Directory;
     for (const part of nameParts) {
         if (!directory) {
             directory = new Directory(part);
-            root = directory;
         } else {
             directory = directory.createDirectory(part);
         }
@@ -113,9 +112,9 @@ export function createDirectoryStructure(fullName: string): Directory {
 }
 
 function tab(level: number): string {
-    let tab = '';
+    let tab = "";
     for (let i = 0; i < level; i++) {
-        tab += '--';
+        tab += "--";
     }
     return tab;
 }
@@ -123,7 +122,7 @@ function tab(level: number): string {
 export function prettyPrint(directory: Directory, level = 0): string {
     let output = `${tab(level)}${directory.name}/\n`;
 
-    for (const node of Object.values(directory.children)) {
+    for (const node of directory.contents) {
         if (node instanceof Directory) {
             output += prettyPrint(node, level + 1);
         } else {
