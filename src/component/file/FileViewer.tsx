@@ -10,8 +10,10 @@ interface Props {
 function FileViewer({ file, onClose }: Props) {
     return (
         <div className="file-viewer">
-            <div>{file.name}</div>
-            <button className="close-button" onClick={() => onClose()}>Close</button>
+            <div className="title">
+                {file.name}
+                <button className="close-button" onClick={() => onClose()} title="close">&times;</button>
+            </div>
             <div className="file-content">
                 <pre>{file.content}</pre>
             </div>

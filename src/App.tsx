@@ -2,7 +2,7 @@ import React, { useReducer, useState } from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
-import Views, { View } from "./component/Views";
+import Navigation, { View } from "./component/navigation/Navigation";
 import { reducer, Action, getInitialState, State } from "./reducer";
 
 type Store = {
@@ -33,7 +33,7 @@ function App() {
                     )}
                 </AppStore.Provider>
             </div>
-            <Views currentView={view} setView={setView} />
+            <Navigation currentView={view} setView={setView} />
         </div>
     );
 }

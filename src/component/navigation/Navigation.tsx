@@ -1,8 +1,8 @@
 import React from "react";
-import "./Views.scss";
-import filesystemIcon from "./icons/filesystem.svg";
-import inventoryIcon from "./icons/inventory.svg";
-import logIcon from "./icons/log.svg";
+import "./Navigation.scss";
+import filesystemIcon from "../icons/filesystem.svg";
+import inventoryIcon from "../icons/inventory.svg";
+import logIcon from "../icons/log.svg";
 
 export enum View {
     FILESYSTEM,
@@ -33,14 +33,14 @@ interface ViewsProps {
     setView: (view: View) => void;
 }
 
-function Views({ currentView, setView }: ViewsProps) {
+function Navigation({ currentView, setView }: ViewsProps) {
     return (
-        <div className="view-list">
+        <div className="navigation-list">
             {views.map(view => (
                 <button
                     key={view}
                     onClick={() => setView(view)}
-                    className={`view-button ${currentView === view ? "selected" : ""}`}>
+                    className={`navigation-button ${currentView === view ? "selected" : ""}`}>
                     <img alt={viewTitles[view]} src={viewIcons[view]} />
                 </button>
             ))}
@@ -48,4 +48,4 @@ function Views({ currentView, setView }: ViewsProps) {
     );
 }
 
-export default Views;
+export default Navigation;

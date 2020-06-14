@@ -8,12 +8,31 @@
     font-weight: bold;
     padding: 0 20px;
     padding-bottom: 20px;
+    position: relative;
+
+    .close-button {
+        background: #f44;
+        color: #fff;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        font-weight: bold;
+        text-align: center;
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
 }
 
 .file-content {
     width: 100%;
-}
+    background: #fff;
+    border: #ccc 2px solid;
+    padding: 10px;
 
-.close-button {
-    color: #ffaaaa;
+    pre {
+        margin: 0;
+        padding: 0;
+    }
 }

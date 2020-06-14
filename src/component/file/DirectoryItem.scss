@@ -18,9 +18,9 @@
             background-image: url("../icons/lock.svg");
             width: 16px;
             height: 16px;
-            bottom: 26px;
-            right: 16px;
-            content: "  ";
+            bottom: 34px;
+            right: 22px;
+            content: "";
         }
     }
 
@@ -28,12 +28,12 @@
         display: block;
         margin: 0 auto;
         margin-bottom: 8px;
-        width: 64px;
+        width: 80px;
     }
 
-    width: 96px;
+    width: 126px;
     min-height: 96px;
     text-align: center;
-    margin: 6px;
+    margin: 8px;
     padding: 5px;
 }
