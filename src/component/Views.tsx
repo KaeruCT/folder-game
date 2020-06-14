@@ -38,6 +38,7 @@ function Views({ currentView, setView }: ViewsProps) {
         <div className="view-list">
             {views.map(view => (
                 <button
+                    key={view}
                     onClick={() => setView(view)}
                     className={`view-button ${currentView === view ? "selected" : ""}`}>
                     <img alt={viewTitles[view]} src={viewIcons[view]} />

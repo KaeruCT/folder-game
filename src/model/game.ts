@@ -10,6 +10,7 @@ export function getFilesystem(): Directory {
     newDir.createFile("track1.wav", "...");
     newDir.createFile("track2.wav", "...");
     root.createFile("secrets1.txt", "do not dead open inside", { key: "locked_secrets" });
+    root.createFile("instructions.txt", "do what you will");
     root.createFile("secrets20.txt", "do not dead open inside", { key: "locked_secrets" });
     root.createFile("secrets50.txt", "do not dead open inside", { key: "locked_secrets" });
     root.createFile("secrets99.txt", "do not dead open inside", { key: "locked_secrets" });

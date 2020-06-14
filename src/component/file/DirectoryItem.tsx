@@ -42,7 +42,7 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
         onFileOpen(fileNode as File);
     }
 
-    const name = isParent ? '..' : (fileNode.name || ' ');
+    const name = isParent ? ".." : (fileNode.name || " ");
 
     return (
         <button onClick={onClick} title={fileNode.name} className={`directory-item ${fileNode.locked ? "locked" : ""}`}>
