@@ -25,6 +25,5 @@ export function getInventory(): Inventory {
     addItem(inventory, "locked_secrets");
     addItem(inventory, "locked_secrets");
     addItem(inventory, "gates");
-    console.log(inventory);
     return inventory;
 }

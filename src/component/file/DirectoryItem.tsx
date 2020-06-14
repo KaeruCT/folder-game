@@ -5,7 +5,7 @@ import { Directory, File, FileNode } from "../../model/files";
 import folderIcon from "../icons/folder-3.svg";
 import textIcon from "../icons/text-5.svg";
 import parentIcon from "../icons/folder.svg";
-import { AppDispatch } from "../../App";
+import { AppStore } from "../../App";
 
 interface Props {
     fileNode: FileNode;
@@ -25,7 +25,7 @@ function Icon({ fileNode, isParent }: { fileNode: FileNode, isParent: boolean })
 }
 
 function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
-    const dispatch = useContext(AppDispatch);
+    const { dispatch } = useContext(AppStore);
 
     function onClick() {
         if (fileNode.locked) {

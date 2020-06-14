@@ -1,0 +1,39 @@
+.view-list {
+    display: flex;
+    justify-content: space-around;
+    border: #ccc 2px solid;
+}
+
+.view-button {
+    align-self: center;
+    border-right: #ccc 2px solid;
+    background: #fff;
+    display: flex;
+    width: 100%;
+    cursor: pointer;
+
+    &.selected {
+        background: #d6eeff;
+    }
+
+    &:focus {
+        outline: #6af 2px solid;
+    }
+
+    &:hover {
+        background: #d6eeff;
+    }
+
+    &:last-child {
+        border-right: 0;
+    }
+
+    img {
+        display: block;
+        margin: 0 auto;
+        width: 40px;
+    }
+
+    text-align: center;
+    padding: 20px;
+}

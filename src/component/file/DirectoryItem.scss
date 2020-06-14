@@ -1,7 +1,5 @@
 .directory-item {
-    border: 0;
     position: relative;
-    background: transparent;
     cursor: pointer;
 
     &:focus {
@@ -34,7 +32,8 @@
     }
 
     width: 96px;
-    height: 96px;
+    min-height: 96px;
     text-align: center;
     margin: 6px;
+    padding: 5px;
 }

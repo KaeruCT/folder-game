@@ -1,18 +1,39 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useState } from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
-import { reducer, Action, getInitialState } from "./reducer";
+import InventoryViewer from "./component/inventory/InventoryViewer";
+import Views, { View } from "./component/Views";
+import { reducer, Action, getInitialState, State } from "./reducer";
 
-export const AppDispatch = React.createContext<React.Dispatch<Action>>(() => { });
+type Store = {
+    state: State;
+    dispatch: React.Dispatch<Action>;
+}
+
+export const AppStore = React.createContext({} as Store);
 
 function App() {
     const [state, dispatch] = useReducer(reducer, getInitialState());
+
+    const [view, setView] = useState(View.FILESYSTEM);
+
     return (
         <div className="app">
             {/* <pre>{prettyPrint(root)}</pre> */}
-            <AppDispatch.Provider value={dispatch}>
-                <FilesystemViewer root={state.filesystemRoot} />
-            </AppDispatch.Provider>
+            <div className="view-container">
+                <AppStore.Provider value={{ state, dispatch }}>
+                    {view === View.FILESYSTEM && (
+                        <FilesystemViewer root={state.filesystemRoot} />
+                    )}
+                    {view === View.INVENTORY && (
+                        <InventoryViewer inventory={state.inventory} />
+                    )}
+                    {view === View.LOG && (
+                        <div>log</div>
+                    )}
+                </AppStore.Provider>
+            </div>
+            <Views currentView={view} setView={setView} />
         </div>
     );
 }
