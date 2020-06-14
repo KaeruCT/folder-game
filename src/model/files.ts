@@ -6,15 +6,23 @@ export class File {
     readonly name: string;
     readonly content: string;
     readonly parent: Directory;
+    readonly meta: Record<string, string>;
+    locked: boolean = false;
 
-    constructor(name: string, content: string, parent: Directory) {
+    constructor(name: string, content: string, parent: Directory, meta = {}) {
         this.name = name;
         this.content = content;
         this.parent = parent;
+        this.meta = meta;
+        setLock(this, meta);
     }
 
     get fullName(): string {
         return getFullName(this);
+    }
+
+    get root(): Directory {
+        return getRoot(this);
     }
 
     get extension(): string {
@@ -30,12 +38,16 @@ export class Directory {
     protected readonly children: Record<string, FileNode> = {};
     readonly name: string;
     readonly parent: Directory | undefined;
+    readonly meta: Record<string, string>;
+    locked: boolean = false;
 
-    constructor(name: string, parent: Directory | undefined = undefined) {
+    constructor(name: string, parent: Directory | undefined = undefined, meta = {}) {
         this.name = name;
+        this.meta = meta;
         if (parent) {
             this.parent = parent;
         }
+        setLock(this, meta);
     }
 
     get fullName(): string {
@@ -51,29 +63,25 @@ export class Directory {
     }
 
     get root(): Directory {
-        let directory: Directory = this;
-        while (directory.parent) {
-            directory = directory.parent;
-        }
-        return directory;
+        return getRoot(this);
     }
 
-    createDirectory(name: string): Directory {
+    createDirectory(name: string, meta = {}): Directory {
         if (this.children[name]) {
             throw Error(`FileNode already exists: ${this.fullName}${SEPARATOR}${name}`);
         }
 
-        const newDirectory = new Directory(name, this);
+        const newDirectory = new Directory(name, this, meta);
         this.children[name] = newDirectory;
         return newDirectory;
     }
 
-    createFile(name: string, content: string): File {
+    createFile(name: string, content: string, meta = {}): File {
         if (this.children[name]) {
             throw Error(`FileNode already exists: ${this.fullName}${SEPARATOR}${name}`);
         }
 
-        const newFile = new File(name, content, this);
+        const newFile = new File(name, content, this, meta);
         this.children[name] = newFile;
         return newFile;
     }
@@ -83,14 +91,28 @@ export class Directory {
     }
 }
 
+function getRoot(node: FileNode): Directory {
+    let directory: Directory = node instanceof Directory ? node : node.parent;
+    while (directory.parent) {
+        directory = directory.parent;
+    }
+    return directory;
+}
+
 function getFullName(node: FileNode): string {
     let fullName = node.name;
     let parent = node.parent;
     while (parent) {
-        fullName = `${parent.name}${SEPARATOR}${fullName}`
+        fullName = `${parent.name}${SEPARATOR}${fullName}`;
         parent = parent.parent;
     }
     return fullName;
+}
+
+function setLock(node: FileNode, meta: Record<string, string>) {
+    if (meta.key || meta.password) {
+        node.locked = true;
+    }
 }
 
 /**
@@ -109,6 +131,15 @@ export function createDirectoryStructure(fullName: string): Directory {
         }
     }
     return directory!;
+}
+
+/**
+ * Unlocks a FileNode and returns its root Directory
+ * @param fileNode FileNode to unlock
+ */
+export function unlockFileNode(fileNode: FileNode): Directory {
+    fileNode.locked = false;
+    return fileNode.root;
 }
 
 function tab(level: number): string {

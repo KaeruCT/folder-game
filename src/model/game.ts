@@ -1,6 +1,7 @@
-import { createDirectoryStructure } from "./files";
+import { createDirectoryStructure, Directory } from "./files";
+import { Inventory, addItem } from "./inventory";
 
-export function getFilesystem() {
+export function getFilesystem(): Directory {
     const newDir = createDirectoryStructure("$ROOT/Users/darkl/Desktop/muexport/31may2020");
     const root = newDir.root;
     const notes = newDir.createDirectory("liner_notes");
@@ -8,18 +9,22 @@ export function getFilesystem() {
     notes.createFile("hello2.txt", "this is a message");
     newDir.createFile("track1.wav", "...");
     newDir.createFile("track2.wav", "...");
-    root.createFile("secrets.txt", "do not dead open inside");
-    root.createFile("secrets1.txt", "do not dead open inside");
-    root.createFile("secrets2.txt", "do not dead open inside");
-    root.createFile("secrets3.txt", "do not dead open inside");
-    root.createFile("secrets4.txt", "do not dead open inside");
-    root.createFile("secrets5.txt", "do not dead open inside");
-    root.createFile("secrets6.txt", "do not dead open inside");
-    root.createFile("secrets7.txt", "do not dead open inside");
-    root.createFile("secrets8.txt", "do not dead open inside");
-    root.createFile("secrets9.txt", "do not dead open inside");
-    root.createDirectory("hackintosh");
+    root.createFile("secrets1.txt", "do not dead open inside", { key: "locked_secrets" });
+    root.createFile("secrets20.txt", "do not dead open inside", { key: "locked_secrets" });
+    root.createFile("secrets50.txt", "do not dead open inside", { key: "locked_secrets" });
+    root.createFile("secrets99.txt", "do not dead open inside", { key: "locked_secrets" });
+    root.createDirectory("hackintosh", { key: "mac" });
+
     root.createDirectory("lunix");
-    root.createDirectory("micro$oft");
+    root.createDirectory("micro$oft", { key: "gates" });
     return root;
+}
+
+export function getInventory(): Inventory {
+    const inventory = {};
+    addItem(inventory, "locked_secrets");
+    addItem(inventory, "locked_secrets");
+    addItem(inventory, "gates");
+    console.log(inventory);
+    return inventory;
 }

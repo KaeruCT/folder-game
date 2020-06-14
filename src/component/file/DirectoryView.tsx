@@ -1,8 +1,8 @@
 import React from "react";
 import "./DirectoryView.scss";
-import { Directory, File, FileNode } from "../../model/files";
+import { Directory, File } from "../../model/files";
 import sortBy from "lodash/sortBy";
-import Item from "./Item";
+import DirectoryItem from "./DirectoryItem";
 
 interface Props {
     directory: Directory;
@@ -23,7 +23,7 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
             <div className="title">{directory.fullName}</div>
             <div className="item-list">
                 {fileNodes.map((fileNode) => (
-                    <Item
+                    <DirectoryItem
                         isParent={fileNode === directory.parent}
                         fileNode={fileNode}
                         onNavigate={onNavigate}
