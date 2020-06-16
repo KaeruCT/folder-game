@@ -34,6 +34,17 @@ button {
     background: none;
 }
 
+.styled-button {
+    cursor: pointer;
+    background: rgb(38, 177, 241);
+    color: #f0f0f0;
+    padding: 10px 20px;
+
+    &:hover, &:active {
+        background: rgb(19, 115, 160);
+    }
+}
+
 .window {
     padding: 20px;
     background: #f6f6f6;
