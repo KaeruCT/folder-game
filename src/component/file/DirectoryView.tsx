@@ -19,18 +19,20 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
         fileNodes.unshift(directory.parent);
     }
     return (
-        <div className="directory">
+        <div className="window directory">
             <div className="title">{directory.fullName}</div>
-            <div className="item-list">
-                {fileNodes.map((fileNode) => (
-                    <DirectoryItem
-                        isParent={fileNode === directory.parent}
-                        fileNode={fileNode}
-                        onNavigate={onNavigate}
-                        onFileOpen={onFileOpen}
-                        key={fileNode.fullName}
-                    />
-                ))}
+            <div className="content">
+                <div className="item-list">
+                    {fileNodes.map((fileNode) => (
+                        <DirectoryItem
+                            isParent={fileNode === directory.parent}
+                            fileNode={fileNode}
+                            onNavigate={onNavigate}
+                            onFileOpen={onFileOpen}
+                            key={fileNode.fullName}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

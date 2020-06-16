@@ -18,6 +18,9 @@ export function getFilesystem(): Directory {
 
     root.createDirectory("lunix");
     root.createDirectory("micro$oft", { key: "gates" });
+    for (let i = 0; i < 20; i++) {
+        root.createFile(`.trash-${Math.random().toString(36).substring(3)}.txt`, "useless file");
+    }
     return root;
 }
 

@@ -12,7 +12,6 @@ function FilesystemViewer({ root }: Props) {
     const [file, setFile] = useState<File | null>(null);
 
     function openFile(file: File) {
-        console.log("file ", file.name, " opened");
         setFile(file);
     }
 

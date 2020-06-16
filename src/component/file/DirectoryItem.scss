@@ -11,14 +11,14 @@
     }
 
     &.locked {
-        opacity: 0.7;
+        opacity: 0.5;
         &::after {
             position: absolute;
             display: block;
             background-image: url("../icons/lock.svg");
             width: 16px;
             height: 16px;
-            bottom: 34px;
+            bottom: 56px;
             right: 22px;
             content: "";
         }
@@ -34,6 +34,6 @@
     width: 126px;
     min-height: 96px;
     text-align: center;
-    margin: 8px;
-    padding: 5px;
+    margin: 4px;
+    padding: 8px;
 }
