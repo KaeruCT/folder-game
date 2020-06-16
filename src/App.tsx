@@ -23,10 +23,10 @@ function App() {
             <div className="view-container">
                 <AppStore.Provider value={{ state, dispatch }}>
                     {view === View.FILESYSTEM && (
-                        <FilesystemViewer root={state.filesystemRoot} />
+                        <FilesystemViewer />
                     )}
                     {view === View.INVENTORY && (
-                        <InventoryViewer inventory={state.inventory} />
+                        <InventoryViewer />
                     )}
                     {view === View.LOG && (
                         <div>log</div>

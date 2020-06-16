@@ -1,16 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 import "./InventoryViewer.scss";
-import { Inventory } from "../../model/inventory";
+import { AppStore } from "../../App";
 
-interface Props {
-    inventory: Inventory;
-}
-
-function InventoryViewer({ inventory }: Props) {
+function InventoryViewer() {
+    const { state } = useContext(AppStore);
     return (
-        <div className="inventory">
-            <div className="item-list">
-                {Object.values(inventory).map((item) => (
+        <div className="window inventory">
+            <div className="content item-list">
+                {Object.values(state.inventory).map((item) => (
                     <div>{item.type} ({item.quantity})</div>
                 ))}
             </div>

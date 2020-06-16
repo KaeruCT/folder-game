@@ -22,7 +22,7 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
         <div className="window directory">
             <div className="title">{directory.fullName}</div>
             <div className="content">
-                <div className="item-list">
+                <div className="file-list">
                     {fileNodes.map((fileNode) => (
                         <DirectoryItem
                             isParent={fileNode === directory.parent}
