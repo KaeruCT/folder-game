@@ -1,26 +1,22 @@
 import { createDirectoryStructure, Directory } from "./files";
 import { Inventory, addItem } from "./inventory";
+const instructions = require("../game-files/instructions.txt");
 
 export function getFilesystem(): Directory {
-    const newDir = createDirectoryStructure("$ROOT/Users/darkl/Desktop/muexport/31may2020");
-    const root = newDir.root;
-    const notes = newDir.createDirectory("liner_notes");
-    notes.createFile("hello.txt", "this is a message");
-    notes.createFile("hello2.txt", "this is a message");
-    newDir.createFile("track1.wav", "...");
-    newDir.createFile("track2.wav", "...");
-    root.createFile("secrets1.txt", "do not dead open inside", { key: "locked_secrets" });
-    root.createFile("instructions.txt", "do what you will");
-    root.createFile("secrets20.txt", "do not dead open inside", { key: "locked_secrets" });
-    root.createFile("secrets50.txt", "do not dead open inside", { key: "locked_secrets" });
-    root.createFile("secrets99.txt", "do not dead open inside", { key: "locked_secrets" });
+    const help = createDirectoryStructure("$ROOT/help");
+    const root = help.root;
+    help.createFile("instructions.txt", instructions);
+
+    const diary = root.createDirectory("diary");
+
+    diary.createFile("may1.txt", "I am writing this to help my mental health.", { key: "diary_entry" });
+    diary.createFile("may5.txt", "I keep trying but I cannot forget what happened.", { key: "diary_entry" });
+    diary.createFile("may8.txt", "I don't know how much longer I will be able to write.", { key: "diary_entry" });
+
     root.createDirectory("hackintosh", { key: "mac" });
 
     root.createDirectory("lunix");
     root.createDirectory("micro$oft", { key: "gates" });
-    for (let i = 0; i < 20; i++) {
-        root.createFile(`.trash-${Math.random().toString(36).substring(3)}.txt`, "useless file");
-    }
     return root;
 }
 
