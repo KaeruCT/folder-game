@@ -11,7 +11,8 @@ interface Props {
 }
 
 function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
-    const fileNodes = sortBy([...directory.contents], [
+    const availableFileNodes = directory.contents.filter(fileNode => !fileNode.hidden);
+    const fileNodes = sortBy([...availableFileNodes], [
         { name: 'asc' },
         (fileNode) => !(fileNode instanceof Directory)]
     );

@@ -1,11 +1,13 @@
 import { createDirectoryStructure, Directory } from "./files";
 import { Inventory, addItem } from "./inventory";
-const instructions = require("../game-files/instructions.txt");
+const instructions = require("../game-files/instructions.txt").default;
+const oneTimeFile = require("../game-files/one_time_file.txt").default;
 
 export function getFilesystem(): Directory {
     const help = createDirectoryStructure("$ROOT/help");
     const root = help.root;
     help.createFile("instructions.txt", instructions);
+    help.createFile("one_time_file.txt", oneTimeFile, { selfDestruct: true });
 
     const diary = root.createDirectory("diary");
 
@@ -22,8 +24,8 @@ export function getFilesystem(): Directory {
 
 export function getInventory(): Inventory {
     const inventory = {};
-    addItem(inventory, "locked_secrets");
-    addItem(inventory, "locked_secrets");
+    addItem(inventory, "diary_entry");
+    addItem(inventory, "diary_entry");
     addItem(inventory, "gates");
     return inventory;
 }

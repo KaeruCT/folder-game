@@ -1,0 +1,4 @@
+Some files have a self-destruct bit which will
+cause the system to delete them once they are read.
+
+There may be a way to recover these files...

@@ -1,0 +1,9 @@
+If you have access to this system, it means my deadman switch worked!
+
+I published the access credentials to this server in plain sight for any hackers
+wanting to get in. There's possibly hundreds of others infiltrated into
+this system as you read this file.
+
+I advise you find a way to lock them out before they lock you out.
+
+Once the system detects the lock has been triggered, a new instruction should appear.

@@ -26,7 +26,11 @@ export function reducer(state: State, action: Action): State {
         case "SET_CWD":
             return { ...state, cwd: action.payload as Directory };
         case "SET_FILE":
-            return { ...state, file: action.payload as File };
+            const file = action.payload as File;
+            if (file?.meta.selfDestruct) {
+                file.hidden = true;
+            }
+            return { ...state, file };
         case "UNLOCK_FILENODE":
             const fileNode: FileNode = action.payload as FileNode;
             const key: string = fileNode.meta.key;

@@ -7,9 +7,10 @@ export class File {
     readonly content: string;
     readonly parent: Directory;
     readonly meta: Record<string, string>;
-    locked: boolean = false;
+    locked = false;
+    hidden = false;
 
-    constructor(name: string, content: string, parent: Directory, meta = {}) {
+    constructor(name: string, content: string, parent: Directory, meta: Record<string, string> = {}) {
         this.name = name;
         this.content = content;
         this.parent = parent;
@@ -39,9 +40,10 @@ export class Directory {
     readonly name: string;
     readonly parent: Directory | undefined;
     readonly meta: Record<string, string>;
-    locked: boolean = false;
+    locked = false;
+    hidden = false;
 
-    constructor(name: string, parent: Directory | undefined = undefined, meta = {}) {
+    constructor(name: string, parent: Directory | undefined = undefined, meta: Record<string, string> = {}) {
         this.name = name;
         this.meta = meta;
         if (parent) {
