@@ -2,15 +2,22 @@ const SEPARATOR = "/";
 
 export type FileNode = Directory | File;
 
+type LoggerFunction = (line: string) => void;
+
+type Meta = {
+    [key: string]: any,
+    run?: (log: LoggerFunction) => void
+};
+
 export class File {
     readonly name: string;
-    readonly content: string;
+    content: string;
     readonly parent: Directory;
-    readonly meta: Record<string, string>;
+    readonly meta: Meta;
     locked = false;
     hidden = false;
 
-    constructor(name: string, content: string, parent: Directory, meta: Record<string, string> = {}) {
+    constructor(name: string, content: string, parent: Directory, meta: Meta = {}) {
         this.name = name;
         this.content = content;
         this.parent = parent;
@@ -33,17 +40,31 @@ export class File {
     get size(): number {
         return this.content.length;
     }
+
+    get isExecutable(): boolean {
+        return typeof this.meta.run === 'function';
+    }
+
+    run() {
+        if (!this.isExecutable) return;
+        this.content = "";
+        this.meta.run!(this.output);
+    }
+
+    private output = (line: string) => {
+        this.content += `${line}\n`;
+    }
 }
 
 export class Directory {
     protected readonly children: Record<string, FileNode> = {};
     readonly name: string;
-    readonly parent: Directory | undefined;
-    readonly meta: Record<string, string>;
+    readonly meta: Meta;
+    parent: Directory | undefined;
     locked = false;
     hidden = false;
 
-    constructor(name: string, parent: Directory | undefined = undefined, meta: Record<string, string> = {}) {
+    constructor(name: string, parent: Directory | undefined = undefined, meta: Meta = {}) {
         this.name = name;
         this.meta = meta;
         if (parent) {
@@ -68,7 +89,23 @@ export class Directory {
         return getRoot(this);
     }
 
+    addDirectory(directory: Directory) {
+        if (this.children[directory.name]) {
+            throw Error(`FileNode already exists: ${this.fullName}${SEPARATOR}${directory.name}`);
+        }
+        directory.parent = this;
+        this.children[directory.name] = directory;
+        return directory;
+    }
+
     createDirectory(name: string, meta = {}): Directory {
+        if (name.indexOf(SEPARATOR) !== -1) {
+            const newDirectoryStructure = createDirectoryStructure(name);
+            const newDirectoryStructureRoot = newDirectoryStructure.root;
+            this.addDirectory(newDirectoryStructureRoot);
+            return newDirectoryStructure;
+        }
+
         if (this.children[name]) {
             throw Error(`FileNode already exists: ${this.fullName}${SEPARATOR}${name}`);
         }
@@ -78,7 +115,7 @@ export class Directory {
         return newDirectory;
     }
 
-    createFile(name: string, content: string, meta = {}): File {
+    createFile(name: string, content: string, meta: Meta = {}): File {
         if (this.children[name]) {
             throw Error(`FileNode already exists: ${this.fullName}${SEPARATOR}${name}`);
         }
@@ -86,6 +123,10 @@ export class Directory {
         const newFile = new File(name, content, this, meta);
         this.children[name] = newFile;
         return newFile;
+    }
+
+    fileExists(name: string): boolean {
+        return !!this.children[name];
     }
 
     remove(name: string): void {
@@ -111,7 +152,7 @@ function getFullName(node: FileNode): string {
     return fullName;
 }
 
-function setLock(node: FileNode, meta: Record<string, string>) {
+function setLock(node: FileNode, meta: Meta) {
     if (meta.key || meta.password) {
         node.locked = true;
     }

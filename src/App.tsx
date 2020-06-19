@@ -4,6 +4,7 @@ import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
 import { reducer, Action, getInitialState, State } from "./reducer";
+import { prettyPrint } from "./model/files";
 
 type Store = {
     state: State;
@@ -13,13 +14,11 @@ type Store = {
 export const AppStore = React.createContext({} as Store);
 
 function App() {
-    const [state, dispatch] = useReducer(reducer, getInitialState());
-
+    const [state, dispatch] = useReducer(reducer, getInitialState()); // TODO: fix reducer being called twice
     const [view, setView] = useState(View.FILESYSTEM);
 
     return (
         <div className="app">
-            {/* <pre>{prettyPrint(root)}</pre> */}
             <div className="view-container">
                 <AppStore.Provider value={{ state, dispatch }}>
                     {view === View.FILESYSTEM && (
@@ -29,7 +28,9 @@ function App() {
                         <InventoryViewer />
                     )}
                     {view === View.LOG && (
-                        <div>log</div>
+                        <div>
+                            <pre>{prettyPrint(state.filesystemRoot)}</pre>
+                        </div>
                     )}
                 </AppStore.Provider>
             </div>

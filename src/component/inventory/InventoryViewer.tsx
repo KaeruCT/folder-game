@@ -8,7 +8,7 @@ function InventoryViewer() {
         <div className="window inventory">
             <div className="content item-list">
                 {Object.values(state.inventory).map((item) => (
-                    <div>{item.type} ({item.quantity})</div>
+                    <div key={item.type}>{item.type} ({item.quantity})</div>
                 ))}
             </div>
         </div>

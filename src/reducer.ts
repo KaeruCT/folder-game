@@ -18,6 +18,7 @@ export interface Action {
 
 export function reducer(state: State, action: Action): State {
     let { inventory, filesystemRoot } = state;
+    console.log(action.type);
     switch (action.type) {
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
@@ -27,8 +28,13 @@ export function reducer(state: State, action: Action): State {
             return { ...state, cwd: action.payload as Directory };
         case "SET_FILE":
             const file = action.payload as File;
-            if (file?.meta.selfDestruct) {
-                file.hidden = true;
+            if (file) {
+                if (file.meta.selfDestruct) {
+                    file.hidden = true;
+                }
+                if (file.isExecutable) {
+                    file.run();
+                }
             }
             return { ...state, file };
         case "UNLOCK_FILENODE":
