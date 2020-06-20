@@ -1,5 +1,7 @@
-import { createDirectoryStructure, Directory } from "./files";
+import { createDirectoryStructure, Directory, File } from "./files";
 import { Inventory, addItem } from "./inventory";
+import { randItem, randInt } from "./util";
+import { USER_NAMES, SUFFIXES } from "./data";
 const instructions = require("../game-files/intro/instructions.txt").default;
 const oneTimeFile = require("../game-files/intro/one_time_file.txt").default;
 
@@ -16,17 +18,30 @@ export function getFilesystem(): Directory {
     diary.createFile("may8.txt", "I don't know how much longer I will be able to write.", { key: "diary_entry" });
 
     const programs = root.createDirectory("programs");
-    programs.createFile("lock.exe", "", { selfDestruct: true });
+    programs.createFile("lock.exe", "", {
+        selfDestruct: true,
+        run(this: File, log) {
+            log("nice try");
+            this.parent.createFile("", "");
+        }
+    });
     programs.createFile("user_info.exe", "", {
-        run(log) {
+        run(this: File, log) {
+            const parent = this.parent;
             const filename = "user_report.txt";
-            if (programs.fileExists(filename)) {
+            if (parent.fileExists(filename)) {
                 log("previous report found, removing...");
-                programs.remove(filename);
+                parent.remove(filename);
             }
 
             log(`creating user report: ${filename}`);
-            programs.createFile(filename, "user info output");
+
+            let report = "==== USER REPORT ====\n";
+            const total = randInt(2000, 8000);
+            report += `TOTAL USERS: ${total}\n`;
+            report += `ONLINE: ${total - randInt(100, 1500)}\n`;
+            report += `NEWEST: ${randUserName()}, ${randUserName()}, ${randUserName()}\n`;
+            parent.createFile(filename, report);
         }
     });
 
@@ -45,4 +60,8 @@ export function getInventory(): Inventory {
     addItem(inventory, "diary_entry");
     addItem(inventory, "sys");
     return inventory;
+}
+
+function randUserName(): string {
+    return `${randItem(USER_NAMES)}${randItem(SUFFIXES)}`;
 }

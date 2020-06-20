@@ -18,7 +18,6 @@ export interface Action {
 
 export function reducer(state: State, action: Action): State {
     let { inventory, filesystemRoot } = state;
-    console.log(action.type);
     switch (action.type) {
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
@@ -36,7 +35,7 @@ export function reducer(state: State, action: Action): State {
                     file.run();
                 }
             }
-            return { ...state, file };
+            return { ...state, file, filesystemRoot: file ? file.root : filesystemRoot };
         case "UNLOCK_FILENODE":
             const fileNode: FileNode = action.payload as FileNode;
             const key: string = fileNode.meta.key;

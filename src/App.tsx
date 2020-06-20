@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useReducer, useState, useCallback } from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
@@ -14,7 +14,8 @@ type Store = {
 export const AppStore = React.createContext({} as Store);
 
 function App() {
-    const [state, dispatch] = useReducer(reducer, getInitialState()); // TODO: fix reducer being called twice
+    const memoizedReducer = useCallback(reducer, []);
+    const [state, dispatch] = useReducer(memoizedReducer, getInitialState());
     const [view, setView] = useState(View.FILESYSTEM);
 
     return (

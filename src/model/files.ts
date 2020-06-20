@@ -48,7 +48,7 @@ export class File {
     run() {
         if (!this.isExecutable) return;
         this.content = "";
-        this.meta.run!(this.output);
+        this.meta.run!.call(this, this.output);
     }
 
     private output = (line: string) => {
