@@ -1,15 +1,19 @@
-import { createDirectoryStructure, Directory, File } from "./files";
+import { createDirectoryStructure, Directory } from "./files";
 import { Inventory, addItem } from "./inventory";
 import { randItem, randInt } from "./util";
 import { USER_NAMES, SUFFIXES } from "./data";
 const instructions = require("../game-files/intro/instructions.txt").default;
-const oneTimeFile = require("../game-files/intro/one_time_file.txt").default;
+const lockout = require("../game-files/intro/lockout.txt").default;
+const lockExe = require("../game-files/intro/lock.exe.txt").default;
 
 export function getFilesystem(): Directory {
+    const lockFile = "lucky7.exe";
+
     const help = createDirectoryStructure("$ROOT/help");
     const root = help.root;
-    help.createFile("instructions.txt", instructions);
-    help.createFile("one_time_file.txt", oneTimeFile, { selfDestruct: true });
+    help.createFile("instructions.txt", instructions, { selfDestruct: true });
+
+    root.createDirectory("trash");
 
     const diary = root.createDirectory("users/evan/diary");
 
@@ -18,17 +22,46 @@ export function getFilesystem(): Directory {
     diary.createFile("may8.txt", "I don't know how much longer I will be able to write.", { key: "diary_entry" });
 
     const programs = root.createDirectory("programs");
-    programs.createFile("lock.exe", "", {
+    programs.createFile("lock.exe", lockExe, {
         selfDestruct: true,
-        run(this: File, log) {
-            log("nice try");
-            this.parent.createFile("", "");
+        corrupted: true,
+    });
+
+    const system = root.createDirectory("sys");
+    system.createDirectory("share", { key: "sys" });
+    system.createDirectory("lib", { key: "sys" });
+    system.createDirectory("cache", { key: "sys" });
+    system.createDirectory("local", { key: "sys" });
+    system.createDirectory("net", { key: "sys" });
+    const safe = system.createDirectory("safe");
+    safe.createFile(lockFile, "", {
+        selfDestruct: true,
+        run(log) {
+            const count = randInt(7000, 8000);
+            log("running lockdown routine");
+            log("...");
+            log(`${count} user accounts found`);
+            log(`banning and disconnecting ${count} users`);
+            log("initiating stale account cleanup...");
+            log("14.45% done");
+            log("35.89% done");
+            log("56.24% done");
+            log("79.48% done");
+            log("88.19% done");
+            log("99.97% done");
+            log("100% done");
+            log("lockdown routine complete");
+
+            this.root.createFile("lockout.txt", lockout);
         }
     });
-    programs.createFile("user_info.exe", "", {
-        run(this: File, log) {
+
+    safe.createFile("user_info.exe", "", {
+        run(log) {
             const parent = this.parent;
             const filename = "user_report.txt";
+            const locked = parent.getFileNode(lockFile).hidden;
+
             if (parent.fileExists(filename)) {
                 log("previous report found, removing...");
                 parent.remove(filename);
@@ -37,20 +70,18 @@ export function getFilesystem(): Directory {
             log(`creating user report: ${filename}`);
 
             let report = "==== USER REPORT ====\n";
-            const total = randInt(2000, 8000);
+            const total = locked ? 1 : randInt(2000, 8000);
+            const online = locked ? 1 : total - randInt(100, 1500);
+            const newest = locked ? "<unknown>" : `${randUserName()}, ${randUserName()}, ${randUserName()}`;
             report += `TOTAL USERS: ${total}\n`;
-            report += `ONLINE: ${total - randInt(100, 1500)}\n`;
-            report += `NEWEST: ${randUserName()}, ${randUserName()}, ${randUserName()}\n`;
+            report += `ONLINE: ${online}\n`;
+            report += `NEWEST: ${newest}\n`;
             parent.createFile(filename, report);
+
+            log(`report created succesfully`);
         }
     });
 
-    const system = root.createDirectory("sys");
-    system.createDirectory("share", { key: "gates" });
-    system.createDirectory("lib", { key: "gates" });
-    system.createDirectory("cache", { key: "gates" });
-    system.createDirectory("local", { key: "gates" });
-    system.createDirectory("net", { key: "gates" });
     return root;
 }
 

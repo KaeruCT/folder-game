@@ -6,12 +6,13 @@ type LoggerFunction = (line: string) => void;
 
 type Meta = {
     [key: string]: any,
-    run?: (log: LoggerFunction) => void
+    run?: (this: File, log: LoggerFunction) => void
 };
 
 export class File {
     readonly name: string;
     content: string;
+    tempContent: string = ""; // used only by exes that log output
     readonly parent: Directory;
     readonly meta: Meta;
     locked = false;
@@ -34,7 +35,7 @@ export class File {
     }
 
     get extension(): string {
-        return this.name.substring(this.name.indexOf("."));
+        return this.name.substring(this.name.indexOf(".") + 1);
     }
 
     get size(): number {
@@ -47,12 +48,15 @@ export class File {
 
     run() {
         if (!this.isExecutable) return;
-        this.content = "";
+        this.tempContent = "";
         this.meta.run!.call(this, this.output);
+        if (this.tempContent) {
+            this.content = this.tempContent;
+        }
     }
 
     private output = (line: string) => {
-        this.content += `${line}\n`;
+        this.tempContent += `${line}\n`;
     }
 }
 
@@ -127,6 +131,10 @@ export class Directory {
 
     fileExists(name: string): boolean {
         return !!this.children[name];
+    }
+
+    getFileNode(name: string): FileNode {
+        return this.children[name];
     }
 
     remove(name: string): void {
