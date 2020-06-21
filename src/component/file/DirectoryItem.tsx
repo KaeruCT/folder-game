@@ -6,7 +6,7 @@ import folderIcon from "../icons/folder-3.svg";
 import textIcon from "../icons/text-5.svg";
 import parentIcon from "../icons/folder.svg";
 import browserIcon from "../icons/browser.svg";
-import skullIcon from "../icons/skull.svg";
+//import skullIcon from "../icons/skull.svg";
 import trashIcon from "../icons/trash.svg";
 import { AppStore } from "../../App";
 import Modal from "../ui/Modal";
