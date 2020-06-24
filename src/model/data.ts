@@ -9,3 +9,11 @@ export const USER_NAMES = [
 ];
 
 export const SUFFIXES = ["89", "1994", "25", "_hh", "xxx", "333", "41", "CA", "VVV", "0"];
+
+export const IMAGE_EXTENSIONS = [
+    'jpg', 'jpeg', 'gif', 'png',
+];
+
+export const VIDEO_EXTENSIONS = [
+    'webm', 'mp4',
+];

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./FileViewer.scss";
 import { File } from "../../model/files";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 
 function corruptContent(content: string): string {
     return content.split("").map((_, i) => {
@@ -86,6 +87,23 @@ function PlainTextOutput({ file }: OutputProps) {
         </div>
     );
 }
+
+function ImageResourceOutput({ file }: OutputProps) {
+    return (
+        <div className="content media-content">
+            <img src={file.content} alt="" />
+        </div>
+    );
+}
+
+function VideoResourceOutput({ file }: OutputProps) {
+    return (
+        <div className="content media-content">
+            <video src={file.content} loop controls autoPlay />
+        </div>
+    );
+}
+
 interface Props {
     file: File;
     onClose: () => void;
@@ -97,6 +115,14 @@ function FileViewer({ file, onClose }: Props) {
         // check for extension to allow for "fake" executables
         // that just print out their content
         Output = ExeOutput;
+    }
+
+    if (IMAGE_EXTENSIONS.includes(file.extension)) {
+        Output = ImageResourceOutput;
+    }
+
+    if (VIDEO_EXTENSIONS.includes(file.extension)) {
+        Output = VideoResourceOutput;
     }
 
     return (

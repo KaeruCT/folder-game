@@ -11,5 +11,14 @@
             background: #111;
             color: #eee;
         }
+
+        
+    }
+
+    .media-content {
+        background: #000;
+        img, video {
+            max-width: 100%;
+        }
     }
 }

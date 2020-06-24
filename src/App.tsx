@@ -4,7 +4,7 @@ import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
 import { reducer, Action, getInitialState, State } from "./reducer";
-import { prettyPrint } from "./model/files";
+// import { prettyPrint } from "./model/files";
 
 type Store = {
     state: State;
@@ -30,7 +30,8 @@ function App() {
                     )}
                     {view === View.LOG && (
                         <div>
-                            <pre>{prettyPrint(state.filesystemRoot)}</pre>
+                            WIP
+                            {/* <pre>{prettyPrint(state.filesystemRoot)}</pre> */}
                         </div>
                     )}
                 </AppStore.Provider>

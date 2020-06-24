@@ -2,6 +2,15 @@ import { createDirectoryStructure, Directory } from "./files";
 import { Inventory, addItem } from "./inventory";
 import { randItem, randInt } from "./util";
 import { USER_NAMES, SUFFIXES } from "./data";
+
+import img1 from "../game-files/images/1.png";
+import img4 from "../game-files/images/4.png";
+import img6 from "../game-files/images/6.png";
+import img7 from "../game-files/images/7.png";
+import img8 from "../game-files/images/8.png";
+import imgEd from "../game-files/images/ed.gif";
+import imgErik from "../game-files/images/erik.jpg";
+
 const instructions = require("../game-files/intro/instructions.txt").default;
 const lockout = require("../game-files/intro/lockout.txt").default;
 const lockExe = require("../game-files/intro/lock.exe.txt").default;
@@ -12,14 +21,26 @@ export function getFilesystem(): Directory {
     const help = createDirectoryStructure("$ROOT/help");
     const root = help.root;
     help.createFile("instructions.txt", instructions, { selfDestruct: true });
+    help.createFile("1.png", img1);
+    help.createFile("4.png", img4);
+    help.createFile("6.png", img6);
 
-    root.createDirectory("trash");
+    const trash = root.createDirectory("trash");
+    trash.createFile("ed.gif", imgEd);
+    trash.createFile("7.png", img7);
+    trash.createFile("8.png", img8);
 
-    const diary = root.createDirectory("users/evan/diary");
+    const evan = root.createDirectory("users/evan");
 
+    const diary = evan.createDirectory("diary");
     diary.createFile("may1.txt", "I am writing this to help my mental health.", { key: "diary_entry" });
     diary.createFile("may5.txt", "I keep trying but I cannot forget what happened.", { key: "diary_entry" });
     diary.createFile("may8.txt", "I don't know how much longer I will be able to write.", { key: "diary_entry" });
+    diary.createFile("person.jpg", imgErik);
+
+    const porn = evan.createDirectory("porn");
+    porn.createFile("italian.mp4", "/vid/italian.mp4");
+    porn.createFile("smell.mp4", "/vid/smell.mp4");
 
     const programs = root.createDirectory("programs");
     programs.createFile("lock.exe", lockExe, {
@@ -53,6 +74,7 @@ export function getFilesystem(): Directory {
             log("lockdown routine complete");
 
             this.root.createFile("lockout.txt", lockout);
+            this.root.createFile("gnu.webm", "/vid/gnu.webm");
         }
     });
 

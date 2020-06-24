@@ -8,8 +8,11 @@ import parentIcon from "../icons/folder.svg";
 import browserIcon from "../icons/browser.svg";
 //import skullIcon from "../icons/skull.svg";
 import trashIcon from "../icons/trash.svg";
+import imageIcon from "../icons/image.svg";
+import televisionIcon from "../icons/television.svg";
 import { AppStore } from "../../App";
 import Modal from "../ui/Modal";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 
 interface Props {
     fileNode: FileNode;
@@ -30,6 +33,12 @@ function Icon({ fileNode, isParent }: { fileNode: FileNode, isParent: boolean })
     }
     if (fileNode.extension === 'exe') {
         return <img src={browserIcon} alt="" />;
+    }
+    if (IMAGE_EXTENSIONS.includes(fileNode.extension)) {
+        return <img src={imageIcon} alt="" />;
+    }
+    if (VIDEO_EXTENSIONS.includes(fileNode.extension)) {
+        return <img src={televisionIcon} alt="" />;
     }
     return <img src={textIcon} alt="" />;
 }
