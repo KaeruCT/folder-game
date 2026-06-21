@@ -42,15 +42,21 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
             function handleClick() {
                 if (isLocked) {
                     dispatch({ type: "UNLOCK_FILENODE", payload: node });
-                    // After unlock: open files immediately, expand dirs
                     if (!isDir) {
                         onFileOpen(node as FileModel);
                     } else {
+                        dispatch({ type: "SET_CWD", payload: node });
                         onToggleExpand(node.fullName);
                     }
                     return;
                 }
                 if (isDir) {
+                    if (isExpanded) {
+                        const parent = (node as Directory).parent;
+                        if (parent) dispatch({ type: "SET_CWD", payload: parent });
+                    } else {
+                        dispatch({ type: "SET_CWD", payload: node });
+                    }
                     onToggleExpand(node.fullName);
                 } else {
                     onFileOpen(node as FileModel);
