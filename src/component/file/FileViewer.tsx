@@ -33,7 +33,10 @@ function FileContent({ file, content }: ContentProps) {
     if (file.meta.corrupted) {
         return <CorruptedFileContent content={content} file={file} />;
     }
-    return <pre>{content}</pre>;
+    if (file.isExecutable || file.extension === "exe") {
+        return <pre>{content}</pre>;
+    }
+    return <div className="file-text">{content}</div>;
 }
 
 function CorruptedFileContent({ content }: ContentProps) {
@@ -47,7 +50,7 @@ function CorruptedFileContent({ content }: ContentProps) {
         return () => clearInterval(interval);
     }, [content]);
 
-    return <pre>{corruptedContent}</pre>;
+    return <div className="file-text file-text--corrupted">{corruptedContent}</div>;
 }
 
 interface OutputProps {

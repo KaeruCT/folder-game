@@ -3,6 +3,19 @@
         padding: 16px;
         color: var(--text-primary);
 
+        .file-text {
+            margin: 0;
+            padding: 0;
+            white-space: pre-line;
+            line-height: 1.7;
+            color: var(--text-primary);
+
+            &--corrupted {
+                font-family: var(--font-mono);
+                white-space: pre-wrap;
+            }
+        }
+
         pre {
             margin: 0;
             padding: 0;
