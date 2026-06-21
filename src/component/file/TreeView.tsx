@@ -1,10 +1,11 @@
 import { useContext, useMemo } from "react";
 import "./TreeView.scss";
+import { File, Folder, Lock } from "lucide-react";
 import { AppStore } from "../../App";
-import { Directory, type File, type FileNode } from "../../model/files";
+import { Directory, type File as FileModel, type FileNode } from "../../model/files";
 
 interface Props {
-    onFileOpen: (file: File) => void;
+    onFileOpen: (file: FileModel) => void;
     onToggleView: () => void;
     expanded: Set<string>;
     onToggleExpand: (path: string) => void;
@@ -43,7 +44,7 @@ function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props)
                 if (isDir) {
                     onToggleExpand(node.fullName);
                 } else {
-                    onFileOpen(node as File);
+                    onFileOpen(node as FileModel);
                 }
             }
 
@@ -71,9 +72,15 @@ function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props)
                     <span className="tree-node__arrow">
                         {isDir ? (isExpanded ? "▼" : children.length > 0 || isLocked ? "▶" : " ") : " "}
                     </span>
-                    <span className="tree-node__icon">{isDir ? "📁" : "📄"}</span>
+                    <span className="tree-node__icon">
+                        {isDir ? <Folder size={14} strokeWidth={1.5} /> : <File size={14} strokeWidth={1.5} />}
+                    </span>
                     <span className="tree-node__name">{node.name}</span>
-                    {isLocked && <span className="tree-node__lock">🔒</span>}
+                    {isLocked && (
+                        <span className="tree-node__lock">
+                            <Lock size={10} strokeWidth={2} />
+                        </span>
+                    )}
                 </div>
             );
 
@@ -103,7 +110,7 @@ function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props)
             <div className="title">
                 {root.name}
                 <button type="button" className="tree-toggle" onClick={onToggleView} title="Switch to directory view">
-                    📂
+                    <Folder size={18} strokeWidth={1.5} />
                 </button>
             </div>
             <div className="content tree-content">{tree}</div>

@@ -1,15 +1,9 @@
 import { Fragment, useContext, useState } from "react";
 import "./DirectoryItem.scss";
+import { FileCode, File as FileIcon, FileImage, FileVideo, Folder, FolderUp, Lock, Trash2 } from "lucide-react";
 import { AppStore } from "../../App";
 import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import { Directory, type File, type FileNode } from "../../model/files";
-import browserIcon from "../icons/browser.svg";
-import parentIcon from "../icons/folder.svg";
-import folderIcon from "../icons/folder-3.svg";
-import imageIcon from "../icons/image.svg";
-import televisionIcon from "../icons/television.svg";
-import textIcon from "../icons/text-5.svg";
-import trashIcon from "../icons/trash.svg";
 import Modal from "../ui/Modal";
 
 interface Props {
@@ -19,26 +13,27 @@ interface Props {
     onFileOpen: (file: File) => void;
 }
 
-function Icon({ fileNode, isParent }: { fileNode: FileNode; isParent: boolean }) {
+function NodeIcon({ fileNode, isParent }: { fileNode: FileNode; isParent: boolean }) {
+    const size = 40;
     if (isParent) {
-        return <img src={parentIcon} alt="" />;
+        return <FolderUp size={size} strokeWidth={1.5} />;
     }
     if (fileNode.name === "trash") {
-        return <img src={trashIcon} alt="" />;
+        return <Trash2 size={size} strokeWidth={1.5} />;
     }
     if (fileNode instanceof Directory) {
-        return <img src={folderIcon} alt="" />;
+        return <Folder size={size} strokeWidth={1.5} />;
     }
     if (fileNode.extension === "exe") {
-        return <img src={browserIcon} alt="" />;
+        return <FileCode size={size} strokeWidth={1.5} />;
     }
     if (IMAGE_EXTENSIONS.includes(fileNode.extension)) {
-        return <img src={imageIcon} alt="" />;
+        return <FileImage size={size} strokeWidth={1.5} />;
     }
     if (VIDEO_EXTENSIONS.includes(fileNode.extension)) {
-        return <img src={televisionIcon} alt="" />;
+        return <FileVideo size={size} strokeWidth={1.5} />;
     }
-    return <img src={textIcon} alt="" />;
+    return <FileIcon size={size} strokeWidth={1.5} />;
 }
 
 function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
@@ -76,8 +71,11 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
                 title={fileNode.name}
                 className={`directory-item ${fileNode.locked ? "locked" : ""}`}
             >
-                <Icon fileNode={fileNode} isParent={isParent} />
-                {name || "\u00A0"}
+                <div className="directory-item__icon">
+                    <NodeIcon fileNode={fileNode} isParent={isParent} />
+                </div>
+                <div className="directory-item__name">{name || "\u00A0"}</div>
+                {fileNode.locked && <Lock className="directory-item__lock" size={12} strokeWidth={2} />}
             </button>
         </Fragment>
     );

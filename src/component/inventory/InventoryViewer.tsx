@@ -1,6 +1,8 @@
+import { Package } from "lucide-react";
 import { useContext, useMemo } from "react";
 import "./InventoryViewer.scss";
 import { AppStore } from "../../App";
+import { resolveIcon } from "../../model/icons";
 import { getItemInfo } from "../../model/items";
 
 function InventoryViewer() {
@@ -11,7 +13,9 @@ function InventoryViewer() {
         return (
             <div className="window inventory">
                 <div className="content inv-empty">
-                    <div className="inv-empty__icon">🎒</div>
+                    <div className="inv-empty__icon">
+                        <Package size={40} strokeWidth={1.5} />
+                    </div>
                     <p className="inv-empty__text">
                         Your inventory is empty. Explore the filesystem to find keys and items.
                     </p>
@@ -27,7 +31,7 @@ function InventoryViewer() {
                     const info = getItemInfo(item.type);
                     return (
                         <div key={item.type} className="inventory-item">
-                            <div className="inventory-item__icon">{info.icon}</div>
+                            <div className="inventory-item__icon">{resolveIcon(info.icon, 22)}</div>
                             <div className="inventory-item__body">
                                 <div className="inventory-item__name">{info.name}</div>
                                 <div className="inventory-item__desc">{info.description}</div>

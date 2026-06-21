@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import "./DirectoryView.scss";
+import { FolderTree } from "lucide-react";
 import { Directory, type File } from "../../model/files";
 import DirectoryItem from "./DirectoryItem";
 
@@ -31,7 +32,7 @@ function DirectoryView({ directory, onNavigate, onFileOpen, onToggleView }: Prop
             <div className="title">
                 {directory.fullName}
                 <button type="button" className="tree-toggle" onClick={onToggleView} title="Switch to tree view">
-                    🌳
+                    <FolderTree size={18} strokeWidth={1.5} />
                 </button>
             </div>
             <div className="content">

@@ -1,61 +1,62 @@
+/**
+ * Global registry of all items used across storylines.
+ * Maps the internal item type string to display info.
+ * `icon` is a Lucide icon component name (e.g. "BookOpen", "Key").
+ */
 export interface ItemInfo {
     /** Display name shown in inventory and toasts */
     name: string;
     /** What the item does or where it came from */
     description: string;
-    /** Emoji icon for the item */
+    /** Lucide icon component name */
     icon: string;
 }
 
-/**
- * Global registry of all items used across storylines.
- * Maps the internal item type string to display info.
- */
 const ITEM_REGISTRY: Record<string, ItemInfo> = {
     // ── The Echoes Below ──
     diary_key: {
         name: "Diary Key",
         description: "Unlocks Frank's private diary directory",
-        icon: "📔",
+        icon: "BookOpen",
     },
     expedition_clearance: {
         name: "Expedition Clearance",
         description: "Grants access to restricted Hollow Earth expedition reports",
-        icon: "📋",
+        icon: "ClipboardList",
     },
     echo_cipher: {
         name: "Echo Cipher",
         description: "Decryption key for the Path of Echoes sacred texts",
-        icon: "🔮",
+        icon: "Fingerprint",
     },
     kael_contact: {
         name: "Kael's Contact Credentials",
         description: "Unlocks messages from the mysterious inner-world contact",
-        icon: "🌑",
+        icon: "MessageCircle",
     },
 
     // ── The Libertine's Ledger ──
     vault_key: {
         name: "Vault Key",
         description: "Unlocks Vincenzo's private diary and photo gallery",
-        icon: "🔐",
+        icon: "Key",
     },
     ledger_key: {
         name: "Ledger Key",
         description: "Grants access to Vincenzo's black book and business connections",
-        icon: "📒",
+        icon: "BookText",
     },
 
     // ── The Lockdown (legacy) ──
     diary_entry: {
         name: "Diary Entry Key",
         description: "Unlocks Evan's personal diary entries",
-        icon: "🔓",
+        icon: "BookOpen",
     },
     sys: {
         name: "System Access",
         description: "Unlocks restricted system directories",
-        icon: "⚙️",
+        icon: "Settings",
     },
 };
 
@@ -63,7 +64,7 @@ const ITEM_REGISTRY: Record<string, ItemInfo> = {
 const UNKNOWN_ITEM: ItemInfo = {
     name: "Unknown Item",
     description: "An unregistered item",
-    icon: "❓",
+    icon: "HelpCircle",
 };
 
 export function getItemInfo(type: string): ItemInfo {

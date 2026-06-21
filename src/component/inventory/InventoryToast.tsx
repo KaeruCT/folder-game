@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import "./InventoryToast.scss";
 import { AppStore } from "../../App";
+import { resolveIcon } from "../../model/icons";
 import { getItemInfo } from "../../model/items";
 
 function InventoryToast() {
@@ -64,7 +65,7 @@ function InventoryToast() {
 
     return (
         <div className="inv-toast" onClick={dismiss} onKeyDown={handleKeyDown} role="status" aria-live="polite">
-            <div className="inv-toast__icon">{info.icon}</div>
+            <div className="inv-toast__icon">{resolveIcon(info.icon, 20, 1.5)}</div>
             <div className="inv-toast__body">
                 <div className="inv-toast__title">Item Acquired</div>
                 <div className="inv-toast__name">{info.name}</div>

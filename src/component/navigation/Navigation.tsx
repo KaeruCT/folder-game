@@ -1,7 +1,5 @@
+import { FolderTree, PackageSearch, ScrollText } from "lucide-react";
 import "./Navigation.scss";
-import filesystemIcon from "../icons/filesystem.svg";
-import inventoryIcon from "../icons/inventory.svg";
-import logIcon from "../icons/log.svg";
 
 export enum View {
     FILESYSTEM,
@@ -11,16 +9,16 @@ export enum View {
 
 const views = [View.FILESYSTEM, View.INVENTORY, View.LOG];
 
-const viewTitles = {
+const viewTitles: Record<View, string> = {
     [View.FILESYSTEM]: "Filesystem",
     [View.INVENTORY]: "Inventory",
     [View.LOG]: "Log",
 };
 
-const viewIcons = {
-    [View.FILESYSTEM]: filesystemIcon,
-    [View.INVENTORY]: inventoryIcon,
-    [View.LOG]: logIcon,
+const viewIcons: Record<View, React.ReactNode> = {
+    [View.FILESYSTEM]: <FolderTree size={24} />,
+    [View.INVENTORY]: <PackageSearch size={24} />,
+    [View.LOG]: <ScrollText size={24} />,
 };
 
 interface ViewsProps {
@@ -37,8 +35,9 @@ function Navigation({ currentView, setView }: ViewsProps) {
                     key={view}
                     onClick={() => setView(view)}
                     className={`navigation-button ${currentView === view ? "selected" : ""}`}
+                    aria-label={viewTitles[view]}
                 >
-                    <img alt={viewTitles[view]} src={viewIcons[view]} />
+                    {viewIcons[view]}
                 </button>
             ))}
         </div>
