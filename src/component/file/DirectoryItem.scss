@@ -1,13 +1,17 @@
 .directory-item {
     position: relative;
     cursor: pointer;
+    touch-action: manipulation;
 
-    &:focus {
+    &:focus-visible {
         outline: #6af 2px solid;
     }
 
     &:hover {
         background: #d6eeff;
+    }
+    &:active {
+        background: #bee4fc;
     }
 
     &.locked {
@@ -16,18 +20,21 @@
             position: absolute;
             display: block;
             background-image: url("../icons/lock.svg");
-            width: 24px;
-            height: 24px;
-            bottom: 35px;
-            right: 5px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 20px;
+            height: 20px;
+            bottom: 32px;
+            right: 4px;
             content: "";
         }
     }
 
     img {
         display: block;
-        margin: 0 auto;
-        margin-bottom: 8px;
+        margin: 0 auto 8px;
+        width: 48px;
+        height: 48px;
     }
 
     width: 30%;
@@ -36,5 +43,8 @@
     text-align: center;
     margin: 4px;
     padding: 8px;
-    font-size: .8em;
+    font-size: 12px;
+    border-radius: 4px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }

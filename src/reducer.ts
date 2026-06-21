@@ -1,6 +1,6 @@
+import { type Directory, type File, type FileNode, unlockFileNode } from "./model/files";
 import { getFilesystem, getInventory } from "./model/game";
-import { Directory, File, FileNode, unlockFileNode } from "./model/files";
-import { Inventory, addItem, removeItem } from "./model/inventory";
+import { addItem, type Inventory, removeItem } from "./model/inventory";
 
 type ActionType = "INVENTORY_ADD" | "INVENTORY_REMOVE" | "SET_CWD" | "SET_FILE" | "UNLOCK_FILENODE";
 
@@ -13,6 +13,7 @@ export interface State {
 
 export interface Action {
     type: ActionType;
+    // biome-ignore lint/suspicious/noExplicitAny: discriminated union via type field
     payload: any;
 }
 
@@ -25,7 +26,7 @@ export function reducer(state: State, action: Action): State {
             return { ...state, inventory: removeItem(inventory, action.payload) };
         case "SET_CWD":
             return { ...state, cwd: action.payload as Directory };
-        case "SET_FILE":
+        case "SET_FILE": {
             const file = action.payload as File;
             if (file) {
                 if (file.meta.selfDestruct) {
@@ -36,15 +37,16 @@ export function reducer(state: State, action: Action): State {
                 }
             }
             return { ...state, file, filesystemRoot: file ? file.root : filesystemRoot };
-        case "UNLOCK_FILENODE":
+        }
+        case "UNLOCK_FILENODE": {
             const fileNode: FileNode = action.payload as FileNode;
             const key: string = fileNode.meta.key;
             if (inventory[key]) {
-                // unlock FileNode only if the inventory has the required item
                 inventory = removeItem(inventory, key);
                 filesystemRoot = unlockFileNode(action.payload);
             }
             return { ...state, filesystemRoot, inventory };
+        }
         default:
             throw new Error();
     }

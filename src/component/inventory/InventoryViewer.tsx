@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import "./InventoryViewer.scss";
 import { AppStore } from "../../App";
 
@@ -8,7 +8,9 @@ function InventoryViewer() {
         <div className="window inventory">
             <div className="content item-list">
                 {Object.values(state.inventory).map((item) => (
-                    <div key={item.type}>{item.type} ({item.quantity})</div>
+                    <div key={item.type}>
+                        {item.type} ({item.quantity})
+                    </div>
                 ))}
             </div>
         </div>

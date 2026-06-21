@@ -1,18 +1,16 @@
-import React, { useContext, useState, Fragment } from "react";
+import { Fragment, useContext, useState } from "react";
 import "./DirectoryItem.scss";
-import { Directory, File, FileNode } from "../../model/files";
-
-import folderIcon from "../icons/folder-3.svg";
-import textIcon from "../icons/text-5.svg";
-import parentIcon from "../icons/folder.svg";
+import { AppStore } from "../../App";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
+import { Directory, type File, type FileNode } from "../../model/files";
 import browserIcon from "../icons/browser.svg";
-//import skullIcon from "../icons/skull.svg";
-import trashIcon from "../icons/trash.svg";
+import parentIcon from "../icons/folder.svg";
+import folderIcon from "../icons/folder-3.svg";
 import imageIcon from "../icons/image.svg";
 import televisionIcon from "../icons/television.svg";
-import { AppStore } from "../../App";
+import textIcon from "../icons/text-5.svg";
+import trashIcon from "../icons/trash.svg";
 import Modal from "../ui/Modal";
-import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 
 interface Props {
     fileNode: FileNode;
@@ -21,17 +19,17 @@ interface Props {
     onFileOpen: (file: File) => void;
 }
 
-function Icon({ fileNode, isParent }: { fileNode: FileNode, isParent: boolean }) {
+function Icon({ fileNode, isParent }: { fileNode: FileNode; isParent: boolean }) {
     if (isParent) {
         return <img src={parentIcon} alt="" />;
     }
-    if (fileNode.name === 'trash') {
+    if (fileNode.name === "trash") {
         return <img src={trashIcon} alt="" />;
     }
     if (fileNode instanceof Directory) {
         return <img src={folderIcon} alt="" />;
     }
-    if (fileNode.extension === 'exe') {
+    if (fileNode.extension === "exe") {
         return <img src={browserIcon} alt="" />;
     }
     if (IMAGE_EXTENSIONS.includes(fileNode.extension)) {
@@ -72,9 +70,14 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
             <Modal show={showModal} onConfirm={attemptUnlock} onCancel={() => setShowModal(false)}>
                 Attempt unlocking file {fileNode.name}?
             </Modal>
-            <button onClick={onClick} title={fileNode.name} className={`directory-item ${fileNode.locked ? "locked" : ""}`}>
+            <button
+                type="button"
+                onClick={onClick}
+                title={fileNode.name}
+                className={`directory-item ${fileNode.locked ? "locked" : ""}`}
+            >
                 <Icon fileNode={fileNode} isParent={isParent} />
-                {name || '\u00A0'}
+                {name || "\u00A0"}
             </button>
         </Fragment>
     );

@@ -1,4 +1,3 @@
-import React from "react";
 import "./Navigation.scss";
 import filesystemIcon from "../icons/filesystem.svg";
 import inventoryIcon from "../icons/inventory.svg";
@@ -8,13 +7,9 @@ export enum View {
     FILESYSTEM,
     INVENTORY,
     LOG,
-};
+}
 
-const views = [
-    View.FILESYSTEM,
-    View.INVENTORY,
-    View.LOG,
-];
+const views = [View.FILESYSTEM, View.INVENTORY, View.LOG];
 
 const viewTitles = {
     [View.FILESYSTEM]: "Filesystem",
@@ -36,11 +31,13 @@ interface ViewsProps {
 function Navigation({ currentView, setView }: ViewsProps) {
     return (
         <div className="navigation-list">
-            {views.map(view => (
+            {views.map((view) => (
                 <button
+                    type="button"
                     key={view}
                     onClick={() => setView(view)}
-                    className={`navigation-button ${currentView === view ? "selected" : ""}`}>
+                    className={`navigation-button ${currentView === view ? "selected" : ""}`}
+                >
                     <img alt={viewTitles[view]} src={viewIcons[view]} />
                 </button>
             ))}

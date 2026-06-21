@@ -5,22 +5,26 @@ body {
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 18px;
-    height: 100%;
+    font-size: 16px;
+    height: 100dvh;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 code, pre {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',  monospace;
-    white-space: break-spaces;
-    font-size: 16px;
+    font-family: 'SF Mono', SFMono-Regular, ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 15px;
 }
 
 html {
     box-sizing: border-box;
-    height: 100%;
+    height: 100dvh;
 }
+
 #root {
-    height: 100%;
+    height: 100dvh;
 }
 
 *, *:before, *:after {
@@ -34,21 +38,26 @@ button {
     font: inherit;
     color: inherit;
     background: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .styled-button {
     cursor: pointer;
-    background: rgb(38, 177, 241);
+    background: #26b1f1;
     color: #f0f0f0;
-    padding: 10px 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    min-height: 44px;
+    min-width: 44px;
 
     &:hover, &:active {
-        background: rgb(19, 115, 160);
+        background: #1373a0;
     }
 }
 
 .window {
-    padding: 20px;
+    padding: 16px;
     background: #f6f6f6;
     height: 100%;
     display: flex;
@@ -57,32 +66,34 @@ button {
     .content {
         background: #fff;
         border: #ccc 2px solid;
-        overflow: scroll;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
         height: 100%;
     }
 
     .title {
       font-weight: bold;
-      height: 2em;
-      vertical-align: middle;
-      line-height: 2em;
+      min-height: 44px;
+      line-height: 44px;
       position: relative;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      font-size: 18px;
 
       .close-button {
           background: #f44;
           color: #fff;
           cursor: pointer;
-          width: 42px;
-          height: 100%;
+          min-width: 44px;
+          min-height: 44px;
           font-weight: bold;
-          display: block;
-          position: absolute;
-          right: 0;
-          top: 0;
+          font-size: 24px;
           display: flex;
           align-items: center;
           justify-content: center;
-        }
+          position: absolute;
+          right: 0;
+          top: 0;
+          border-radius: 4px;
+      }
     }
 }

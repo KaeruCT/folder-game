@@ -5,8 +5,9 @@ export type FileNode = Directory | File;
 type LoggerFunction = (line: string) => void;
 
 type Meta = {
-    [key: string]: any,
-    run?: (this: File, log: LoggerFunction) => void
+    // biome-ignore lint/suspicious/noExplicitAny: intentionally flexible metadata bag
+    [key: string]: any;
+    run?: (this: File, log: LoggerFunction) => void;
 };
 
 export class File {
@@ -43,13 +44,13 @@ export class File {
     }
 
     get isExecutable(): boolean {
-        return typeof this.meta.run === 'function';
+        return typeof this.meta.run === "function";
     }
 
     run() {
         if (!this.isExecutable) return;
         this.tempContent = "";
-        this.meta.run!.call(this, this.output);
+        this.meta.run?.call(this, this.output);
         if (this.tempContent) {
             this.content = this.tempContent;
         }
@@ -57,7 +58,7 @@ export class File {
 
     private output = (line: string) => {
         this.tempContent += `${line}\n`;
-    }
+    };
 }
 
 export class Directory {
@@ -173,7 +174,7 @@ function setLock(node: FileNode, meta: Meta) {
 export function createDirectoryStructure(fullName: string): Directory {
     const nameParts = fullName.split(SEPARATOR);
 
-    let directory: Directory | undefined = undefined;
+    let directory: Directory | undefined;
     for (const part of nameParts) {
         if (!directory) {
             directory = new Directory(part);
@@ -181,6 +182,7 @@ export function createDirectoryStructure(fullName: string): Directory {
             directory = directory.createDirectory(part);
         }
     }
+    // biome-ignore lint/style/noNonNullAssertion: guaranteed to be set after loop
     return directory!;
 }
 
@@ -191,26 +193,4 @@ export function createDirectoryStructure(fullName: string): Directory {
 export function unlockFileNode(fileNode: FileNode): Directory {
     fileNode.locked = false;
     return fileNode.root;
-}
-
-function tab(level: number): string {
-    let tab = "";
-    for (let i = 0; i < level; i++) {
-        tab += "--";
-    }
-    return tab;
-}
-
-export function prettyPrint(directory: Directory, level = 0): string {
-    let output = `${tab(level)}${directory.name}/\n`;
-
-    for (const node of directory.contents) {
-        if (node instanceof Directory) {
-            output += prettyPrint(node, level + 1);
-        } else {
-            output += `${tab(level + 1)}${node.name}\n`;
-        }
-    }
-
-    return output;
 }

@@ -2,6 +2,8 @@
     display: flex;
     justify-content: space-around;
     border: #ccc 2px solid;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    background: #fff;
 }
 
 .navigation-button {
@@ -11,17 +13,21 @@
     display: flex;
     width: 100%;
     cursor: pointer;
+    touch-action: manipulation;
 
     &.selected {
         background: #d6eeff;
     }
 
-    &:focus {
+    &:focus-visible {
         outline: #6af 2px solid;
     }
 
     &:hover {
         background: #d6eeff;
+    }
+    &:active {
+        background: #bee4fc;
     }
 
     &:last-child {
@@ -31,9 +37,11 @@
     img {
         display: block;
         margin: 0 auto;
-        width: 40px;
+        width: 32px;
+        height: 32px;
     }
 
     text-align: center;
-    padding: 20px;
+    padding: 16px;
+    min-height: 60px;
 }

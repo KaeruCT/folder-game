@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 import "./Modal.scss";
 
 interface ModalProps {
@@ -13,15 +13,16 @@ function Modal({ show, onConfirm, onCancel, children }: PropsWithChildren<ModalP
     return (
         <div className="modal">
             <div className="modal-content">
-                <div>
-                    {children}
-                </div>
+                <div>{children}</div>
                 <div className="modal-options">
-                    <button className="styled-button" onClick={() => onCancel()}>Cancel</button>
-                    <button className="styled-button" onClick={() => onConfirm()}>OK</button>
+                    <button type="button" className="styled-button" onClick={() => onCancel()}>
+                        Cancel
+                    </button>
+                    <button type="button" className="styled-button" onClick={() => onConfirm()}>
+                        OK
+                    </button>
                 </div>
             </div>
-
         </div>
     );
 }

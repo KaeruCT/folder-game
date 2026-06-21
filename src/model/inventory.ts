@@ -1,5 +1,5 @@
 export type ItemType = string;
-export type Item = {
+type Item = {
     type: ItemType;
     quantity: number;
 };

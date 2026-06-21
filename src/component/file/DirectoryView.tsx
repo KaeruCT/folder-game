@@ -1,7 +1,5 @@
-import React from "react";
 import "./DirectoryView.scss";
-import { Directory, File } from "../../model/files";
-import sortBy from "lodash/sortBy";
+import { Directory, type File } from "../../model/files";
 import DirectoryItem from "./DirectoryItem";
 
 interface Props {
@@ -11,11 +9,16 @@ interface Props {
 }
 
 function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
-    const availableFileNodes = directory.contents.filter(fileNode => !fileNode.hidden);
-    const fileNodes = sortBy([...availableFileNodes], [
-        { name: 'asc' },
-        (fileNode) => !(fileNode instanceof Directory)]
-    );
+    const availableFileNodes = directory.contents.filter((fileNode) => !fileNode.hidden);
+    const fileNodes = [...availableFileNodes].sort((a, b) => {
+        const aIsDir = a instanceof Directory;
+        const bIsDir = b instanceof Directory;
+        // directories first
+        if (aIsDir && !bIsDir) return -1;
+        if (!aIsDir && bIsDir) return 1;
+        // within same type, sort by name
+        return a.name.localeCompare(b.name);
+    });
     if (directory.parent) {
         fileNodes.unshift(directory.parent);
     }

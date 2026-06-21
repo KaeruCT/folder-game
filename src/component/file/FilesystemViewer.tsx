@@ -1,8 +1,8 @@
-import React, { useContext } from "react";
-import { Directory, File } from "../../model/files";
+import { useContext } from "react";
+import { AppStore } from "../../App";
+import type { Directory, File } from "../../model/files";
 import DirectoryView from "./DirectoryView";
 import FileViewer from "./FileViewer";
-import { AppStore } from "../../App";
 
 function FilesystemViewer() {
     const { state, dispatch } = useContext(AppStore);
@@ -16,14 +16,10 @@ function FilesystemViewer() {
     }
 
     if (state.file) {
-        return (
-            <FileViewer file={state.file} onClose={() => setFile(null)} />
-        );
+        return <FileViewer file={state.file} onClose={() => setFile(null)} />;
     }
 
-    return (
-        <DirectoryView directory={state.cwd} onNavigate={setDirectory} onFileOpen={setFile} />
-    )
+    return <DirectoryView directory={state.cwd} onNavigate={setDirectory} onFileOpen={setFile} />;
 }
 
 export default FilesystemViewer;

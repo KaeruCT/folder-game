@@ -1,8 +1,3 @@
-import { createDirectoryStructure, Directory } from "./files";
-import { Inventory, addItem } from "./inventory";
-import { randItem, randInt } from "./util";
-import { USER_NAMES, SUFFIXES } from "./data";
-
 import img1 from "../game-files/images/1.png";
 import img4 from "../game-files/images/4.png";
 import img6 from "../game-files/images/6.png";
@@ -10,10 +5,13 @@ import img7 from "../game-files/images/7.png";
 import img8 from "../game-files/images/8.png";
 import imgEd from "../game-files/images/ed.gif";
 import imgErik from "../game-files/images/erik.jpg";
-
-const instructions = require("../game-files/intro/instructions.txt").default;
-const lockout = require("../game-files/intro/lockout.txt").default;
-const lockExe = require("../game-files/intro/lock.exe.txt").default;
+import instructions from "../game-files/intro/instructions.txt?raw";
+import lockExe from "../game-files/intro/lock.exe.txt?raw";
+import lockout from "../game-files/intro/lockout.txt?raw";
+import { SUFFIXES, USER_NAMES } from "./data";
+import { createDirectoryStructure, type Directory } from "./files";
+import { addItem, type Inventory } from "./inventory";
+import { randInt, randItem } from "./util";
 
 export function getFilesystem(): Directory {
     const lockFile = "lucky7.exe";
@@ -75,7 +73,7 @@ export function getFilesystem(): Directory {
 
             this.root.createFile("lockout.txt", lockout);
             this.root.createFile("gnu.webm", "/vid/gnu.webm");
-        }
+        },
     });
 
     safe.createFile("user_info.exe", "", {
@@ -101,7 +99,7 @@ export function getFilesystem(): Directory {
             parent.createFile(filename, report);
 
             log(`report created succesfully`);
-        }
+        },
     });
 
     return root;
