@@ -11,7 +11,7 @@ function StorylineSelect({ dispatch }: Props) {
 
     return (
         <div className="storyline-select">
-            <h1>Folder Game</h1>
+            <h1>Root</h1>
             <p className="storyline-subtitle">Choose your storyline</p>
             <div className="storyline-list">
                 {storylines.map((storyline) => (
