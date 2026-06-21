@@ -2,13 +2,15 @@
 
 ## Check before declaring done
 
-Before marking any task complete, run all three:
+Before marking any task complete, run all four:
 
 ```sh
-pnpm check && pnpm knip && pnpm build
+pnpm check && pnpm knip && pnpm dupe && pnpm build
 ```
 
-All must pass with zero errors. If Biome or Knip fail, fix them. If the build fails, fix it. Never suppress issues without a comment explaining why.
+All must pass with zero errors. If Biome, Knip, or dupehound fail, fix them. If the build fails, fix it. Never suppress issues without a comment explaining why.
+
+When adding new functions, prefer reusing existing ones. Run `pnpm dupe:check` to verify new code doesn't duplicate what's already in the codebase.
 
 ## Code style
 
@@ -23,6 +25,7 @@ Biome enforces everything. Let `pnpm check:write` auto-fix formatting and import
 - **SCSS** — styling
 - **Biome** — linter + formatter (Rust, fast)
 - **Knip** — dead code detection (Rust, fast)
+- **dupehound** — structural duplicate detection (Rust, finds renamed copies)
 
 No external state library — uses `useReducer` + `Context`.
 

@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "check": "biome check",
     "check:write": "biome check --write",
-    "knip": "knip"
+    "knip": "knip",
+    "dupe": "dupehound scan .",
+    "dupe:check": "dupehound check --diff master ."
   },
   "dependencies": {
     "react": "^18.3.1",
