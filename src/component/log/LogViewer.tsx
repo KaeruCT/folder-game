@@ -1,10 +1,6 @@
-import { useCallback, useContext, useMemo } from "react";
+import { useMemo } from "react";
 import "./LogViewer.scss";
-import { AppStore } from "../../App";
-import { clearAllTimers } from "../../model/files";
 import type { LogCategory, LogEntry } from "../../model/log";
-import { deleteSave } from "../../model/save";
-import { deferredActions } from "../../reducer";
 
 const CATEGORY_LABELS: Record<LogCategory, string> = {
     story: "Story",
@@ -24,77 +20,47 @@ function formatTime(timestamp: number): string {
     return `${days}d ago`;
 }
 
-function LogViewer() {
-    const { state, dispatch } = useContext(AppStore);
-    const entries = useMemo(() => [...state.logEntries].reverse(), [state.logEntries]);
+interface Props {
+    overlay?: boolean;
+    entries: LogEntry[];
+}
 
-    const handleReset = useCallback(() => {
-        clearAllTimers();
-        deferredActions.length = 0;
-        // Clear tree-view expanded state for all storylines
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-            const key = localStorage.key(i);
-            if (key?.startsWith("folder-game-tree-expanded-")) {
-                localStorage.removeItem(key);
-            }
-        }
-        deleteSave();
-        window.location.reload();
-    }, []);
+function LogViewer({ overlay, entries }: Props) {
+    const sorted = useMemo(() => [...entries].reverse(), [entries]);
 
-    if (entries.length === 0) {
+    if (sorted.length === 0) {
+        const empty = (
+            <div className="log-empty">
+                <p>No events yet. Explore the filesystem to discover the story.</p>
+            </div>
+        );
+        if (overlay) return <>{empty}</>;
         return (
             <div className="window log">
-                <div className="title">Log</div>
-                <div className="content log-empty">
-                    <p>No events yet. Explore the filesystem to discover the story.</p>
-                </div>
-                <div className="log-footer">
-                    <button
-                        type="button"
-                        className="styled-button"
-                        onClick={handleReset}
-                        style={{ background: "var(--color-goal)" }}
-                    >
-                        Reset Game
-                    </button>
-                </div>
+                <div className="content">{empty}</div>
             </div>
         );
     }
 
+    const list = (
+        <div className="log-list">
+            {sorted.map((entry: LogEntry) => (
+                <div key={entry.id} className={`log-entry log-entry--${entry.category}`}>
+                    <div className="log-entry__header">
+                        <span className="log-entry__badge">{CATEGORY_LABELS[entry.category]}</span>
+                        <span className="log-entry__time">{formatTime(entry.timestamp)}</span>
+                    </div>
+                    <div className="log-entry__text">{entry.text}</div>
+                </div>
+            ))}
+        </div>
+    );
+
+    if (overlay) return <>{list}</>;
+
     return (
         <div className="window log">
-            <div className="title">Log</div>
-            <div className="content log-list">
-                {entries.map((entry: LogEntry) => (
-                    <div key={entry.id} className={`log-entry log-entry--${entry.category}`}>
-                        <div className="log-entry__header">
-                            <span className="log-entry__badge">{CATEGORY_LABELS[entry.category]}</span>
-                            <span className="log-entry__time">{formatTime(entry.timestamp)}</span>
-                        </div>
-                        <div className="log-entry__text">{entry.text}</div>
-                    </div>
-                ))}
-            </div>
-            <div className="log-footer">
-                <button
-                    type="button"
-                    className="styled-button"
-                    onClick={() => dispatch({ type: "SAVE_GAME", payload: null })}
-                    style={{ marginRight: 12 }}
-                >
-                    Save Now
-                </button>
-                <button
-                    type="button"
-                    className="styled-button"
-                    onClick={handleReset}
-                    style={{ background: "var(--color-goal)" }}
-                >
-                    Reset Game
-                </button>
-            </div>
+            <div className="content">{list}</div>
         </div>
     );
 }

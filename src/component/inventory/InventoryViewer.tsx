@@ -5,33 +5,35 @@ import { AppStore } from "../../App";
 import { resolveIcon } from "../../model/icons";
 import { getItemInfo } from "../../model/items";
 
-function InventoryViewer() {
+interface Props {
+    overlay?: boolean;
+}
+
+function InventoryViewer({ overlay }: Props) {
     const { state } = useContext(AppStore);
     const items = useMemo(() => Object.values(state.inventory), [state.inventory]);
 
-    if (items.length === 0) {
-        return (
-            <div className="window inventory">
-                <div className="content inv-empty">
+    const body = (() => {
+        if (items.length === 0) {
+            return (
+                <div className="inv-empty">
                     <div className="inv-empty__icon">
-                        <Package size={40} strokeWidth={1.5} />
+                        <Package size={32} strokeWidth={1.5} />
                     </div>
                     <p className="inv-empty__text">
                         Your inventory is empty. Explore the filesystem to find keys and items.
                     </p>
                 </div>
-            </div>
-        );
-    }
+            );
+        }
 
-    return (
-        <div className="window inventory">
-            <div className="content item-list">
+        return (
+            <div className="item-list">
                 {items.map((item) => {
                     const info = getItemInfo(item.type);
                     return (
                         <div key={item.type} className="inventory-item">
-                            <div className="inventory-item__icon">{resolveIcon(info.icon, 22)}</div>
+                            <div className="inventory-item__icon">{resolveIcon(info.icon, 20)}</div>
                             <div className="inventory-item__body">
                                 <div className="inventory-item__name">{info.name}</div>
                                 <div className="inventory-item__desc">{info.description}</div>
@@ -41,6 +43,14 @@ function InventoryViewer() {
                     );
                 })}
             </div>
+        );
+    })();
+
+    if (overlay) return <>{body}</>;
+
+    return (
+        <div className="window inventory">
+            <div className="content">{body}</div>
         </div>
     );
 }

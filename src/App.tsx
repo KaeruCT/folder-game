@@ -15,8 +15,9 @@ import InventoryToast from "./component/inventory/InventoryToast";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import LogToast from "./component/log/LogToast";
 import LogViewer from "./component/log/LogViewer";
-import Navigation, { View } from "./component/navigation/Navigation";
 import StorylineSelect from "./component/storyline/StorylineSelect";
+import FloatingOverlay from "./component/ui/FloatingOverlay";
+import HeaderBar from "./component/ui/HeaderBar";
 import { clearAllTimers } from "./model/files";
 import { deleteSave, loadSnapshot } from "./model/save";
 import { type Action, deferredActions, getInitialState, getNullState, reducer, type State } from "./reducer";
@@ -27,6 +28,24 @@ type Store = {
 };
 
 export const AppStore = createContext({} as Store);
+
+const TREE_MODE_KEY = "folder-game-view-mode";
+
+function loadTreeMode(): boolean {
+    try {
+        return localStorage.getItem(TREE_MODE_KEY) === "1";
+    } catch {
+        return false;
+    }
+}
+
+function saveTreeMode(showTree: boolean) {
+    try {
+        localStorage.setItem(TREE_MODE_KEY, showTree ? "1" : "0");
+    } catch {
+        // ignore
+    }
+}
 
 class ErrorBoundary extends Component<PropsWithChildren, { error: Error | null }> {
     state = { error: null as Error | null };
@@ -71,12 +90,28 @@ function resolveInitial(): State {
 function App() {
     const memoizedReducer = useCallback(reducer, []);
     const [state, dispatch] = useReducer(memoizedReducer, resolveInitial());
-    const [view, setView] = useState(View.FILESYSTEM);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
     const [loadError] = useState(() => {
         const result = loadState();
         return "error" in result ? result.error : null;
     });
+
+    // Persisted tree view mode
+    const [showTree, setShowTree] = useState(loadTreeMode);
+    const toggleTree = useCallback(() => {
+        setShowTree((prev) => {
+            const next = !prev;
+            saveTreeMode(next);
+            return next;
+        });
+    }, []);
+
+    // Floating overlay state
+    const [inventoryOpen, setInventoryOpen] = useState(false);
+    const [logOpen, setLogOpen] = useState(false);
+
+    const toggleInventory = useCallback(() => setInventoryOpen((prev) => !prev), []);
+    const toggleLog = useCallback(() => setLogOpen((prev) => !prev), []);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable but explicit is clearer
     const storeValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
@@ -140,20 +175,39 @@ function App() {
         );
     }
 
+    const headerTitle = state.file ? state.file.name : state.cwd.fullName;
+
     return (
         <ErrorBoundary>
-            <div className="app">
-                <div className="view-container">
-                    <AppStore.Provider value={storeValue}>
-                        {view === View.FILESYSTEM && <FilesystemViewer />}
-                        {view === View.INVENTORY && <InventoryViewer />}
-                        {view === View.LOG && <LogViewer />}
+            <AppStore.Provider value={storeValue}>
+                <div className="app">
+                    <HeaderBar
+                        title={headerTitle}
+                        showTree={showTree}
+                        onToggleTree={toggleTree}
+                        onToggleInventory={toggleInventory}
+                        onToggleLog={toggleLog}
+                        inventoryOpen={inventoryOpen}
+                        logOpen={logOpen}
+                    />
+                    <div className="view-container">
+                        <FilesystemViewer showTree={showTree} />
                         <LogToast />
                         <InventoryToast />
-                    </AppStore.Provider>
+
+                        {inventoryOpen && (
+                            <FloatingOverlay title="Inventory" onClose={() => setInventoryOpen(false)}>
+                                <InventoryViewer overlay />
+                            </FloatingOverlay>
+                        )}
+                        {logOpen && (
+                            <FloatingOverlay title="Log" onClose={() => setLogOpen(false)}>
+                                <LogViewer overlay entries={state.logEntries} />
+                            </FloatingOverlay>
+                        )}
+                    </div>
                 </div>
-                <Navigation currentView={view} setView={setView} />
-            </div>
+            </AppStore.Provider>
         </ErrorBoundary>
     );
 }

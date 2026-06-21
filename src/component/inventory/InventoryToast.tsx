@@ -43,7 +43,7 @@ function InventoryToast() {
     useEffect(() => {
         if (!toastId) return;
         if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(dismiss, 6000);
+        timerRef.current = setTimeout(dismiss, 3000);
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
         };

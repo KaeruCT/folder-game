@@ -1,17 +1,16 @@
+import { File, Folder, Lock } from "lucide-react";
 import { useContext, useMemo } from "react";
 import "./TreeView.scss";
-import { File, Folder, Lock } from "lucide-react";
 import { AppStore } from "../../App";
 import { Directory, type File as FileModel, type FileNode } from "../../model/files";
 
 interface Props {
     onFileOpen: (file: FileModel) => void;
-    onToggleView: () => void;
     expanded: Set<string>;
     onToggleExpand: (path: string) => void;
 }
 
-function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props) {
+function TreeView({ onFileOpen, expanded, onToggleExpand }: Props) {
     const { state } = useContext(AppStore);
     const root = state.filesystemRoot;
     const cwd = state.cwd;
@@ -38,9 +37,7 @@ function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props)
                 : [];
 
             function handleClick() {
-                if (isLocked) {
-                    return;
-                }
+                if (isLocked) return;
                 if (isDir) {
                     onToggleExpand(node.fullName);
                 } else {
@@ -107,12 +104,7 @@ function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props)
 
     return (
         <div className="window tree">
-            <div className="title">
-                {root.name}
-                <button type="button" className="tree-toggle" onClick={onToggleView} title="Switch to directory view">
-                    <Folder size={18} strokeWidth={1.5} />
-                </button>
-            </div>
+            <div className="title">{root.name}</div>
             <div className="content tree-content">{tree}</div>
         </div>
     );

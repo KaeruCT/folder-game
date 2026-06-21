@@ -34,7 +34,7 @@ function LogToast() {
     useEffect(() => {
         if (!latestEntry || !isNew) return;
         if (timerRef.current) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(dismiss, 8000);
+        timerRef.current = setTimeout(dismiss, 3000);
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
         };

@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import "./DirectoryView.scss";
-import { FolderTree } from "lucide-react";
 import { Directory, type File } from "../../model/files";
 import DirectoryItem from "./DirectoryItem";
 
@@ -8,10 +7,9 @@ interface Props {
     directory: Directory;
     onNavigate: (directory: Directory) => void;
     onFileOpen: (file: File) => void;
-    onToggleView: () => void;
 }
 
-function DirectoryView({ directory, onNavigate, onFileOpen, onToggleView }: Props) {
+function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
     const fileNodes = useMemo(() => {
         const available = directory.contents.filter((fn) => !fn.hidden);
         const nodes = [...available].sort((a, b) => {
@@ -29,12 +27,7 @@ function DirectoryView({ directory, onNavigate, onFileOpen, onToggleView }: Prop
 
     return (
         <div className="window directory">
-            <div className="title">
-                {directory.fullName}
-                <button type="button" className="tree-toggle" onClick={onToggleView} title="Switch to tree view">
-                    <FolderTree size={18} strokeWidth={1.5} />
-                </button>
-            </div>
+            <div className="title">{directory.fullName}</div>
             <div className="content">
                 <div className="file-list">
                     {fileNodes.map((fileNode) => (
