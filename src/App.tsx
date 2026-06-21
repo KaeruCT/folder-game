@@ -12,9 +12,8 @@ import {
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
+import LogViewer from "./component/log/LogViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
-import { clearAllTimers } from "./model/files";
-import { deleteSave } from "./model/save";
 import { type Action, deferredActions, getInitialState, reducer, type State } from "./reducer";
 
 type Store = {
@@ -75,13 +74,6 @@ function App() {
         }
     }, [state]);
 
-    function handleReset() {
-        clearAllTimers();
-        deferredActions.length = 0;
-        deleteSave();
-        window.location.reload();
-    }
-
     return (
         <ErrorBoundary>
             <div className="app">
@@ -89,32 +81,7 @@ function App() {
                     <AppStore.Provider value={storeValue}>
                         {view === View.FILESYSTEM && <FilesystemViewer />}
                         {view === View.INVENTORY && <InventoryViewer />}
-                        {view === View.LOG && (
-                            <div className="window">
-                                <div className="title">Game</div>
-                                <div className="content" style={{ padding: 16 }}>
-                                    <div style={{ marginBottom: 16 }}>
-                                        <p>Progress is saved automatically.</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="styled-button"
-                                        onClick={() => dispatch({ type: "SAVE_GAME", payload: null })}
-                                        style={{ marginRight: 12 }}
-                                    >
-                                        Save Now
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="styled-button"
-                                        onClick={handleReset}
-                                        style={{ background: "#f44" }}
-                                    >
-                                        Reset Game
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        {view === View.LOG && <LogViewer />}
                     </AppStore.Provider>
                 </div>
                 <Navigation currentView={view} setView={setView} />

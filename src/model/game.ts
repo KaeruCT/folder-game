@@ -18,7 +18,12 @@ export function getFilesystem(): Directory {
 
     const help = createDirectoryStructure("$ROOT/help");
     const root = help.root;
-    help.createFile("instructions.txt", instructions, { selfDestruct: true });
+    help.createFile("instructions.txt", instructions, {
+        selfDestruct: true,
+        onRead(ctx) {
+            ctx.log("story", "Instructions found: Evan published access credentials for hackers to find.");
+        },
+    });
     help.createFile("1.png", img1);
     help.createFile("4.png", img4);
     help.createFile("6.png", img6);
@@ -31,7 +36,15 @@ export function getFilesystem(): Directory {
     const evan = root.createDirectory("users/evan");
 
     const diary = evan.createDirectory("diary");
-    diary.createFile("may1.txt", "I am writing this to help my mental health.", { key: "diary_entry" });
+    diary.createFile("may1.txt", "I am writing this to help my mental health.", {
+        key: "diary_entry",
+        onRead(ctx) {
+            ctx.log(
+                "story",
+                "Found Evan's diary. He's struggling with his mental health and trying to forget something.",
+            );
+        },
+    });
     diary.createFile("may5.txt", "I keep trying but I cannot forget what happened.", { key: "diary_entry" });
     diary.createFile("may8.txt", "I don't know how much longer I will be able to write.", { key: "diary_entry" });
     diary.createFile("person.jpg", imgErik);
@@ -55,7 +68,8 @@ export function getFilesystem(): Directory {
     const safe = system.createDirectory("safe");
     safe.createFile(lockFile, "", {
         selfDestruct: true,
-        run(log, _ctx) {
+        run(log, ctx) {
+            ctx.log("milestone", "Initiated system lockdown via lucky7.exe.");
             const count = randInt(7000, 8000);
             log("running lockdown routine");
             log("...");
@@ -71,8 +85,14 @@ export function getFilesystem(): Directory {
             log("100% done");
             log("lockdown routine complete");
 
-            this.root.createFile("lockout.txt", lockout);
+            this.root.createFile("lockout.txt", lockout, {
+                onRead(c) {
+                    c.log("story", "Evan's lockout message: he's running out of time and being silenced.");
+                    c.log("goal", "Find the truth behind it all. Evan's secret is hidden somewhere in this system.");
+                },
+            });
             this.root.createFile("gnu.webm", "/vid/gnu.webm");
+            ctx.log("milestone", "Lockdown complete. New files appeared in the root directory.");
         },
     });
 

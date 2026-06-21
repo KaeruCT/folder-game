@@ -1,3 +1,5 @@
+import type { LogCategory } from "./log";
+
 const SEPARATOR = "/";
 
 const activeTimers = new Set<ReturnType<typeof setTimeout>>();
@@ -17,6 +19,8 @@ export interface RunContext {
     /** Schedule an action to dispatch after `delayMs` milliseconds. Returns a cancel function. */
     // biome-ignore lint/suspicious/noExplicitAny: generic action payload
     schedule: (action: { type: string; payload: any }, delayMs: number) => () => void;
+    /** Log an event to the game log (visible in the Log tab). */
+    log: (category: LogCategory, text: string) => void;
     state: {
         inventory: Record<string, { type: string; quantity: number }>;
         gamePhase: number;

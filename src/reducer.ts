@@ -1,6 +1,7 @@
 import { Directory, type File, type FileNode, findNode, unlockFileNode } from "./model/files";
 import { getFilesystem, getInventory } from "./model/game";
 import { addItem, addItems, type Inventory, removeItem } from "./model/inventory";
+import { createLogEntry, getInitialLogEntries, type LogCategory, type LogEntry } from "./model/log";
 import { applySnapshot, buildSnapshot, loadSnapshot, type SaveSnapshot, saveGame } from "./model/save";
 
 type ActionType =
@@ -13,7 +14,8 @@ type ActionType =
     | "SAVE_GAME"
     | "REVEAL_FILE"
     | "ADD_ITEMS"
-    | "SET_PHASE";
+    | "SET_PHASE"
+    | "LOG_ADD";
 
 export interface State {
     inventory: Inventory;
@@ -22,6 +24,7 @@ export interface State {
     file: File | null;
     readFiles: string[];
     gamePhase: number;
+    logEntries: LogEntry[];
 }
 
 export interface Action {
@@ -62,6 +65,9 @@ function makeRunContext(state: State) {
         schedule: (a: { type: string; payload: any }, delayMs: number) => {
             return scheduleDeferred(a as Action, delayMs);
         },
+        log: (category: LogCategory, text: string) => {
+            deferredActions.push({ type: "LOG_ADD", payload: createLogEntry(category, text) });
+        },
     };
 }
 
@@ -74,6 +80,8 @@ export function reducer(state: State, action: Action): State {
             return { ...state, inventory: removeItem(inventory, action.payload) };
         case "ADD_ITEMS":
             return { ...state, inventory: addItems(inventory, action.payload) };
+        case "LOG_ADD":
+            return { ...state, logEntries: [...state.logEntries, action.payload as LogEntry] };
         case "SET_PHASE":
             return { ...state, gamePhase: action.payload as number };
         case "SET_CWD":
@@ -160,6 +168,7 @@ export function reducer(state: State, action: Action): State {
                 file: null,
                 readFiles: snapshot.readFiles ?? [],
                 gamePhase: snapshot.gamePhase ?? 0,
+                logEntries: snapshot.logEntries ?? [],
             };
         }
         case "SAVE_GAME": {
@@ -169,6 +178,7 @@ export function reducer(state: State, action: Action): State {
                 state.cwd,
                 state.gamePhase,
                 state.readFiles,
+                state.logEntries,
                 state.inventory,
                 freshRoot,
             );
@@ -208,6 +218,7 @@ export function getInitialState(): State {
             file: null,
             readFiles: snapshot.readFiles ?? [],
             gamePhase: snapshot.gamePhase ?? 0,
+            logEntries: snapshot.logEntries ?? [],
         };
     }
 
@@ -219,5 +230,6 @@ export function getInitialState(): State {
         file: null,
         readFiles: [],
         gamePhase: 0,
+        logEntries: getInitialLogEntries(),
     };
 }

@@ -1,9 +1,11 @@
 import { Directory, File, findNode } from "./files";
+import type { LogEntry } from "./log";
 
 export interface SaveSnapshot {
     cwdPath: string;
     gamePhase: number;
     readFiles: string[];
+    logEntries: LogEntry[];
     inventory: Record<string, number>;
     hiddenPaths: string[];
     unlockedPaths: string[];
@@ -22,6 +24,7 @@ export function buildSnapshot(
     cwd: Directory,
     gamePhase: number,
     readFiles: string[],
+    logEntries: LogEntry[],
     inventory: Record<string, { quantity: number }>,
     freshRoot: Directory,
 ): SaveSnapshot {
@@ -29,6 +32,7 @@ export function buildSnapshot(
         cwdPath: cwd.fullName,
         gamePhase,
         readFiles: [...readFiles],
+        logEntries: [...logEntries],
         inventory: {},
         hiddenPaths: [],
         unlockedPaths: [],
