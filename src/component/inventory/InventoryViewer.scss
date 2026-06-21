@@ -4,12 +4,12 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        padding: 24px 20px;
+        padding: 36px 24px;
         text-align: center;
 
         &__text {
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 11px;
+            line-height: 1.6;
             color: var(--text-muted);
         }
     }
