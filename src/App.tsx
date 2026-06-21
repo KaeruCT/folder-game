@@ -11,6 +11,7 @@ import {
 } from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
+import InventoryToast from "./component/inventory/InventoryToast";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import LogToast from "./component/log/LogToast";
 import LogViewer from "./component/log/LogViewer";
@@ -148,6 +149,7 @@ function App() {
                         {view === View.INVENTORY && <InventoryViewer />}
                         {view === View.LOG && <LogViewer />}
                         <LogToast />
+                        <InventoryToast />
                     </AppStore.Provider>
                 </div>
                 <Navigation currentView={view} setView={setView} />
