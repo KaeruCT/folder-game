@@ -5,6 +5,15 @@ export default defineConfig({
     base: "/folder-game/",
     plugins: [react()],
     publicDir: "public",
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ["react", "react-dom"],
+                },
+            },
+        },
+    },
     css: {
         preprocessorOptions: {
             scss: {

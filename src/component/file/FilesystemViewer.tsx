@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { AppStore } from "../../App";
 import type { Directory, File } from "../../model/files";
 import DirectoryView from "./DirectoryView";
@@ -7,13 +7,19 @@ import FileViewer from "./FileViewer";
 function FilesystemViewer() {
     const { state, dispatch } = useContext(AppStore);
 
-    function setDirectory(directory: Directory) {
-        dispatch({ type: "SET_CWD", payload: directory });
-    }
+    const setDirectory = useCallback(
+        (directory: Directory) => {
+            dispatch({ type: "SET_CWD", payload: directory });
+        },
+        [dispatch],
+    );
 
-    function setFile(file: File | null) {
-        dispatch({ type: "SET_FILE", payload: file });
-    }
+    const setFile = useCallback(
+        (file: File | null) => {
+            dispatch({ type: "SET_FILE", payload: file });
+        },
+        [dispatch],
+    );
 
     if (state.file) {
         return <FileViewer file={state.file} onClose={() => setFile(null)} />;

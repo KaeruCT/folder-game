@@ -1,8 +1,16 @@
-import { type Directory, type File, type FileNode, unlockFileNode } from "./model/files";
+import { Directory, type File, type FileNode, unlockFileNode } from "./model/files";
 import { getFilesystem, getInventory } from "./model/game";
 import { addItem, type Inventory, removeItem } from "./model/inventory";
+import { applySnapshot, buildSnapshot, loadSnapshot, type SaveSnapshot, saveGame } from "./model/save";
 
-type ActionType = "INVENTORY_ADD" | "INVENTORY_REMOVE" | "SET_CWD" | "SET_FILE" | "UNLOCK_FILENODE";
+type ActionType =
+    | "INVENTORY_ADD"
+    | "INVENTORY_REMOVE"
+    | "SET_CWD"
+    | "SET_FILE"
+    | "UNLOCK_FILENODE"
+    | "LOAD_GAME"
+    | "SAVE_GAME";
 
 export interface State {
     inventory: Inventory;
@@ -43,16 +51,67 @@ export function reducer(state: State, action: Action): State {
             const key: string = fileNode.meta.key;
             if (inventory[key]) {
                 inventory = removeItem(inventory, key);
-                filesystemRoot = unlockFileNode(action.payload);
+                filesystemRoot = unlockFileNode(fileNode);
             }
             return { ...state, filesystemRoot, inventory };
         }
+        case "LOAD_GAME": {
+            const snapshot = action.payload as SaveSnapshot;
+            const freshRoot = getFilesystem();
+            applySnapshot(freshRoot, snapshot);
+
+            const loadedInventory: Inventory = {};
+            for (const [type, qty] of Object.entries(snapshot.inventory)) {
+                loadedInventory[type] = { type, quantity: qty };
+            }
+
+            let cwd = freshRoot;
+            if (snapshot.cwdPath) {
+                const parts = snapshot.cwdPath.split("/").filter(Boolean);
+                for (const part of parts) {
+                    const child = cwd.getFileNode(part);
+                    if (child instanceof Directory) cwd = child;
+                    else break;
+                }
+            }
+
+            return { filesystemRoot: freshRoot, inventory: loadedInventory, cwd, file: null };
+        }
+        case "SAVE_GAME": {
+            const freshRoot = getFilesystem();
+            const snapshot = buildSnapshot(filesystemRoot, state.cwd, state.inventory, freshRoot);
+            saveGame(snapshot);
+            return state;
+        }
         default:
-            throw new Error();
+            throw new Error(`Unknown action type: ${(action as Action).type}`);
     }
 }
 
 export function getInitialState(): State {
+    const snapshot = loadSnapshot();
+    if (snapshot) {
+        const root = getFilesystem();
+        applySnapshot(root, snapshot);
+
+        const inventory: Inventory = {};
+        for (const [type, qty] of Object.entries(snapshot.inventory)) {
+            inventory[type] = { type, quantity: qty };
+        }
+
+        let cwd = root;
+        if (snapshot.cwdPath) {
+            const parts = snapshot.cwdPath.split("/").filter(Boolean);
+            for (const part of parts) {
+                const child = cwd.getFileNode(part);
+                if (child instanceof Directory) cwd = child;
+                else break;
+            }
+        }
+
+        return { filesystemRoot: root, inventory, cwd, file: null };
+    }
+
     const filesystemRoot = getFilesystem();
     return {
         inventory: getInventory(),

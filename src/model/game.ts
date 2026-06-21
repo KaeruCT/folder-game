@@ -106,10 +106,10 @@ export function getFilesystem(): Directory {
 }
 
 export function getInventory(): Inventory {
-    const inventory = {};
-    addItem(inventory, "diary_entry");
-    addItem(inventory, "diary_entry");
-    addItem(inventory, "sys");
+    let inventory: Inventory = {};
+    inventory = addItem(inventory, "diary_entry");
+    inventory = addItem(inventory, "diary_entry");
+    inventory = addItem(inventory, "sys");
     return inventory;
 }
 

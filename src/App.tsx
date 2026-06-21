@@ -1,8 +1,19 @@
-import { createContext, useCallback, useReducer, useState } from "react";
+import {
+    Component,
+    createContext,
+    type PropsWithChildren,
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
+import { deleteSave } from "./model/save";
 import { type Action, getInitialState, reducer, type State } from "./reducer";
 
 type Store = {
@@ -12,22 +23,92 @@ type Store = {
 
 export const AppStore = createContext({} as Store);
 
+class ErrorBoundary extends Component<PropsWithChildren, { error: Error | null }> {
+    state = { error: null as Error | null };
+
+    static getDerivedStateFromError(error: Error) {
+        return { error };
+    }
+
+    render() {
+        if (this.state.error) {
+            return (
+                <div className="crash-screen" style={{ padding: 40, textAlign: "center" }}>
+                    <h2>Something broke</h2>
+                    <p>{this.state.error.message}</p>
+                    <button type="button" className="styled-button" onClick={() => this.setState({ error: null })}>
+                        Retry
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 function App() {
     const memoizedReducer = useCallback(reducer, []);
     const [state, dispatch] = useReducer(memoizedReducer, getInitialState());
     const [view, setView] = useState(View.FILESYSTEM);
+    const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable but explicit is clearer
+    const storeValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: state is the trigger, dispatch is stable
+    useEffect(() => {
+        if (saveTimer.current) clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => {
+            dispatch({ type: "SAVE_GAME", payload: null });
+        }, 500);
+        return () => clearTimeout(saveTimer.current);
+    }, [state]);
+
+    function handleReset() {
+        deleteSave();
+        // Force re-initialize by dispatching load with null — simplest approach:
+        // Reload the page to get a clean slate
+        window.location.reload();
+    }
 
     return (
-        <div className="app">
-            <div className="view-container">
-                <AppStore.Provider value={{ state, dispatch }}>
-                    {view === View.FILESYSTEM && <FilesystemViewer />}
-                    {view === View.INVENTORY && <InventoryViewer />}
-                    {view === View.LOG && <div>WIP</div>}
-                </AppStore.Provider>
+        <ErrorBoundary>
+            <div className="app">
+                <div className="view-container">
+                    <AppStore.Provider value={storeValue}>
+                        {view === View.FILESYSTEM && <FilesystemViewer />}
+                        {view === View.INVENTORY && <InventoryViewer />}
+                        {view === View.LOG && (
+                            <div className="window">
+                                <div className="title">Game</div>
+                                <div className="content" style={{ padding: 16 }}>
+                                    <div style={{ marginBottom: 16 }}>
+                                        <p>Progress is saved automatically.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="styled-button"
+                                        onClick={() => dispatch({ type: "SAVE_GAME", payload: null })}
+                                        style={{ marginRight: 12 }}
+                                    >
+                                        Save Now
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="styled-button"
+                                        onClick={handleReset}
+                                        style={{ background: "#f44" }}
+                                    >
+                                        Reset Game
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </AppStore.Provider>
+                </div>
+                <Navigation currentView={view} setView={setView} />
             </div>
-            <Navigation currentView={view} setView={setView} />
-        </div>
+        </ErrorBoundary>
     );
 }
 

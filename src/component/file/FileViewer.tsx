@@ -1,26 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "./FileViewer.scss";
 import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import type { File } from "../../model/files";
 
 function corruptContent(content: string): string {
-    return content
-        .split("")
-        .map((_, i) => {
-            if (content[i] === "\n") return content[i];
-
-            if (Math.random() < 0.001) {
-                return ".";
-            }
-            if (Math.random() < 0.005) {
-                return content[i + 1] || content[i - 1];
-            }
-            if (Math.random() > 0.2) {
-                return content[i].toLowerCase();
-            }
-            return content[i].toUpperCase();
-        })
-        .join("");
+    const chars = new Array<string>(content.length);
+    for (let i = 0; i < content.length; i++) {
+        if (content[i] === "\n") {
+            chars[i] = "\n";
+            continue;
+        }
+        if (Math.random() < 0.001) {
+            chars[i] = ".";
+            continue;
+        }
+        if (Math.random() < 0.005) {
+            chars[i] = content[i + 1] || content[i - 1] || content[i];
+            continue;
+        }
+        chars[i] = Math.random() > 0.2 ? content[i].toLowerCase() : content[i].toUpperCase();
+    }
+    return chars.join("");
 }
 
 interface ContentProps {
@@ -55,21 +55,25 @@ interface OutputProps {
 
 function ExeOutput({ file }: OutputProps) {
     const TIMEOUT = 600;
-    const lines = file.content.split("\n");
+    const lines = useMemo(() => file.content.split("\n"), [file.content]);
     const [line, setLine] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
     useEffect(() => {
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
             setLine((prev) => {
                 const next = prev + 1;
-                if (next >= lines.length) {
-                    clearInterval(interval);
-                }
                 return next < lines.length ? next : prev;
             });
         }, TIMEOUT);
-        return () => clearInterval(interval);
+        return () => clearInterval(intervalRef.current);
     }, [lines.length]);
+
+    useEffect(() => {
+        if (line >= lines.length - 1 && intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+    }, [line, lines.length]);
 
     return (
         <div className="content file-content exe">
@@ -89,7 +93,7 @@ function PlainTextOutput({ file }: OutputProps) {
 function ImageResourceOutput({ file }: OutputProps) {
     return (
         <div className="content media-content">
-            <img src={file.content} alt="" />
+            <img src={file.content} alt="" loading="lazy" />
         </div>
     );
 }

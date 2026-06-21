@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import "./DirectoryView.scss";
 import { Directory, type File } from "../../model/files";
 import DirectoryItem from "./DirectoryItem";
@@ -9,19 +10,21 @@ interface Props {
 }
 
 function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
-    const availableFileNodes = directory.contents.filter((fileNode) => !fileNode.hidden);
-    const fileNodes = [...availableFileNodes].sort((a, b) => {
-        const aIsDir = a instanceof Directory;
-        const bIsDir = b instanceof Directory;
-        // directories first
-        if (aIsDir && !bIsDir) return -1;
-        if (!aIsDir && bIsDir) return 1;
-        // within same type, sort by name
-        return a.name.localeCompare(b.name);
-    });
-    if (directory.parent) {
-        fileNodes.unshift(directory.parent);
-    }
+    const fileNodes = useMemo(() => {
+        const available = directory.contents.filter((fn) => !fn.hidden);
+        const nodes = [...available].sort((a, b) => {
+            const aIsDir = a instanceof Directory;
+            const bIsDir = b instanceof Directory;
+            if (aIsDir && !bIsDir) return -1;
+            if (!aIsDir && bIsDir) return 1;
+            return a.name.localeCompare(b.name);
+        });
+        if (directory.parent) {
+            nodes.unshift(directory.parent);
+        }
+        return nodes;
+    }, [directory]);
+
     return (
         <div className="window directory">
             <div className="title">{directory.fullName}</div>
