@@ -1,5 +1,7 @@
 # AGENTS.md
 
+See [STORYLINES.md](./STORYLINES.md) for how to author and register new storylines.
+
 ## Check before declaring done
 
 Before marking any task complete, run all four:
