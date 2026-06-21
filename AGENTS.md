@@ -25,6 +25,7 @@ Biome enforces everything. Let `pnpm check:write` auto-fix formatting and import
 - **React 18** — UI (use `createRoot`, not `ReactDOM.render`)
 - **TypeScript 5** — strict mode
 - **SCSS** — styling
+- **Lucide React** — icon library
 - **Biome** — linter + formatter (Rust, fast)
 - **Knip** — dead code detection (Rust, fast)
 - **dupehound** — structural duplicate detection (Rust)
@@ -37,7 +38,7 @@ All game state lives in `useReducer` + `Context`. The filesystem is class-based 
 
 - **Auto-save**: debounced (500ms) after every state change
 - **On init**: checks `localStorage` for saved state, restores if found
-- **Reset**: Game tab → Reset clears localStorage and reloads
+- **Reset**: Settings gear (⚙) → Reset Game clears localStorage and reloads
 
 If you add new mutable state to File/Directory (fields beyond `hidden`, `locked`, `content`, `runState`), update `buildSnapshot` and `applySnapshot` in `model/save.ts`.
 
@@ -109,18 +110,23 @@ root.createDirectory("basement/secret", {
 src/
 ├── model/
 │   ├── files.ts      # File, Directory, FileNode, Meta, RunContext
-│   ├── game.ts       # Filesystem + inventory initialization (narrative content here)
+│   ├── game.ts       # Storyline registration + selection entry points
+│   ├── storyline.ts  # Storyline interface
 │   ├── inventory.ts  # Pure add/remove/addItems functions
+│   ├── items.ts      # Item registry (display name, description, Lucide icon)
+│   ├── icons.tsx     # Lucide icon name → component resolver
 │   ├── save.ts       # Save/load delta snapshots (localStorage)
+│   ├── log.ts        # Log entry types and creation
 │   ├── data.ts       # Constants (user names, extension maps)
 │   └── util.ts       # Random generation helpers
 ├── component/
-│   ├── file/         # Directory browser, file viewer (text/image/video/audio/exe/choices)
-│   ├── inventory/    # Inventory panel
-│   ├── navigation/   # Bottom tab bar
-│   └── ui/           # Shared UI (Modal)
+│   ├── file/         # Directory browser, file viewer, tree view
+│   ├── inventory/    # Inventory panel + item-acquired toast
+│   ├── log/          # Log viewer + log-entry toast
+│   ├── storyline/    # Storyline selection screen
+│   └── ui/           # Shared UI (Modal, HeaderBar, FloatingOverlay)
 ├── game-files/       # Static game content (images, text)
-├── App.tsx           # Root: Provider, ErrorBoundary, auto-save, deferred action drain, tab routing
+├── App.tsx           # Root: layout, header bar, overlays, auto-save, deferred drain
 ├── reducer.ts        # State + deferred action queue + all actions
 └── index.tsx         # Entry point (createRoot)
 ```

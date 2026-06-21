@@ -22,7 +22,7 @@ A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate di
 
 ## Overview
 
-**folder-game** is a single-page React application that presents a fake operating system desktop with a filesystem browser. The player navigates a mock directory tree, opens files, runs executables, and uses inventory items (keys) to unlock secured content. Files can self-destruct, execute with simulated console output, display images/videos/audio, or become corrupted.
+**folder-game** is a single-page React application that simulates exploring someone else's computer. Navigate a mock directory tree, read files, run executables, collect inventory keys, unlock hidden content, and uncover the story. Features a dark terminal aesthetic with CRT scanlines, togglable tree/directory views, floating inventory and log panels, and three distinct storylines.
 
 Built for mobile — touch-friendly, notch-safe, 44px tap targets, no pull-to-refresh. Progress auto-saves to `localStorage`.
 
@@ -45,7 +45,14 @@ The admin's identity, what happened to them, and who "they" are that are coming 
 
 ### Filesystem Navigation
 
-The player starts at the root directory (`$ROOT/`). Clicking a directory navigates into it. Clicking a file opens it in the file viewer. Each directory view shows a back-navigation item (`..`) to go up one level. Files and directories that are `hidden` are filtered from view.
+The player starts at the root directory (`$ROOT/`). Two views are available, toggled via the 🌳/📂 button in the header bar:
+
+- **Directory view** (default): Cards showing files and subdirectories. Click a directory to navigate into it. Click a file to open it. A back-navigation item (`..`) goes up one level.
+- **Tree view**: Full filesystem hierarchy as a collapsible tree. Expand/collapse directories, click files to open. Current directory is highlighted. State persists across file opens and page reloads.
+
+Both views filter out `hidden` files and directories. The view preference is saved to localStorage.
+
+Inventory (📦) and Log (📜) open as floating overlay panels from the header bar. Click the backdrop or press Escape to dismiss. Save Now and Reset Game live in the settings gear (⚙) dropdown.
 
 ### Executable Files (`.exe`)
 
@@ -79,6 +86,12 @@ The player has an inventory of **items** (keyed by type with a quantity). Items 
 | `webm`, `mp4` | `<video>` player |
 | `mp3`, `ogg`, `wav`, `flac` | `<audio>` player |
 
+### Log & Toasts
+
+Story events, goals, and milestones are recorded in the player's log (📜 in the header bar). Each log entry has a category badge (Story/Goal/Milestone/System) with color-coded styling.
+
+When a new log entry is created, a toast notification slides up at the bottom of the screen. Toasts auto-dismiss after 3 seconds or can be dismissed by clicking.
+
 ### Player Choices
 
 Files with `meta.choices` render button options below their content. Each choice dispatches an action when clicked. Example:
@@ -91,6 +104,12 @@ createFile("door.txt", "You see a locked door.", {
     ],
 });
 ```
+
+### Log & Toasts
+
+Story events, goals, and milestones are recorded in the player's log (📜 in the header bar). Each log entry has a category badge (Story/Goal/Milestone/System) with color-coded styling.
+
+When a new log entry is created, a toast notification slides up at the bottom of the screen. Toasts auto-dismiss after 3 seconds or can be dismissed by clicking.
 
 ## Narrative System
 
@@ -162,6 +181,7 @@ interface State {
 | Vite 5 | Bundler + dev server |
 | pnpm | Package manager |
 | SCSS (dart-sass) | Styling |
+| Lucide React | Icon library |
 
 **Quality tools:**
 
@@ -204,26 +224,35 @@ folder-game/
 │   └── vid/                    #   In-game video files
 ├── src/
 │   ├── component/
-│   │   ├── file/               # Filesystem browsing components
-│   │   │   ├── DirectoryItem.tsx    # Single file/directory entry
-│   │   │   ├── DirectoryView.tsx    # Directory contents listing
-│   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer or directory view
-│   │   │   └── FileViewer.tsx       # File renderer (text/image/video/audio/exe/choices)
-│   │   ├── icons/              # SVG icons for file types and UI elements (143 icons)
-│   │   ├── inventory/          # Inventory panel
-│   │   ├── navigation/         # Bottom navigation bar
-│   │   └── ui/                 # Shared UI primitives (Modal)
+│   │   ├── file/               # Filesystem browsing + tree view
+│   │   │   ├── DirectoryItem.tsx    # Single file/directory entry in grid view
+│   │   │   ├── DirectoryView.tsx    # Flat directory contents listing
+│   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer, directory, or tree view
+│   │   │   ├── FileViewer.tsx       # File renderer (text/image/video/audio/exe/choices)
+│   │   │   └── TreeView.tsx         # Collapsible filesystem tree
+│   │   ├── icons/              # Legacy SVG icons (143 icons, mostly unused)
+│   │   ├── inventory/          # Inventory overlay + item-acquired toast
+│   │   ├── log/                # Log overlay + log-entry toast
+│   │   ├── storyline/          # Storyline selection screen
+│   │   └── ui/                 # Shared UI (Modal, HeaderBar, FloatingOverlay)
 │   ├── game-files/             # Static game content
 │   │   ├── images/             #   Images referenced by in-game files
 │   │   └── intro/              #   Initial game text files
 │   ├── model/                  # Core game logic and data structures
 │   │   ├── data.ts             #   Constants (user names, extension maps)
 │   │   ├── files.ts            #   File, Directory, FileNode, RunContext, Meta
-│   │   ├── game.ts             #   Game initialization (filesystem + inventory)
+│   │   ├── game.ts             #   Storyline registration + selection entry points
+│   │   ├── storyline.ts        #   Storyline interface
+│   │   ├── icons.tsx           #   Lucide icon name → component resolver
 │   │   ├── inventory.ts        #   Pure inventory functions (add/remove/addItems)
+│   │   ├── items.ts            #   Item registry (display name, description, icon)
+│   │   ├── log.ts              #   Log entry types and creation
 │   │   ├── save.ts             #   Save/load delta snapshots (localStorage)
 │   │   └── util.ts             #   Random generation helpers
-│   ├── App.tsx                 #   Root: Provider, ErrorBoundary, auto-save, deferred action drain, tab routing
+│   ├── model/storylines/       # Storyline definitions
+│   │   ├── lockdown.ts         #   The Lockdown
+│   │   └── echoes.ts           #   The Echoes Below
+│   ├── App.tsx                 #   Root: layout, header bar, overlays, auto-save, deferred drain
 │   ├── reducer.ts              #   Game state reducer + deferred action queue
 │   ├── index.tsx               #   React 18 entry point (createRoot)
 │   └── vite-env.d.ts           #   Vite type declarations
@@ -235,6 +264,7 @@ folder-game/
 ├── package.json
 ├── pnpm-lock.yaml
 ├── AGENTS.md                   # Agent instructions
+├── STORYLINES.md               # Storyline authoring guide
 ├── .gitignore
 └── LICENSE
 ```
@@ -245,10 +275,16 @@ folder-game/
 
 ```
 App (ErrorBoundary > AppStore.Provider)
+├── HeaderBar
+│   ├── Tree/List view toggle (🌳 / 📂)
+│   ├── Inventory button (📦) → FloatingOverlay > InventoryViewer
+│   ├── Log button (📜) → FloatingOverlay > LogViewer
+│   └── Settings gear (⚙) → Save Now / Reset Game dropdown
 ├── FilesystemViewer
 │   ├── DirectoryView
 │   │   └── DirectoryItem (× N per listing)
 │   │       └── Modal (unlock confirmation)
+│   ├── TreeView (collapsible filesystem tree)
 │   └── FileViewer
 │       ├── ExeOutput              (typewriter effect)
 │       │   └── FileContent
@@ -258,9 +294,9 @@ App (ErrorBoundary > AppStore.Provider)
 │       ├── ImageResourceOutput
 │       ├── VideoResourceOutput
 │       ├── AudioResourceOutput
-│       └── ChoiceOutput           (button choices from meta)
-├── InventoryViewer
-└── Navigation (Filesystem / Inventory / Game)
+│       └── ChoiceOutput           (button actions from meta)
+├── LogToast (auto-dismiss notification)
+└── InventoryToast (item acquired notification)
 ```
 
 ### State Management

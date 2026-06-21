@@ -180,12 +180,12 @@ const ITEM_REGISTRY: Record<string, ItemInfo> = {
     your_key_id: {
         name: "Display Name",          // shown in inventory and toasts
         description: "What it unlocks", // shown below the name
-        icon: "🔑",                     // emoji
+        icon: "Key",                    // Lucide icon component name
     },
 };
 ```
 
-This powers the inventory tab cards and the item-acquired toast. If an item is missing from the registry, it shows as "Unknown Item" with a ❓ icon.
+This powers the inventory overlay cards and the item-acquired toast. If an item is missing from the registry, it shows as "Unknown Item" with a HelpCircle icon. Icons are resolved in `src/model/icons.tsx`.
 
 ### Executable with console output
 
@@ -321,7 +321,8 @@ When adding a new storyline:
 - [ ] `getInitialInventory()` returns the starting items
 - [ ] Keys only lock **directories**, not individual files (see Key-and-Lock Rules above)
 - [ ] Every key has one corresponding locked node — never reuse a key on two nodes
-- [ ] Register every key in `src/model/items.ts` with display name, description, and icon
+- [ ] Register every key in `src/model/items.ts` with display name, description, and Lucide icon name
+- [ ] If using a new Lucide icon, add it to the switch cases in `src/model/icons.tsx`
 - [ ] Register in `src/model/game.ts` → `storylines` map
 - [ ] Run `pnpm check && pnpm knip && pnpm dupe && pnpm build` — all must pass
 - [ ] Test: clear localStorage → pick storyline → play through a few steps → reload → verify state restored
