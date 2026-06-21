@@ -175,7 +175,7 @@ function App() {
         );
     }
 
-    const headerTitle = state.file ? state.file.name : state.cwd.fullName;
+    const headerTitle = state.cwd.fullName;
 
     return (
         <ErrorBoundary>
