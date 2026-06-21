@@ -27,9 +27,12 @@ const storyline: Storyline = {
         diary.createFile("entry_02_she_wont_leave_my_mind.txt", DIARY_02);
         diary.createFile("entry_03_the_expedition.txt", DIARY_03, {
             onRead(ctx) {
-                ctx.dispatch({ type: "ADD_ITEMS", payload: { expedition_data: 1 } });
+                ctx.dispatch({ type: "ADD_ITEMS", payload: { expedition_clearance: 1 } });
                 ctx.log("story", "Frank joined an expedition to the Hollow Earth. His colleague Danny went with him.");
-                ctx.log("milestone", "Acquired expedition data — deeper expedition reports are now accessible.");
+                ctx.log(
+                    "milestone",
+                    "Acquired expedition clearance code — Frank embedded it in this entry. The restricted expedition reports can now be unlocked.",
+                );
             },
         });
         diary.createFile("entry_04_they_dont_speak.txt", DIARY_04);
@@ -108,53 +111,64 @@ const storyline: Storyline = {
         const expeditions = research.createDirectory("expeditions");
         expeditions.createFile("report_1.txt", EXPEDITION_1);
         expeditions.createFile("report_2.txt", EXPEDITION_2, {
-            key: "expedition_data",
+            key: "expedition_clearance",
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/research/texts/echo_ritual.txt" });
+                ctx.dispatch({ type: "ADD_ITEMS", payload: { echo_cipher: 1 } });
                 ctx.log(
                     "story",
                     "Frank's second expedition report mentions contact with the inner people and their religious practices.",
                 );
+                ctx.log(
+                    "milestone",
+                    "Found an Echo Cipher — Frank used it to decrypt the inner people's sacred texts. The sacred texts directory is now accessible.",
+                );
+                ctx.log("goal", "Open the sacred texts directory to read the decrypted fragments.");
             },
         });
         expeditions.createFile("report_3.txt", EXPEDITION_3, {
-            key: "expedition_data",
+            key: "expedition_clearance",
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael_1.txt" });
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/research/texts/frank_translation.txt" });
+                ctx.dispatch({ type: "ADD_ITEMS", payload: { kael_contact: 1 } });
                 ctx.log(
                     "story",
                     "Frank's third expedition — he met Kael, an inner-world figure connected to the Path of Echoes.",
                 );
-                ctx.log("goal", "Read the messages between Frank and Kael to understand their arrangement.");
+                ctx.log(
+                    "milestone",
+                    "Obtained Kael's contact credentials. The Kael messages directory is now accessible.",
+                );
+                ctx.log("goal", "Unlock Kael's messages to understand their arrangement.");
             },
         });
 
-        // Sacred texts
+        // Sacred texts — echo_fragment is accessible; deeper texts locked behind echo_cipher
         const texts = research.createDirectory("texts");
         texts.createFile("echo_fragment.txt", TEXT_FRAGMENT, {
             onRead(ctx) {
                 ctx.log(
                     "story",
-                    "An excerpt from the Path of Echoes sacred text. It mentions a ritual of 'silent communion.'",
+                    "An excerpt from the Path of Echoes sacred text. It mentions a ritual of 'silent communion.' The rest of the texts appear to be encrypted — you'll need a cipher key to decode them.",
                 );
+                ctx.log("goal", "Find the Echo Cipher to unlock the rest of the sacred texts.");
             },
         });
-        texts.createFile("echo_ritual.txt", TEXT_RITUAL, {
+        const sacred = texts.createDirectory("decrypted", { key: "echo_cipher" });
+        sacred.createFile("echo_ritual.txt", TEXT_RITUAL, {
+            onRead(ctx) {
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/research/texts/decrypted/frank_translation.txt" });
+                ctx.log(
+                    "story",
+                    "The full ritual text: 'Offer the blood of the divided one to the depths, and the silent tongue shall be yours.' Frank's translation notes are in the same directory.",
+                );
+                ctx.log("goal", "Read Frank's translation to understand what he plans to do.");
+            },
+        });
+        sacred.createFile("frank_translation.txt", FRANK_TRANSLATION, {
             hidden: true,
             onRead(ctx) {
                 ctx.log(
                     "story",
-                    "The full ritual text: 'Offer the blood of the divided one to the depths, and the silent tongue shall be yours.'",
-                );
-            },
-        });
-        texts.createFile("frank_translation.txt", FRANK_TRANSLATION, {
-            hidden: true,
-            onRead(ctx) {
-                ctx.log(
-                    "story",
-                    "Frank's translation and interpretation of the ritual. He believes killing Chiara will grant him telepathy.",
+                    "Frank's translation and interpretation of the ritual. He believes killing Chiara will grant him telepathy — and that the ritual gives him a 'good reason' to do it.",
                 );
             },
         });
@@ -192,28 +206,27 @@ const storyline: Storyline = {
             },
         });
 
-        // Kael (hollow-earth contact)
-        messages.createFile("kael_1.txt", KAEL_1, {
-            hidden: true,
+        // Kael — hollow-earth contact, locked behind kael_contact key
+        const kaelDir = messages.createDirectory("kael", { key: "kael_contact" });
+        kaelDir.createFile("kael_01_first_contact.txt", KAEL_1, {
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael_2.txt" });
                 ctx.log(
                     "story",
                     "Kael first contacted Frank after noticing his interest in the Echo texts. They've been watching him.",
                 );
             },
         });
-        messages.createFile("kael_2.txt", KAEL_2, {
-            hidden: true,
+        kaelDir.createFile("kael_02_she_is_the_one.txt", KAEL_2, {
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael_3.txt" });
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael/kael_03_final_warning.txt" });
                 ctx.log(
                     "story",
                     "Kael confirmed Chiara is an 'unawakened one' — a child of the inner world living on the surface. The Path of Echoes tracks them.",
                 );
+                ctx.log("goal", "Kael's next message was hidden. Find it in the kael directory.");
             },
         });
-        messages.createFile("kael_3.txt", KAEL_3, {
+        kaelDir.createFile("kael_03_final_warning.txt", KAEL_3, {
             hidden: true,
             onRead(ctx) {
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/resolve.txt" });
@@ -308,13 +321,13 @@ const storyline: Storyline = {
                 id: `log-${now}-0`,
                 timestamp: now,
                 category: "story" as const,
-                text: "You've accessed Frank Nicholas's remote server. Danny Vega mentioned it — he's worried about Frank.",
+                text: "You've breached Frank Nicholas's remote server. Danny Vega mentioned it — he's worried about Frank.",
             },
             {
                 id: `log-${now}-1`,
                 timestamp: now,
                 category: "goal" as const,
-                text: "Search Frank's files. Find out what he discovered in the Hollow Earth — and why he disappeared.",
+                text: "Start in the research folder. Frank was studying the Hollow Earth — his notes may contain access codes for the rest of the server.",
             },
         ];
     },
