@@ -56,14 +56,6 @@
         text-overflow: ellipsis;
     }
 
-    &__lock {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        margin-left: 2px;
-        color: var(--text-muted);
-    }
-
     &--dir {
         color: var(--text-secondary);
 

@@ -72,14 +72,15 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                         {isDir ? (isExpanded ? "▼" : children.length > 0 || isLocked ? "▶" : " ") : " "}
                     </span>
                     <span className="tree-node__icon">
-                        {isDir ? <Folder size={14} strokeWidth={1.5} /> : <File size={14} strokeWidth={1.5} />}
+                        {isLocked ? (
+                            <Lock size={14} strokeWidth={1.5} />
+                        ) : isDir ? (
+                            <Folder size={14} strokeWidth={1.5} />
+                        ) : (
+                            <File size={14} strokeWidth={1.5} />
+                        )}
                     </span>
                     <span className="tree-node__name">{node.name}</span>
-                    {isLocked && (
-                        <span className="tree-node__lock">
-                            <Lock size={10} strokeWidth={2} />
-                        </span>
-                    )}
                 </div>
             );
 

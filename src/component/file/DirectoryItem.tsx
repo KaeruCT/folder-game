@@ -18,6 +18,9 @@ function NodeIcon({ fileNode, isParent }: { fileNode: FileNode; isParent: boolea
     if (isParent) {
         return <FolderUp size={size} strokeWidth={1.5} />;
     }
+    if (fileNode.locked) {
+        return <Lock size={size} strokeWidth={1.5} />;
+    }
     if (fileNode.name === "trash") {
         return <Trash2 size={size} strokeWidth={1.5} />;
     }
@@ -75,7 +78,6 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
                     <NodeIcon fileNode={fileNode} isParent={isParent} />
                 </div>
                 <div className="directory-item__name">{name || "\u00A0"}</div>
-                {fileNode.locked && <Lock className="directory-item__lock" size={12} strokeWidth={2} />}
             </button>
         </Fragment>
     );

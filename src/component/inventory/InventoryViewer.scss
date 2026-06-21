@@ -1,22 +1,20 @@
-.inventory {
-    .inv-empty {
-        padding: 0 20px;
-        text-align: center;
+.inv-empty {
+    padding: 0 20px;
+    text-align: center;
 
-        p {
-            margin: 0;
-            font-size: 12px;
-            line-height: 1.5;
-            color: var(--text-muted);
-        }
+    p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-muted);
     }
+}
 
-    .item-list {
-        padding: 8px 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
+.item-list {
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .inventory-item {

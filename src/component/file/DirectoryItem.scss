@@ -53,11 +53,4 @@
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
     }
-
-    &__lock {
-        position: absolute;
-        top: 28px;
-        right: 4px;
-        color: var(--text-muted);
-    }
 }
