@@ -258,11 +258,11 @@ const storyline: Storyline = {
             choices: [
                 {
                     label: "Warn Chiara. Tell her everything — her heritage, Frank's plan, the truth.",
-                    action: { type: "SET_PHASE", payload: 99 },
+                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_chiara.txt" },
                 },
                 {
                     label: "Stay silent. Frank has his reasons. Maybe this is how it has to be.",
-                    action: { type: "SET_PHASE", payload: 1 },
+                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_silence.txt" },
                 },
             ],
             onRead(ctx) {
@@ -270,29 +270,27 @@ const storyline: Storyline = {
             },
         });
 
-        // Ending files — revealed by choice
+        // Ending files — revealed by resolve.txt choices
         root.createFile("ending_chiara.txt", ENDING_SAVE, {
             hidden: true,
             onRead(ctx) {
+                ctx.dispatch({ type: "SET_PHASE", payload: 99 });
                 ctx.log("milestone", "You chose to warn Chiara.");
-                if (ctx.state.gamePhase >= 99) {
-                    ctx.log(
-                        "story",
-                        "ENDING: You told Chiara everything. She didn't believe you at first — but the evidence was undeniable. Together, you've begun helping her awaken her dormant abilities. The Path of Echoes won't stop, but neither will you. Frank's fate remains unknown... but Chiara is alive, and that's what matters.",
-                    );
-                }
+                ctx.log(
+                    "story",
+                    "ENDING: You told Chiara everything. She didn't believe you at first — but the evidence was undeniable. Together, you've begun helping her awaken her dormant abilities. The Path of Echoes won't stop, but neither will you. Frank's fate remains unknown... but Chiara is alive, and that's what matters.",
+                );
             },
         });
         root.createFile("ending_silence.txt", ENDING_SILENCE, {
             hidden: true,
             onRead(ctx) {
+                ctx.dispatch({ type: "SET_PHASE", payload: 1 });
                 ctx.log("milestone", "You chose to stay silent.");
-                if (ctx.state.gamePhase >= 1) {
-                    ctx.log(
-                        "story",
-                        "ENDING: Frank's plan may succeed. Chiara will never know what she is, or why she was targeted. The Path of Echoes will continue drawing surface people into the depths. You'll carry this secret — and the weight of your silence — alone.",
-                    );
-                }
+                ctx.log(
+                    "story",
+                    "ENDING: Frank's plan may succeed. Chiara will never know what she is, or why she was targeted. The Path of Echoes will continue drawing surface people into the depths. You'll carry this secret — and the weight of your silence — alone.",
+                );
             },
         });
 

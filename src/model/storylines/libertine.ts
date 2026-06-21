@@ -193,6 +193,7 @@ const storyline: Storyline = {
         });
         evidence.createFile("vincenzo_draft.txt", VINCENZO_DRAFT, {
             onRead(ctx) {
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/the_choice.txt" });
                 ctx.log(
                     "story",
                     "A draft email Vincenzo never sent — threatening the intern if she talked. The language is chilling.",
@@ -208,58 +209,52 @@ const storyline: Storyline = {
             hidden: true,
             onRead(ctx) {
                 ctx.log("milestone", "You've seen it all. The conquests, the ledger, the coercion. Now you choose.");
-                if (ctx.state.gamePhase < 90) {
-                    // Reveal choice on first read
-                }
             },
             choices: [
                 {
                     label: "Leak everything. The press, the police, his wife — everyone.",
-                    action: { type: "SET_PHASE", payload: 99 },
+                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_expose.txt" },
                 },
                 {
                     label: "Blackmail him. If he's been using women, you can use him.",
-                    action: { type: "SET_PHASE", payload: 98 },
+                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_blackmail.txt" },
                 },
                 {
                     label: "Confront him privately. Destroy the evidence. Let him live with the fear.",
-                    action: { type: "SET_PHASE", payload: 97 },
+                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_confront.txt" },
                 },
             ],
         });
 
-        // Ending files
+        // Ending files — revealed by the_choice.txt choices
         root.createFile("ending_expose.txt", ENDING_EXPOSE, {
             hidden: true,
             onRead(ctx) {
-                if (ctx.state.gamePhase >= 99) {
-                    ctx.log(
-                        "story",
-                        "ENDING: You leaked everything. The politician resigned within a week. Vincenzo was arrested — not for the affairs, but for the coercion. The intern went public. His wife filed for divorce. His empire crumbled. You watch the news coverage from your laptop and feel... something between satisfaction and nausea. You exposed a predator. But you also exposed women who never wanted their private lives made public. Was it worth it? You tell yourself yes.",
-                    );
-                }
+                ctx.dispatch({ type: "SET_PHASE", payload: 99 });
+                ctx.log(
+                    "story",
+                    "ENDING: You leaked everything. The politician resigned within a week. Vincenzo was arrested — not for the affairs, but for the coercion. The intern went public. His wife filed for divorce. His empire crumbled. You watch the news coverage from your laptop and feel... something between satisfaction and nausea. You exposed a predator. But you also exposed women who never wanted their private lives made public. Was it worth it? You tell yourself yes.",
+                );
             },
         });
         root.createFile("ending_blackmail.txt", ENDING_BLACKMAIL, {
             hidden: true,
             onRead(ctx) {
-                if (ctx.state.gamePhase >= 98) {
-                    ctx.log(
-                        "story",
-                        "ENDING: You contacted Vincenzo through an encrypted channel. He paid. He paid a lot. You've set up recurring payments — silence isn't cheap. Every month, the money arrives. Every month, he wonders if this is the month you leak anyway. The power feels good. But the intern still works in his office. She still flinches when he walks past her desk. You tell yourself you'll do something about that. Eventually.",
-                    );
-                }
+                ctx.dispatch({ type: "SET_PHASE", payload: 98 });
+                ctx.log(
+                    "story",
+                    "ENDING: You contacted Vincenzo through an encrypted channel. He paid. He paid a lot. You've set up recurring payments — silence isn't cheap. Every month, the money arrives. Every month, he wonders if this is the month you leak anyway. The power feels good. But the intern still works in his office. She still flinches when he walks past her desk. You tell yourself you'll do something about that. Eventually.",
+                );
             },
         });
         root.createFile("ending_confront.txt", ENDING_CONFRONT, {
             hidden: true,
             onRead(ctx) {
-                if (ctx.state.gamePhase >= 97) {
-                    ctx.log(
-                        "story",
-                        "ENDING: You showed up at his office unannounced. Dropped a USB drive on his desk. 'I've seen everything. The diaries. The ledger. The intern.' He went pale. You told him: resign from the company, leave the country, or you release it all. He chose to leave. The intern kept her job. The politician never faced consequences. Justice is partial, but the predator is gone. You deleted the files — mostly. You kept a copy. Just in case.",
-                    );
-                }
+                ctx.dispatch({ type: "SET_PHASE", payload: 97 });
+                ctx.log(
+                    "story",
+                    "ENDING: You showed up at his office unannounced. Dropped a USB drive on his desk. 'I've seen everything. The diaries. The ledger. The intern.' He went pale. You told him: resign from the company, leave the country, or you release it all. He chose to leave. The intern kept her job. The politician never faced consequences. Justice is partial, but the predator is gone. You deleted the files — mostly. You kept a copy. Just in case.",
+                );
             },
         });
 

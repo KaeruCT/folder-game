@@ -31,6 +31,7 @@ export interface RunContext {
 export type Meta = {
     // biome-ignore lint/suspicious/noExplicitAny: intentionally flexible metadata bag
     [key: string]: any;
+    hidden?: boolean;
     run?: (this: File, log: LoggerFunction, ctx: RunContext) => void;
     onRead?: (ctx: RunContext) => void;
     onUnlock?: (ctx: RunContext) => void;
@@ -58,6 +59,7 @@ export class File {
         this.content = content;
         this.parent = parent;
         this.meta = meta;
+        this.hidden = meta.hidden === true;
         if (meta.runState) {
             this.runState = meta.runState;
         }
@@ -109,6 +111,7 @@ export class Directory {
     constructor(name: string, parent: Directory | undefined = undefined, meta: Meta = {}) {
         this.name = name;
         this.meta = meta;
+        this.hidden = meta.hidden === true;
         if (parent) {
             this.parent = parent;
         }
