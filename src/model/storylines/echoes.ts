@@ -106,6 +106,38 @@ const storyline: Storyline = {
                 );
             },
         });
+        research.createFile("analyze.exe", "", {
+            run(log, _ctx) {
+                const times = (this.runState.timesRun || 0) + 1;
+                this.runState.timesRun = times;
+                log("FRANK NICHOLAS — RESEARCH ANALYSIS TOOL v2.3");
+                log("================================================");
+                log("");
+                log("Loading expedition datasets...");
+                log("Parsing geological survey data...");
+                log("Cross-referencing inner-world taxonomy...");
+                log("");
+                log("KEY FINDINGS:");
+                log("- Subterranean cavity volume: ~4.2 billion km³");
+                log("- Inner Sun spectral classification: G-type (micro)");
+                log("- Inhabitant genetic match to H. sapiens: 99.97%");
+                log("- Telepathic capability: confirmed, mechanism unknown");
+                log("- Path of Echoes origin: ~2000 BCE (carbon-dated)");
+                log("");
+                log("WARNING: 3 restricted datasets require clearance.");
+                log("Use expedition_clearance to access reports 2 and 3.");
+                if (times === 1) {
+                    log("");
+                    log("Personal note (F. Nicholas): The data doesn't lie.");
+                    log("There's something down there we were never meant to find.");
+                }
+                if (times >= 3) {
+                    log("");
+                    log(`Analysis run ${times} times. No new data available.`);
+                }
+            },
+            runState: { timesRun: 0 },
+        });
 
         // Expedition reports — report_1 is public; reports 2&3 require clearance
         const expeditions = research.createDirectory("expeditions");
@@ -171,6 +203,46 @@ const storyline: Storyline = {
                 );
             },
         });
+        sacred.createFile("decoder.exe", "", {
+            run(log, _ctx) {
+                log("ECHO SCRIPT DECODER v1.1 — AUTHORIZED: F. NICHOLAS");
+                log("=====================================================");
+                log("");
+                log("Loading cipher matrix...");
+                log("Initializing glyph substitution tables...");
+                log("Applying syntactic transformation layer...");
+                log("");
+                log("DECODING FRAGMENT 47:");
+                log("");
+                log("...and so the divided walk among the blind,");
+                log("carrying the gift they do not know they carry.");
+                log("");
+                log("DECODING RITE OF SILENT COMMUNION:");
+                log("");
+                log("The divided one must be brought. The blood");
+                log("of the divided one shall touch the altar stone.");
+                log("The seeker shall receive the gift of silence —");
+                log("the silent tongue, the shared thought, the");
+                log("communion of minds.");
+                log("");
+                log("WARNING: Ritual termination clause detected.");
+                log("The divided one does not survive the transfer.");
+                log("");
+                log("Frank's annotation: 'She dies. There is no other");
+                log("reading. The text is unambiguous. The gift is taken,'");
+                log("'not shared. I've been lying to myself.'");
+                log("");
+                log("Decode complete. Output saved to decoded_output.txt");
+                this.parent?.createFile("decoded_output.txt", DECODER_OUTPUT, {
+                    onRead(ctx) {
+                        ctx.log(
+                            "story",
+                            "The decoder produced a clean transcript. The ritual text is undeniable — Chiara would not survive.",
+                        );
+                    },
+                });
+            },
+        });
 
         // =========================================================================
         // MESSAGES
@@ -218,6 +290,7 @@ const storyline: Storyline = {
         kaelDir.createFile("kael_02_she_is_the_one.txt", KAEL_2, {
             onRead(ctx) {
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael/kael_03_final_warning.txt" });
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael/relay.exe" });
                 ctx.log(
                     "story",
                     "Kael confirmed Chiara is an 'unawakened one' — a child of the inner world living on the surface. The Path of Echoes tracks them.",
@@ -228,13 +301,62 @@ const storyline: Storyline = {
         kaelDir.createFile("kael_03_final_warning.txt", KAEL_3, {
             hidden: true,
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/resolve.txt" });
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/resolve.exe" });
                 ctx.log(
                     "story",
                     "Kael's final message: the inner world's resources are finite. The religion is a tool to bring surface people below.",
                 );
                 ctx.log("milestone", "All the pieces are in place. Frank's plan is clear. You must decide what to do.");
                 ctx.log("goal", "Open resolve.txt to make your choice.");
+            },
+        });
+        kaelDir.createFile("relay.exe", "", {
+            hidden: true,
+            run(log, ctx) {
+                log("INNER-WORLD RELAY — ESTABLISHING CONNECTION...");
+                log("==================================================");
+                log("");
+                log("Routing through Sector 12 relay node...");
+                log("Handshake protocol: Echo-v7");
+                log("Authentication: Kael [GUARDIAN CLEARANCE]");
+                log("");
+                log("CONNECTION ESTABLISHED");
+                log("");
+                log("RETRIEVING LAST TRANSMISSION...");
+                log("");
+                log("FROM: kael@[inner-relay]");
+                log("TO: frank_nicholas@[server]");
+                log("DATE: [CORRUPTED]");
+                log("");
+                log("Frank —");
+                log("");
+                log("The Chamber is prepared. The altar stone has been");
+                log("cleansed according to the old rites. The witnesses");
+                log("have been selected — three elders who will validate");
+                log("the transfer.");
+                log("");
+                log("I must warn you one final time: once the Rite begins,");
+                log("it cannot be stopped. The divided one will not survive.");
+                log("You will carry her silence forever. Some who have");
+                log("undergone this have described it as... a haunting.");
+                log("");
+                log("Not the ghost kind. The memory kind. Her last thought");
+                log("will imprint on you. It becomes part of the gift.");
+                log("You will hear it in quiet moments for the rest of");
+                log("your life.");
+                log("");
+                log("If you are prepared for this — come.");
+                log("");
+                log("— Kael");
+                log("");
+                log("TRANSMISSION END");
+                log("");
+                log("Connection terminated by remote host.");
+                ctx.log(
+                    "story",
+                    "Kael's relay transmission: the Chamber is prepared. The ritual is ready. Kael warns Frank he'll carry Chiara's last thought forever.",
+                );
+                ctx.log("goal", "The relay confirms it: Frank is serious. Find the rest of Kael's messages.");
             },
         });
 
@@ -265,20 +387,67 @@ const storyline: Storyline = {
         // RESOLVE (hidden — revealed by Kael's final message)
         // =========================================================================
 
-        root.createFile("resolve.txt", RESOLVE, {
+        root.createFile("resolve.exe", "", {
             hidden: true,
-            choices: [
-                {
-                    label: "Warn Chiara. Tell her everything — her heritage, Frank's plan, the truth.",
-                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_chiara.txt" },
-                },
-                {
-                    label: "Stay silent. Frank has his reasons. Maybe this is how it has to be.",
-                    action: { type: "REVEAL_FILE", payload: "$ROOT/ending_silence.txt" },
-                },
-            ],
-            onRead(ctx) {
-                ctx.log("milestone", "You've uncovered Frank Nicholas's plan. Now you must choose.");
+            run(log, ctx) {
+                log("CASE FILE: THE ECHOES BELOW");
+                log("===============================");
+                log("");
+                log("Compiling evidence matrix...");
+                log("Cross-referencing diary entries...");
+                log("Validating expedition reports...");
+                log("Authenticating Kael communications...");
+                log("");
+                log("EVIDENCE SUMMARY:");
+                log("");
+                log("1. Frank Nicholas became infatuated with Chiara Maria");
+                log("   after seeing her at a metro station.");
+                log("");
+                log("2. He joined hollow-earth expeditions and discovered");
+                log("   the Path of Echoes — an ancient inner-world religion.");
+                log("");
+                log("3. He found a ritual called the Rite of Silent");
+                log("   Communion — a murder ritual that transfers");
+                log('   telepathic ability from an "unawakened one."');
+                log("");
+                log("4. He identified Chiara as an unawakened one —");
+                log("   a child of inner-world parents, raised on the");
+                log("   surface, carrying dormant telepathic ability.");
+                log("");
+                log("5. He made contact with Kael, an inner-world");
+                log("   operative who confirmed Chiara's identity and");
+                log("   offered to prepare the Chamber of Echoes.");
+                log("");
+                log("6. Frank's stated motive: gain telepathy, infiltrate");
+                log("   the inner world, and stop the Path of Echoes from");
+                log("   exploiting surface people. Cost: Chiara's life.");
+                log("");
+                log("7. Frank's unstated motive: he wants her. He always");
+                log("   has. The ritual lets him possess her completely.");
+                log("");
+                log("===============================================");
+                log("Frank's current status: UNKNOWN");
+                log("Chiara's current status: UNAWARE");
+                log("Your current status: INFORMED");
+                log("===============================================");
+                log("");
+                log("Decision required. Open decide.txt to proceed.");
+
+                this.root.createFile("decide.txt", RESOLVE, {
+                    choices: [
+                        {
+                            label: "Warn Chiara. Tell her everything — her heritage, Frank's plan, the truth.",
+                            action: { type: "REVEAL_FILE", payload: "$ROOT/ending_chiara.txt" },
+                        },
+                        {
+                            label: "Stay silent. Frank has his reasons. Maybe this is how it has to be.",
+                            action: { type: "REVEAL_FILE", payload: "$ROOT/ending_silence.txt" },
+                        },
+                    ],
+                });
+
+                ctx.log("milestone", "You've uncovered Frank Nicholas's plan. decide.txt has been created.");
+                ctx.log("goal", "Open decide.txt to make your choice.");
             },
         });
 
@@ -1155,4 +1324,31 @@ But the math doesn't help you sleep at night. The math doesn't stop
 you from flinching every time Chiara doesn't show up to work on time.
 
 You made your choice. Now you live with it.
+`;
+
+const DECODER_OUTPUT = `ECHO SCRIPT DECODER v1.1 — OUTPUT
+=====================================
+
+FRAGMENT 47 (FULLY DECODED):
+
+"...and so the divided walk among the blind, carrying the gift
+they do not know they carry. Their blood remembers the source.
+Their minds dream in the old language, though they wake with no
+memory of the dreaming."
+
+RITE OF SILENT COMMUNION (FULLY DECODED):
+
+The rite shall be performed in the Chamber of Echoes, at the
+point where the Inner Sun's light touches the altar stone at
+the zenith hour. The divided one must be brought. The seeker
+shall speak these words in the language of sound. The blood of
+the divided one shall touch the altar stone. When the stone
+drinks, the seeker shall receive the gift of silence.
+
+FRANK'S ANNOTATIONS:
+"She dies. There is no other reading. The text is unambiguous.
+The gift is taken, not shared. I have been lying to myself."
+"I don't know if I can do it. But I don't know if I can stop."
+"Kael says the memory imprints. Her last thought becomes mine.
+I will never be alone again. That is what I wanted all along."
 `;
