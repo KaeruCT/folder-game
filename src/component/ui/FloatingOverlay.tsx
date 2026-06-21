@@ -4,9 +4,10 @@ import "./FloatingOverlay.scss";
 interface Props {
     title: string;
     onClose: () => void;
+    right?: number;
 }
 
-function FloatingOverlay({ title, onClose, children }: PropsWithChildren<Props>) {
+function FloatingOverlay({ title, onClose, right, children }: PropsWithChildren<Props>) {
     const ref = useRef<HTMLDivElement>(null);
 
     const handleKeyDown = useCallback(
@@ -26,7 +27,13 @@ function FloatingOverlay({ title, onClose, children }: PropsWithChildren<Props>)
             {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop dismiss */}
             {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop dismiss */}
             <div className="floating-backdrop" onClick={onClose} />
-            <div className="floating-overlay" ref={ref} role="dialog" aria-label={title}>
+            <div
+                className="floating-overlay"
+                ref={ref}
+                role="dialog"
+                aria-label={title}
+                style={right != null ? { right } : undefined}
+            >
                 <div className="floating-overlay__header">
                     <span>{title}</span>
                     <button type="button" className="floating-overlay__close" onClick={onClose} aria-label="Close">

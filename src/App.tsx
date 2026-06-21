@@ -197,12 +197,12 @@ function App() {
                     </div>
 
                     {inventoryOpen && (
-                        <FloatingOverlay title="Inventory" onClose={() => setInventoryOpen(false)}>
+                        <FloatingOverlay title="Inventory" onClose={() => setInventoryOpen(false)} right={68}>
                             <InventoryViewer overlay />
                         </FloatingOverlay>
                     )}
                     {logOpen && (
-                        <FloatingOverlay title="Log" onClose={() => setLogOpen(false)}>
+                        <FloatingOverlay title="Log" onClose={() => setLogOpen(false)} right={34}>
                             <LogViewer overlay entries={state.logEntries} />
                         </FloatingOverlay>
                     )}
