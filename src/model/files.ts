@@ -1,5 +1,12 @@
 const SEPARATOR = "/";
 
+const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+export function clearAllTimers() {
+    for (const id of activeTimers) clearTimeout(id);
+    activeTimers.clear();
+}
+
 export type FileNode = Directory | File;
 
 type LoggerFunction = (line: string) => void;
@@ -7,6 +14,9 @@ type LoggerFunction = (line: string) => void;
 export interface RunContext {
     // biome-ignore lint/suspicious/noExplicitAny: generic action dispatch
     dispatch: (action: { type: string; payload: any }) => any;
+    /** Schedule an action to dispatch after `delayMs` milliseconds. Returns a cancel function. */
+    // biome-ignore lint/suspicious/noExplicitAny: generic action payload
+    schedule: (action: { type: string; payload: any }, delayMs: number) => () => void;
     state: {
         inventory: Record<string, { type: string; quantity: number }>;
         gamePhase: number;

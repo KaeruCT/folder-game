@@ -13,8 +13,9 @@ import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
+import { clearAllTimers } from "./model/files";
 import { deleteSave } from "./model/save";
-import { type Action, getInitialState, reducer, type State } from "./reducer";
+import { type Action, deferredActions, getInitialState, reducer, type State } from "./reducer";
 
 type Store = {
     state: State;
@@ -64,10 +65,20 @@ function App() {
         return () => clearTimeout(saveTimer.current);
     }, [state]);
 
+    // Drain deferred actions (from callbacks, executables, and timers)
+    // biome-ignore lint/correctness/useExhaustiveDependencies: state is the trigger
+    useEffect(() => {
+        while (deferredActions.length > 0) {
+            // biome-ignore lint/style/noNonNullAssertion: guarded by while length check
+            const action = deferredActions.shift()!;
+            dispatch(action);
+        }
+    }, [state]);
+
     function handleReset() {
+        clearAllTimers();
+        deferredActions.length = 0;
         deleteSave();
-        // Force re-initialize by dispatching load with null — simplest approach:
-        // Reload the page to get a clean slate
         window.location.reload();
     }
 

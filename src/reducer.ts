@@ -30,8 +30,43 @@ export interface Action {
     payload: any;
 }
 
+/** Queue for deferred actions dispatched from inside callbacks/executables. */
+export const deferredActions: Action[] = [];
+
+const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+function scheduleDeferred(action: Action, delayMs: number): () => void {
+    const id = setTimeout(() => {
+        activeTimers.delete(id);
+        deferredActions.push(action);
+    }, delayMs);
+    activeTimers.add(id);
+    return () => {
+        clearTimeout(id);
+        activeTimers.delete(id);
+    };
+}
+
+function makeRunContext(state: State) {
+    return {
+        // biome-ignore lint/suspicious/noExplicitAny: generic dispatch bridge
+        dispatch: (a: { type: string; payload: any }) => {
+            deferredActions.push(a as Action);
+        },
+        state: {
+            inventory: state.inventory,
+            gamePhase: state.gamePhase,
+            readFiles: state.readFiles,
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: generic action payload
+        schedule: (a: { type: string; payload: any }, delayMs: number) => {
+            return scheduleDeferred(a as Action, delayMs);
+        },
+    };
+}
+
 export function reducer(state: State, action: Action): State {
-    let { inventory, filesystemRoot, readFiles, gamePhase } = state;
+    let { inventory, filesystemRoot, readFiles } = state;
     switch (action.type) {
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
@@ -56,11 +91,7 @@ export function reducer(state: State, action: Action): State {
                     readFiles = [...readFiles, file.fullName];
                 }
 
-                const ctx = {
-                    // biome-ignore lint/suspicious/noExplicitAny: generic dispatch bridge
-                    dispatch: (a: { type: string; payload: any }) => reducer(state, a as Action),
-                    state: { inventory, gamePhase, readFiles },
-                };
+                const ctx = makeRunContext(state);
 
                 if (file.meta.onRead) {
                     file.meta.onRead(ctx);
@@ -88,11 +119,7 @@ export function reducer(state: State, action: Action): State {
                 inventory = removeItem(inventory, key);
                 filesystemRoot = unlockFileNode(fileNode);
 
-                const ctx = {
-                    // biome-ignore lint/suspicious/noExplicitAny: generic dispatch bridge
-                    dispatch: (a: { type: string; payload: any }) => reducer(state, a as Action),
-                    state: { inventory, gamePhase, readFiles },
-                };
+                const ctx = makeRunContext(state);
 
                 if (fileNode.meta.onUnlock) {
                     fileNode.meta.onUnlock(ctx);
