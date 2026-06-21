@@ -29,8 +29,8 @@ export interface State {
     readFiles: string[];
     gamePhase: number;
     logEntries: LogEntry[];
-    unreadInventory: boolean;
-    unreadLog: boolean;
+    unreadInventoryCount: number;
+    unreadLogCount: number;
 }
 
 export interface Action {
@@ -90,17 +90,29 @@ export function reducer(state: State, action: Action): State {
             return result;
         }
         case "INVENTORY_ADD":
-            return { ...state, inventory: addItem(inventory, action.payload), unreadInventory: true };
+            return {
+                ...state,
+                inventory: addItem(inventory, action.payload),
+                unreadInventoryCount: state.unreadInventoryCount + 1,
+            };
         case "INVENTORY_REMOVE":
             return { ...state, inventory: removeItem(inventory, action.payload) };
         case "ADD_ITEMS":
-            return { ...state, inventory: addItems(inventory, action.payload), unreadInventory: true };
+            return {
+                ...state,
+                inventory: addItems(inventory, action.payload),
+                unreadInventoryCount: state.unreadInventoryCount + 1,
+            };
         case "LOG_ADD":
-            return { ...state, logEntries: [...state.logEntries, action.payload as LogEntry], unreadLog: true };
+            return {
+                ...state,
+                logEntries: [...state.logEntries, action.payload as LogEntry],
+                unreadLogCount: state.unreadLogCount + 1,
+            };
         case "MARK_INVENTORY_READ":
-            return { ...state, unreadInventory: false };
+            return { ...state, unreadInventoryCount: 0 };
         case "MARK_LOG_READ":
-            return { ...state, unreadLog: false };
+            return { ...state, unreadLogCount: 0 };
         case "SET_PHASE":
             return { ...state, gamePhase: action.payload as number };
         case "SET_CWD":
@@ -189,8 +201,8 @@ export function reducer(state: State, action: Action): State {
                 readFiles: snapshot.readFiles ?? [],
                 gamePhase: snapshot.gamePhase ?? 0,
                 logEntries: snapshot.logEntries ?? [],
-                unreadInventory: false,
-                unreadLog: false,
+                unreadInventoryCount: 0,
+                unreadLogCount: 0,
             };
         }
         case "SAVE_GAME": {
@@ -226,8 +238,8 @@ export function getNullState(): State {
         readFiles: [],
         gamePhase: 0,
         logEntries: [],
-        unreadInventory: false,
-        unreadLog: false,
+        unreadInventoryCount: 0,
+        unreadLogCount: 0,
     };
 }
 
@@ -280,23 +292,25 @@ export function getInitialState(storylineId: string): State | string {
             readFiles: snapshot.readFiles ?? [],
             gamePhase: snapshot.gamePhase ?? 0,
             logEntries: snapshot.logEntries ?? [],
-            unreadInventory: false,
-            unreadLog: false,
+            unreadInventoryCount: 0,
+            unreadLogCount: 0,
         };
     }
 
     // No save exists — build fresh
     const filesystemRoot = getFilesystem(storylineId);
+    const freshInventory = getInventory(storylineId);
+    const freshLogEntries = getInitialLogEntries(storylineId);
     return {
         storylineId,
-        inventory: getInventory(storylineId),
+        inventory: freshInventory,
         filesystemRoot,
         cwd: filesystemRoot,
         file: null,
         readFiles: [],
         gamePhase: 0,
-        logEntries: getInitialLogEntries(storylineId),
-        unreadInventory: false,
-        unreadLog: false,
+        logEntries: freshLogEntries,
+        unreadInventoryCount: Object.keys(freshInventory).length,
+        unreadLogCount: freshLogEntries.length,
     };
 }

@@ -14,9 +14,17 @@ interface Props {
     onToggleLog: () => void;
     inventoryOpen: boolean;
     logOpen: boolean;
-    unreadInventory: boolean;
-    unreadLog: boolean;
+    unreadInventoryCount: number;
+    unreadLogCount: number;
 }
+
+function badge(count: number) {
+    if (count <= 0) return null;
+    const label = count > 9 ? "*" : String(count);
+    return <span className="header-bar__badge">{label}</span>;
+}
+
+const ICON_SIZE = 20;
 
 function HeaderBar({
     title,
@@ -26,8 +34,8 @@ function HeaderBar({
     onToggleLog,
     inventoryOpen,
     logOpen,
-    unreadInventory,
-    unreadLog,
+    unreadInventoryCount,
+    unreadLogCount,
 }: Props) {
     const { dispatch } = useContext(AppStore);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -60,27 +68,33 @@ function HeaderBar({
                 onClick={onToggleTree}
                 title={showTree ? "Directory view" : "Tree view"}
             >
-                {showTree ? <Folder size={16} strokeWidth={1.5} /> : <FolderTree size={16} strokeWidth={1.5} />}
+                {showTree ? (
+                    <Folder size={ICON_SIZE} strokeWidth={1.5} />
+                ) : (
+                    <FolderTree size={ICON_SIZE} strokeWidth={1.5} />
+                )}
             </button>
 
             <span className="header-bar__divider" />
 
             <button
                 type="button"
-                className={`header-bar__btn${inventoryOpen ? " header-bar__btn--active" : ""}${unreadInventory && !inventoryOpen ? " header-bar__btn--unread" : ""}`}
+                className={`header-bar__btn${inventoryOpen ? " header-bar__btn--active" : ""}`}
                 onClick={onToggleInventory}
                 title="Inventory"
             >
-                <PackageSearch size={16} strokeWidth={1.5} />
+                <PackageSearch size={ICON_SIZE} strokeWidth={1.5} />
+                {inventoryOpen ? null : badge(unreadInventoryCount)}
             </button>
 
             <button
                 type="button"
-                className={`header-bar__btn${logOpen ? " header-bar__btn--active" : ""}${unreadLog && !logOpen ? " header-bar__btn--unread" : ""}`}
+                className={`header-bar__btn${logOpen ? " header-bar__btn--active" : ""}`}
                 onClick={onToggleLog}
                 title="Log"
             >
-                <ScrollText size={16} strokeWidth={1.5} />
+                <ScrollText size={ICON_SIZE} strokeWidth={1.5} />
+                {logOpen ? null : badge(unreadLogCount)}
             </button>
 
             <button
@@ -89,7 +103,7 @@ function HeaderBar({
                 onClick={() => setSettingsOpen((prev) => !prev)}
                 title="Settings"
             >
-                <Settings size={16} strokeWidth={1.5} />
+                <Settings size={ICON_SIZE} strokeWidth={1.5} />
             </button>
 
             {settingsOpen && (

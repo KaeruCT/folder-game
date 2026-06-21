@@ -195,8 +195,8 @@ function App() {
                         onToggleLog={toggleLog}
                         inventoryOpen={inventoryOpen}
                         logOpen={logOpen}
-                        unreadInventory={state.unreadInventory}
-                        unreadLog={state.unreadLog}
+                        unreadInventoryCount={state.unreadInventoryCount}
+                        unreadLogCount={state.unreadLogCount}
                     />
                     <div className="view-container">
                         <FilesystemViewer showTree={showTree} />
