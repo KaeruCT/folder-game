@@ -1,0 +1,102 @@
+.tree {
+    .tree-content {
+        height: 100%;
+        overflow-y: auto;
+        padding: 8px 0;
+        font-family:
+            "Source Code Pro",
+            ui-monospace,
+            monospace;
+        font-size: 13px;
+        user-select: none;
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+    }
+}
+
+.tree-node {
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.8;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 12px;
+    }
+
+    &__arrow {
+        flex-shrink: 0;
+        width: 14px;
+        text-align: center;
+        font-size: 9px;
+        color: #888;
+    }
+
+    &__icon {
+        flex-shrink: 0;
+        font-size: 13px;
+    }
+
+    &__name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__lock {
+        flex-shrink: 0;
+        font-size: 10px;
+        margin-left: 2px;
+    }
+
+    // Directory styles
+    &--dir {
+        color: #1a56c4;
+        font-weight: 500;
+    }
+
+    // Current working directory
+    &--cwd {
+        background: rgba(26, 86, 196, 0.08);
+        border-radius: 3px;
+
+        .tree-node__name {
+            font-weight: 700;
+        }
+    }
+
+    // File styles
+    &--file {
+        color: #333;
+
+        &:hover {
+            color: #111;
+        }
+    }
+
+    // Locked nodes
+    &--locked {
+        color: #999;
+        font-style: italic;
+
+        .tree-node__lock {
+            opacity: 0.6;
+        }
+    }
+
+    // Children indentation
+    &__children {
+        // indentation handled by padding on each row
+    }
+}

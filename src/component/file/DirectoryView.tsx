@@ -7,9 +7,10 @@ interface Props {
     directory: Directory;
     onNavigate: (directory: Directory) => void;
     onFileOpen: (file: File) => void;
+    onToggleView: () => void;
 }
 
-function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
+function DirectoryView({ directory, onNavigate, onFileOpen, onToggleView }: Props) {
     const fileNodes = useMemo(() => {
         const available = directory.contents.filter((fn) => !fn.hidden);
         const nodes = [...available].sort((a, b) => {
@@ -27,7 +28,12 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
 
     return (
         <div className="window directory">
-            <div className="title">{directory.fullName}</div>
+            <div className="title">
+                {directory.fullName}
+                <button type="button" className="tree-toggle" onClick={onToggleView} title="Switch to tree view">
+                    🌳
+                </button>
+            </div>
             <div className="content">
                 <div className="file-list">
                     {fileNodes.map((fileNode) => (
