@@ -11,7 +11,6 @@ import chiaraImg from "../../game-files/storylines/echoes/images/chiara_metaphor
 import hollowEarthImg from "../../game-files/storylines/echoes/images/hollow_earth.jpg";
 import innerCityImg from "../../game-files/storylines/echoes/images/inner_city.jpg";
 import metroImg from "../../game-files/storylines/echoes/images/metro_station.jpg";
-import serverImg from "../../game-files/storylines/echoes/images/server_terminal.jpg";
 import voidImg from "../../game-files/storylines/echoes/images/the_void.jpg";
 import { createDirectoryStructure, type Directory } from "../files";
 import type { Inventory } from "../inventory";
@@ -32,22 +31,21 @@ const storyline: Storyline = {
         // =========================================================================
 
         root.createFile("server_info.txt", SERVER_INFO);
-        root.createFile("server.jpg", serverImg);
 
         // =========================================================================
         // DIARY — locked behind diary_key
         // =========================================================================
 
         const diary = root.createDirectory("diary", { key: "diary_key" });
-        diary.createFile("metro.jpg", metroImg, {
+        diary.createFile("metro_station.jpg", metroImg, {
             hidden: true,
-            revealsOnRead: ["$ROOT/diary/metro.jpg", "$ROOT/diary/metro_ambient.mp3"],
+            revealsOnRead: ["$ROOT/diary/metro_station.jpg", "$ROOT/diary/metro_station.mp3"],
         });
-        diary.createFile("metro_ambient.mp3", metroAudio, { hidden: true });
+        diary.createFile("metro_station.mp3", metroAudio, { hidden: true });
         diary.createFile("entry_01_first_sighting.txt", DIARY_01, {
             onRead(ctx) {
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro.jpg" });
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro_ambient.mp3" });
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro_station.jpg" });
+                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro_station.mp3" });
                 ctx.log("story", "The 14th Street metro station. Chiara. Green coat. It started here.");
             },
         });
@@ -401,7 +399,7 @@ const storyline: Storyline = {
         // =========================================================================
 
         const chiara = root.createDirectory("chiara", { hidden: true });
-        chiara.createFile("her_world.jpg", chiaraImg);
+        chiara.createFile("unawakened.jpg", chiaraImg);
         chiara.createFile("stalking_notes.txt", CHIARA_STALKING, {
             onRead(ctx) {
                 ctx.log(
