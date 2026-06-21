@@ -3,12 +3,10 @@ import type { Inventory } from "./inventory";
 import type { LogEntry } from "./log";
 import type { Storyline } from "./storyline";
 import echoesStoryline from "./storylines/echoes";
-import libertineStoryline from "./storylines/libertine";
 import lockdownStoryline from "./storylines/lockdown";
 
 const storylines: Record<string, Storyline> = {
     echoes: echoesStoryline,
-    libertine: libertineStoryline,
     lockdown: lockdownStoryline,
 };
 

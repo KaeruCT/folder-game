@@ -35,18 +35,6 @@ const ITEM_REGISTRY: Record<string, ItemInfo> = {
         icon: "MessageCircle",
     },
 
-    // ── The Libertine's Ledger ──
-    vault_key: {
-        name: "Vault Key",
-        description: "Unlocks Vincenzo's private diary and photo gallery",
-        icon: "Key",
-    },
-    ledger_key: {
-        name: "Ledger Key",
-        description: "Grants access to Vincenzo's black book and business connections",
-        icon: "BookText",
-    },
-
     // ── The Lockdown (legacy) ──
     diary_entry: {
         name: "Diary Entry Key",
