@@ -12,6 +12,7 @@ import {
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
+import LogToast from "./component/log/LogToast";
 import LogViewer from "./component/log/LogViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
 import StorylineSelect from "./component/storyline/StorylineSelect";
@@ -146,6 +147,7 @@ function App() {
                         {view === View.FILESYSTEM && <FilesystemViewer />}
                         {view === View.INVENTORY && <InventoryViewer />}
                         {view === View.LOG && <LogViewer />}
+                        <LogToast />
                     </AppStore.Provider>
                 </div>
                 <Navigation currentView={view} setView={setView} />
