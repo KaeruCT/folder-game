@@ -14,7 +14,9 @@ import FilesystemViewer from "./component/file/FilesystemViewer";
 import InventoryViewer from "./component/inventory/InventoryViewer";
 import LogViewer from "./component/log/LogViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
-import { type Action, deferredActions, getInitialState, reducer, type State } from "./reducer";
+import StorylineSelect from "./component/storyline/StorylineSelect";
+import { loadSnapshot } from "./model/save";
+import { type Action, deferredActions, getInitialState, getNullState, reducer, type State } from "./reducer";
 
 type Store = {
     state: State;
@@ -46,17 +48,26 @@ class ErrorBoundary extends Component<PropsWithChildren, { error: Error | null }
     }
 }
 
+function resolveInitialState(): State {
+    const snapshot = loadSnapshot();
+    if (snapshot) {
+        const id = snapshot.storylineId ?? "lockdown";
+        return getInitialState(id);
+    }
+    return getNullState();
+}
+
 function App() {
     const memoizedReducer = useCallback(reducer, []);
-    const [state, dispatch] = useReducer(memoizedReducer, getInitialState());
+    const [state, dispatch] = useReducer(memoizedReducer, resolveInitialState());
     const [view, setView] = useState(View.FILESYSTEM);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable but explicit is clearer
     const storeValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: state is the trigger, dispatch is stable
     useEffect(() => {
+        if (state.storylineId === "") return; // don't auto-save before storyline selected
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
             dispatch({ type: "SAVE_GAME", payload: null });
@@ -73,6 +84,17 @@ function App() {
             dispatch(action);
         }
     }, [state]);
+
+    // Show storyline selection if no storyline is active
+    if (state.storylineId === "") {
+        return (
+            <div className="app">
+                <div className="view-container">
+                    <StorylineSelect dispatch={dispatch} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <ErrorBoundary>

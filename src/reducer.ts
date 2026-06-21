@@ -1,7 +1,7 @@
 import { Directory, type File, type FileNode, findNode, unlockFileNode } from "./model/files";
-import { getFilesystem, getInventory } from "./model/game";
+import { getFilesystem, getInitialLogEntries, getInventory } from "./model/game";
 import { addItem, addItems, type Inventory, removeItem } from "./model/inventory";
-import { createLogEntry, getInitialLogEntries, type LogCategory, type LogEntry } from "./model/log";
+import { createLogEntry, type LogCategory, type LogEntry } from "./model/log";
 import { applySnapshot, buildSnapshot, loadSnapshot, type SaveSnapshot, saveGame } from "./model/save";
 
 type ActionType =
@@ -15,9 +15,11 @@ type ActionType =
     | "REVEAL_FILE"
     | "ADD_ITEMS"
     | "SET_PHASE"
-    | "LOG_ADD";
+    | "LOG_ADD"
+    | "SELECT_STORYLINE";
 
 export interface State {
+    storylineId: string;
     inventory: Inventory;
     filesystemRoot: Directory;
     cwd: Directory;
@@ -74,6 +76,10 @@ function makeRunContext(state: State) {
 export function reducer(state: State, action: Action): State {
     let { inventory, filesystemRoot, readFiles } = state;
     switch (action.type) {
+        case "SELECT_STORYLINE": {
+            const id = action.payload as string;
+            return getInitialState(id);
+        }
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
         case "INVENTORY_REMOVE":
@@ -143,7 +149,7 @@ export function reducer(state: State, action: Action): State {
         }
         case "LOAD_GAME": {
             const snapshot = action.payload as SaveSnapshot;
-            const freshRoot = getFilesystem();
+            const freshRoot = getFilesystem(snapshot.storylineId ?? "lockdown");
             applySnapshot(freshRoot, snapshot);
 
             const loadedInventory: Inventory = {};
@@ -162,6 +168,7 @@ export function reducer(state: State, action: Action): State {
             }
 
             return {
+                storylineId: snapshot.storylineId ?? "lockdown",
                 filesystemRoot: freshRoot,
                 inventory: loadedInventory,
                 cwd,
@@ -172,10 +179,11 @@ export function reducer(state: State, action: Action): State {
             };
         }
         case "SAVE_GAME": {
-            const freshRoot = getFilesystem();
+            const freshRoot = getFilesystem(state.storylineId);
             const snapshot = buildSnapshot(
                 filesystemRoot,
                 state.cwd,
+                state.storylineId,
                 state.gamePhase,
                 state.readFiles,
                 state.logEntries,
@@ -190,10 +198,27 @@ export function reducer(state: State, action: Action): State {
     }
 }
 
-export function getInitialState(): State {
+/** Returns a "null" state when no storyline is selected yet (shows selection screen). */
+export function getNullState(): State {
+    // Minimal dummy state — replace entirely when storyline is selected
+    const dummyRoot = new Directory("loading");
+    return {
+        storylineId: "",
+        filesystemRoot: dummyRoot,
+        cwd: dummyRoot,
+        inventory: {},
+        file: null,
+        readFiles: [],
+        gamePhase: 0,
+        logEntries: [],
+    };
+}
+
+export function getInitialState(storylineId: string): State {
     const snapshot = loadSnapshot();
     if (snapshot) {
-        const root = getFilesystem();
+        const id = snapshot.storylineId ?? storylineId;
+        const root = getFilesystem(id);
         applySnapshot(root, snapshot);
 
         const inventory: Inventory = {};
@@ -212,6 +237,7 @@ export function getInitialState(): State {
         }
 
         return {
+            storylineId: id,
             filesystemRoot: root,
             inventory,
             cwd,
@@ -222,14 +248,15 @@ export function getInitialState(): State {
         };
     }
 
-    const filesystemRoot = getFilesystem();
+    const filesystemRoot = getFilesystem(storylineId);
     return {
-        inventory: getInventory(),
+        storylineId,
+        inventory: getInventory(storylineId),
         filesystemRoot,
         cwd: filesystemRoot,
         file: null,
         readFiles: [],
         gamePhase: 0,
-        logEntries: getInitialLogEntries(),
+        logEntries: getInitialLogEntries(storylineId),
     };
 }

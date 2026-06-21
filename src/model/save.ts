@@ -2,6 +2,7 @@ import { Directory, File, findNode } from "./files";
 import type { LogEntry } from "./log";
 
 export interface SaveSnapshot {
+    storylineId: string;
     cwdPath: string;
     gamePhase: number;
     readFiles: string[];
@@ -22,6 +23,7 @@ const SAVE_KEY = "folder-game-save";
 export function buildSnapshot(
     root: Directory,
     cwd: Directory,
+    storylineId: string,
     gamePhase: number,
     readFiles: string[],
     logEntries: LogEntry[],
@@ -29,6 +31,7 @@ export function buildSnapshot(
     freshRoot: Directory,
 ): SaveSnapshot {
     const snapshot: SaveSnapshot = {
+        storylineId,
         cwdPath: cwd.fullName,
         gamePhase,
         readFiles: [...readFiles],
