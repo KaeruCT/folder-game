@@ -31,6 +31,13 @@ function LogViewer() {
     const handleReset = useCallback(() => {
         clearAllTimers();
         deferredActions.length = 0;
+        // Clear tree-view expanded state for all storylines
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key?.startsWith("folder-game-tree-expanded-")) {
+                localStorage.removeItem(key);
+            }
+        }
         deleteSave();
         window.location.reload();
     }, []);

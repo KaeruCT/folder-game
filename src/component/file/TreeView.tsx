@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import "./TreeView.scss";
 import { AppStore } from "../../App";
 import { Directory, type File, type FileNode } from "../../model/files";
@@ -6,35 +6,14 @@ import { Directory, type File, type FileNode } from "../../model/files";
 interface Props {
     onFileOpen: (file: File) => void;
     onToggleView: () => void;
+    expanded: Set<string>;
+    onToggleExpand: (path: string) => void;
 }
 
-function TreeView({ onFileOpen, onToggleView }: Props) {
+function TreeView({ onFileOpen, onToggleView, expanded, onToggleExpand }: Props) {
     const { state } = useContext(AppStore);
     const root = state.filesystemRoot;
     const cwd = state.cwd;
-
-    const [expanded, setExpanded] = useState<Set<string>>(() => {
-        const s = new Set<string>();
-        s.add(root.fullName);
-        let dir: Directory | undefined = cwd;
-        while (dir) {
-            s.add(dir.fullName);
-            dir = dir.parent;
-        }
-        return s;
-    });
-
-    const toggleExpand = useCallback((path: string) => {
-        setExpanded((prev) => {
-            const next = new Set(prev);
-            if (next.has(path)) {
-                next.delete(path);
-            } else {
-                next.add(path);
-            }
-            return next;
-        });
-    }, []);
 
     const tree = useMemo(() => {
         function renderNode(node: FileNode, depth: number): React.ReactNode {
@@ -62,7 +41,7 @@ function TreeView({ onFileOpen, onToggleView }: Props) {
                     return;
                 }
                 if (isDir) {
-                    toggleExpand(node.fullName);
+                    onToggleExpand(node.fullName);
                 } else {
                     onFileOpen(node as File);
                 }
@@ -117,7 +96,7 @@ function TreeView({ onFileOpen, onToggleView }: Props) {
 
         // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul role="tree"> is the WAI-ARIA recommended tree pattern
         return <ul role="tree">{renderNode(root, 0)}</ul>;
-    }, [root, cwd, expanded, onFileOpen, toggleExpand]);
+    }, [root, cwd, expanded, onFileOpen, onToggleExpand]);
 
     return (
         <div className="window tree">
