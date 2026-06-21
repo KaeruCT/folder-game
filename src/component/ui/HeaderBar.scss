@@ -8,6 +8,7 @@
     font-family: var(--font-mono);
     flex-shrink: 0;
     gap: 2px;
+    position: relative;
 
     &__title {
         flex: 1;
@@ -57,7 +58,7 @@
 /* Settings dropdown */
 .settings-menu {
     position: absolute;
-    top: 38px;
+    top: 100%;
     right: 4px;
     z-index: 300;
     min-width: 180px;

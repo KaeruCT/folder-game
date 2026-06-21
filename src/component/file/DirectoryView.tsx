@@ -27,7 +27,6 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
 
     return (
         <div className="window directory">
-            <div className="title">{directory.fullName}</div>
             <div className="content">
                 <div className="file-list">
                     {fileNodes.map((fileNode) => (

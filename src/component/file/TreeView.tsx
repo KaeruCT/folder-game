@@ -104,7 +104,6 @@ function TreeView({ onFileOpen, expanded, onToggleExpand }: Props) {
 
     return (
         <div className="window tree">
-            <div className="title">{root.name}</div>
             <div className="content tree-content">{tree}</div>
         </div>
     );

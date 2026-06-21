@@ -194,18 +194,18 @@ function App() {
                         <FilesystemViewer showTree={showTree} />
                         <LogToast />
                         <InventoryToast />
-
-                        {inventoryOpen && (
-                            <FloatingOverlay title="Inventory" onClose={() => setInventoryOpen(false)}>
-                                <InventoryViewer overlay />
-                            </FloatingOverlay>
-                        )}
-                        {logOpen && (
-                            <FloatingOverlay title="Log" onClose={() => setLogOpen(false)}>
-                                <LogViewer overlay entries={state.logEntries} />
-                            </FloatingOverlay>
-                        )}
                     </div>
+
+                    {inventoryOpen && (
+                        <FloatingOverlay title="Inventory" onClose={() => setInventoryOpen(false)}>
+                            <InventoryViewer overlay />
+                        </FloatingOverlay>
+                    )}
+                    {logOpen && (
+                        <FloatingOverlay title="Log" onClose={() => setLogOpen(false)}>
+                            <LogViewer overlay entries={state.logEntries} />
+                        </FloatingOverlay>
+                    )}
                 </div>
             </AppStore.Provider>
         </ErrorBoundary>
