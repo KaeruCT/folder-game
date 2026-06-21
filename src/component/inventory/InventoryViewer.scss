@@ -1,17 +1,11 @@
 .inventory {
     .inv-empty {
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 20px 16px;
+        height: 100%;
+        padding: 24px 20px;
         text-align: center;
-
-        &__icon {
-            margin-bottom: 12px;
-            opacity: 0.3;
-            color: var(--text-muted);
-        }
 
         &__text {
             font-size: 12px;

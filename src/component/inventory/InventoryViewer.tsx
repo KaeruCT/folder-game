@@ -1,4 +1,3 @@
-import { Package } from "lucide-react";
 import { useContext, useMemo } from "react";
 import "./InventoryViewer.scss";
 import { AppStore } from "../../App";
@@ -17,9 +16,6 @@ function InventoryViewer({ overlay }: Props) {
         if (items.length === 0) {
             return (
                 <div className="inv-empty">
-                    <div className="inv-empty__icon">
-                        <Package size={32} strokeWidth={1.5} />
-                    </div>
                     <p className="inv-empty__text">
                         Your inventory is empty. Explore the filesystem to find keys and items.
                     </p>
