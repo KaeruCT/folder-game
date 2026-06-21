@@ -116,24 +116,76 @@ type LogCategory = "story" | "goal" | "milestone" | "system";
 | `SAVE_GAME` | `null` | Force a save |
 | `LOG_ADD` | `LogEntry` | Add a log entry |
 
+## ⚠️ Key-and-Lock Rules (READ BEFORE AUTHORING)
+
+**Every unlock consumes the key from inventory.** The `UNLOCK_FILENODE` action removes the matching item after a successful unlock. This means:
+
+### ✅ Do: Lock directories, never individual files that share a key
+
+```ts
+// GOOD — one key opens a directory with multiple files inside
+const restricted = root.createDirectory("restricted", { key: "clearance" });
+restricted.createFile("report_a.txt", "...");
+restricted.createFile("report_b.txt", "...");
+```
+
+When the player uses `clearance` to unlock `restricted/`, the key is consumed but both `report_a.txt` and `report_b.txt` become accessible — because the directory is now unlocked.
+
+### ❌ Don't: Lock multiple individual files with the same key
+
+```ts
+// BAD — key is consumed on first unlock, second file stays locked forever
+root.createFile("report_a.txt", "...", { key: "clearance" });
+root.createFile("report_b.txt", "...", { key: "clearance" });
+// Player unlocks report_a → clearance is consumed → report_b is permanently locked
+```
+
+### Key design checklist
+
+- Each key unlocks exactly **one directory** (that may contain many files)
+- If you want two separate locked areas, use **two different keys**
+- Keys handed to the player via `onRead` callbacks must match the key name exactly
+- Every key you grant via `ADD_ITEMS` must have a corresponding locked directory
+- Keys that appear in `getInitialInventory()` are available from game start
+
 ## Patterns
 
 ### Locked content
 
 ```ts
-// Directory locked behind a key
+// Directory locked behind a key — preferred pattern
 root.createDirectory("vault", { key: "vault_key" });
 
-// File locked behind a key
-root.createFile("secret.txt", "content", { key: "diary_entry" });
+// Only lock individual files when each has a UNIQUE key
+root.createFile("secret.txt", "content", { key: "secret_code" });
+// Don't reuse "secret_code" on another file — it's consumed on unlock.
 
 // Give the player the key in inventory
+import { addItem } from "../inventory";
 getInitialInventory(): Inventory {
     let inv: Inventory = {};
     inv = addItem(inv, "vault_key");
     return inv;
 }
 ```
+
+### Item registry
+
+Every key and collectible item must be registered in `src/model/items.ts`:
+
+```ts
+// In src/model/items.ts — add an entry to ITEM_REGISTRY:
+const ITEM_REGISTRY: Record<string, ItemInfo> = {
+    // ...existing items...
+    your_key_id: {
+        name: "Display Name",          // shown in inventory and toasts
+        description: "What it unlocks", // shown below the name
+        icon: "🔑",                     // emoji
+    },
+};
+```
+
+This powers the inventory tab cards and the item-acquired toast. If an item is missing from the registry, it shows as "Unknown Item" with a ❓ icon.
 
 ### Executable with console output
 
@@ -267,7 +319,9 @@ When adding a new storyline:
 - [ ] Create `src/model/storylines/<id>.ts` implementing the `Storyline` interface
 - [ ] `buildFilesystem()` returns a valid tree starting from a `$ROOT` directory
 - [ ] `getInitialInventory()` returns the starting items
-- [ ] Add `{ key }` meta to any locked content you reference in inventory
+- [ ] Keys only lock **directories**, not individual files (see Key-and-Lock Rules above)
+- [ ] Every key has one corresponding locked node — never reuse a key on two nodes
+- [ ] Register every key in `src/model/items.ts` with display name, description, and icon
 - [ ] Register in `src/model/game.ts` → `storylines` map
 - [ ] Run `pnpm check && pnpm knip && pnpm dupe && pnpm build` — all must pass
 - [ ] Test: clear localStorage → pick storyline → play through a few steps → reload → verify state restored
