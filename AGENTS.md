@@ -29,18 +29,35 @@ Biome enforces everything. Let `pnpm check:write` auto-fix formatting and import
 
 No external state library — uses `useReducer` + `Context`.
 
+## State & Save System
+
+All game state lives in `useReducer` + `Context`. The filesystem is class-based (`File`/`Directory`); mutations happen in-place and are captured via **delta snapshots** against a fresh initial tree. The `model/save.ts` module handles serialization to `localStorage`.
+
+- **Auto-save**: debounced (500ms) after every dispatch
+- **On init**: checks `localStorage` for saved state, restores if found
+- **Snapshot stores**: cwd path, inventory quantities, hidden paths, unlocked paths, modified content, runtime-created files
+- **Reset**: clears localStorage, reloads the page
+
+If you add new mutable state to File/Directory (fields beyond `hidden`, `locked`, `content`), update `buildSnapshot` and `applySnapshot` in `model/save.ts`.
+
 ## Project structure
 
 ```
 src/
-├── model/          # Game logic (filesystem, inventory, data)
+├── model/
+│   ├── files.ts      # File, Directory, FileNode classes
+│   ├── game.ts       # Filesystem + inventory initialization
+│   ├── inventory.ts  # Pure add/remove item functions
+│   ├── save.ts       # Save/load delta snapshots (localStorage)
+│   ├── data.ts       # Constants (user names, extension maps)
+│   └── util.ts       # Random generation helpers
 ├── component/
-│   ├── file/       # Directory browser, file viewer
-│   ├── inventory/  # Inventory panel
-│   ├── navigation/ # Bottom tab bar
-│   └── ui/         # Shared UI (Modal)
-├── game-files/     # Static game content (images, text)
-├── index.tsx       # Entry point
-├── App.tsx         # Root component + context provider
-└── reducer.ts      # Game state management
+│   ├── file/         # Directory browser, file viewer
+│   ├── inventory/    # Inventory panel
+│   ├── navigation/   # Bottom tab bar
+│   └── ui/           # Shared UI (Modal)
+├── game-files/       # Static game content (images, text)
+├── App.tsx           # Root: Provider, ErrorBoundary, auto-save, tab routing
+├── reducer.ts        # Game state: actions, save/load, init from localStorage
+└── index.tsx         # Entry point (createRoot)
 ```
