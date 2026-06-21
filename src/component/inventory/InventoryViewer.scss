@@ -1,9 +1,14 @@
 .inventory {
     .inv-empty {
-        padding: 16px 12px;
-        color: var(--text-muted);
+        padding: 20px 16px;
         text-align: center;
-        font-size: 13px;
+
+        p {
+            margin: 0;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
     }
 
     .item-list {
