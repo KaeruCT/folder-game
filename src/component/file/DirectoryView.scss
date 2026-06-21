@@ -1,7 +1,8 @@
 .directory {
     .file-list {
-        display: flex;
-        flex-wrap: wrap;
-        align-content: flex-start;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3px;
+        padding: 8px;
     }
 }
