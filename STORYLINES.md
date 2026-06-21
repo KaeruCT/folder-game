@@ -58,7 +58,7 @@ buildFilesystem(): Directory {
 }
 ```
 
-Root is always named `$ROOT`. Use `/` in `createDirectoryStructure` for nested paths.
+Root directory is always named `$ROOT` internally. Use `$ROOT` as the prefix in `createDirectoryStructure` but do not include it in `REVEAL_FILE` paths — the path resolver strips the `$ROOT` prefix automatically (e.g. `"$ROOT/basement"` resolves correctly).
 
 ## Meta — the narrative engine
 
@@ -108,6 +108,7 @@ type LogCategory = "story" | "goal" | "milestone" | "system";
 
 | Action | Payload | Effect |
 |---|---|---|
+| `SELECT_STORYLINE` | `string` | Start a new storyline |
 | `INVENTORY_ADD` | `string` (item type) | +1 to an inventory item |
 | `INVENTORY_REMOVE` | `string` (item type) | -1 from an inventory item |
 | `ADD_ITEMS` | `Record<string, number>` | Bulk add items |
@@ -115,6 +116,8 @@ type LogCategory = "story" | "goal" | "milestone" | "system";
 | `REVEAL_FILE` | `string` (full path) | Unhide a file or directory |
 | `SAVE_GAME` | `null` | Force a save |
 | `LOG_ADD` | `LogEntry` | Add a log entry |
+| `MARK_INVENTORY_READ` | `null` | Clear inventory badge |
+| `MARK_LOG_READ` | `null` | Clear log badge |
 
 ## ⚠️ Key-and-Lock Rules (READ BEFORE AUTHORING)
 
@@ -208,7 +211,7 @@ root.createFile("door.exe", "", {
     run(log, ctx) {
         if (ctx.state.gamePhase >= 2) {
             log("The door opens.");
-            ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/secret_room" });
+            ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/basement/final_clue.txt" });
         } else {
             log("The door is locked. You need to find the key first.");
         }
@@ -327,3 +330,7 @@ When adding a new storyline:
 - [ ] Run `pnpm check && pnpm knip && pnpm dupe && pnpm build` — all must pass
 - [ ] Test: clear localStorage → pick storyline → play through a few steps → reload → verify state restored
 - [ ] Test: corrupt localStorage manually → verify error screen + Start Over works
+
+## Media files
+
+Place storyline-specific images and audio under `src/game-files/storylines/<id>/{images,audio}/`. Import them in your storyline module and create them as files in the virtual filesystem. Media files render automatically based on their extension (see README for supported formats).

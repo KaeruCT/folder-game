@@ -1,6 +1,6 @@
-# folder-game
+# Root
 
-A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate directories, read files, run executables, collect inventory keys, unlock hidden files, and uncover the story of a system administrator being hunted.
+A mystery/puzzle game disguised as a hacked computer filesystem. Navigate directories, read files, run executables, collect inventory keys, unlock hidden content, and uncover the truth.
 
 ## Table of Contents
 
@@ -12,59 +12,51 @@ A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate di
 - [Quality Pipeline](#quality-pipeline)
 - [Project Structure](#project-structure)
 - [Architecture](#architecture)
-  - [Component Tree](#component-tree)
-  - [State Management](#state-management)
-  - [Data Model](#data-model)
-  - [Save System](#save-system)
 - [Setup & Development](#setup--development)
 - [Deployment](#deployment)
 - [License](#license)
 
 ## Overview
 
-**folder-game** is a single-page React application that simulates exploring someone else's computer. Navigate a mock directory tree, read files, run executables, collect inventory keys, unlock hidden content, and uncover the story. Features a dark terminal aesthetic with CRT scanlines, togglable tree/directory views, floating inventory and log panels, and three distinct storylines.
+**Root** is a single-page React application that simulates exploring someone else's server. Navigate a mock directory tree, read files, run executables, collect inventory keys, unlock hidden content, and uncover the story. Features a dark terminal aesthetic, togglable tree/directory views, floating inventory and log panels, and multiple storylines.
 
 Built for mobile — touch-friendly, notch-safe, 44px tap targets, no pull-to-refresh. Progress auto-saves to `localStorage`.
 
 ## Game Story
 
-An anonymous system administrator built a **deadman switch**: if anything happened to them, access credentials to their server would be published in plain sight for hackers to find.
+Root ships with two storylines:
 
-The player is one of potentially hundreds of infiltrators who have accessed the system. The admin's instructions urge you to **lock everyone else out** before they lock you out.
+### The Lockdown
+An anonymous system administrator built a **deadman switch**: if anything happened to them, access credentials to their server would be published for hackers to find. The player is one of potentially hundreds of infiltrators. Lock everyone else out before they lock you out — then uncover what the admin died to protect.
 
-Game files provide narrative through:
-- `instructions.txt` — initial briefing; self-destructs after reading
-- `lock.exe` (in `sys/safe/`) — runs the lockdown routine once triggered
-- `lockout.txt` — appears after lockdown; reveals file keys as a reward
-- Evan's diary entries (`users/evan/diary/`) — personal logs from a person losing their mental health
-- Miscellaneous files and images scattered through the directory tree
-
-The admin's identity, what happened to them, and who "they" are that are coming to silence them are left ambiguous — part of the mystery.
+### The Echoes Below
+Frank Nicholas vanished into the Hollow Earth. His server holds the answers: obsession, discovery, and a terrible choice. Uncover his research on the inner world, his stalking of a woman named Chiara, and the ritual that could grant him telepathy — at the cost of her life.
 
 ## Gameplay Mechanics
 
 ### Filesystem Navigation
 
-The player starts at the root directory (`$ROOT/`). Two views are available, toggled via the 🌳/📂 button in the header bar:
+The player starts at the root directory (`/`). Two views are available, toggled via the folder button in the header bar:
 
 - **Directory view** (default): Cards showing files and subdirectories. Click a directory to navigate into it. Click a file to open it. A back-navigation item (`..`) goes up one level.
-- **Tree view**: Full filesystem hierarchy as a collapsible tree. Expand/collapse directories, click files to open. Current directory is highlighted. State persists across file opens and page reloads.
+- **Tree view**: Full filesystem hierarchy as a collapsible tree. Click a directory to expand and navigate into it. Click again to collapse and return to the parent. Current directory is highlighted. State persists across file opens and page reloads.
 
 Both views filter out `hidden` files and directories. The view preference is saved to localStorage.
 
-Inventory (📦) and Log (📜) open as floating overlay panels from the header bar. Click the backdrop or press Escape to dismiss. Save Now and Reset Game live in the settings gear (⚙) dropdown.
+Inventory and Log open as floating overlay panels from the header bar. Click the backdrop or press Escape to dismiss. Save Now and Reset Game live in the settings gear (⚙) dropdown.
 
 ### Executable Files (`.exe`)
 
 Files with the `.exe` extension or a `run` function in their metadata are **executables**. When opened, instead of displaying raw content, they simulate console output line-by-line with a typewriter effect. Executables receive a `RunContext` with access to:
 - `ctx.dispatch(action)` — queue an action to be processed by the reducer
 - `ctx.schedule(action, delayMs)` — dispatch an action after a delay (returns cancel function)
+- `ctx.log(category, text)` — add an entry to the player's log
 - `ctx.state` — read-only snapshot of inventory, gamePhase, and readFiles
 - `this.runState` — mutable state bag persisted across save/load
 
 ### Locked Files
 
-Files and directories can be `locked` (requiring a key to access). Clicking a locked item opens a modal asking to confirm unlocking. If the player's inventory has the required key, the item unlocks and the key is consumed. Keys cannot be reused. Unlocking fires `onUnlock` callbacks and `revealsOnUnlock`.
+Files and directories can be `locked` (requiring a key to access). Clicking a locked item prompts to unlock. If the player's inventory has the required key, the item unlocks and the key is consumed. After unlock: files open immediately, directories navigate in.
 
 ### Self-Destructing Files
 
@@ -72,11 +64,11 @@ Files with the `selfDestruct` metadata flag become hidden after the first read.
 
 ### Corrupted Files
 
-Files with the `corrupted` metadata flag display garbled content that animates randomly (character case flips, substitutions, insertions), simulating data corruption.
+Files with the `corrupted` metadata flag display garbled flickering text (case flips, character substitutions, random insertions).
 
 ### Inventory System
 
-The player has an inventory of **items** (keyed by type with a quantity). Items are used to unlock locked file nodes. The game starts with 2 `diary_entry` keys and 1 `sys` key. Locking down the system awards additional keys. Items can be added/removed programmatically via `ADD_ITEMS` / `INVENTORY_REMOVE` actions.
+The player has an inventory of **items** (keyed by type with a quantity). Items are used to unlock locked nodes. Items can be added/removed programmatically via `ADD_ITEMS` / `INVENTORY_REMOVE` actions.
 
 ### Media Files
 
@@ -86,34 +78,21 @@ The player has an inventory of **items** (keyed by type with a quantity). Items 
 | `webm`, `mp4` | `<video>` player |
 | `mp3`, `ogg`, `wav`, `flac` | `<audio>` player |
 
-### Log & Toasts
+Media is organized per-storyline under `src/game-files/storylines/<id>/{images,audio}/`.
 
-Story events, goals, and milestones are recorded in the player's log (📜 in the header bar). Each log entry has a category badge (Story/Goal/Milestone/System) with color-coded styling.
+### Log & Notifications
 
-When a new log entry is created, a toast notification slides up at the bottom of the screen. Toasts auto-dismiss after 3 seconds or can be dismissed by clicking.
+Story events, goals, and milestones are recorded in the player's log (📜 in the header bar). Each log entry has a category badge (Story/Goal/Milestone/System).
+
+When new log entries or inventory items arrive, a red count badge appears on the corresponding header icon. Opening the panel clears it.
 
 ### Player Choices
 
-Files with `meta.choices` render button options below their content. Each choice dispatches an action when clicked. Example:
-
-```ts
-createFile("door.txt", "You see a locked door.", {
-    choices: [
-        { label: "Pick the lock", action: { type: "REVEAL_FILE", payload: "$ROOT/room" } },
-        { label: "Walk away",     action: { type: "SET_PHASE", payload: 2 } },
-    ],
-});
-```
-
-### Log & Toasts
-
-Story events, goals, and milestones are recorded in the player's log (📜 in the header bar). Each log entry has a category badge (Story/Goal/Milestone/System) with color-coded styling.
-
-When a new log entry is created, a toast notification slides up at the bottom of the screen. Toasts auto-dismiss after 3 seconds or can be dismissed by clicking.
+Files with `meta.choices` render button options below their content. Each choice dispatches an action when clicked.
 
 ## Narrative System
 
-Files and directories carry a **Meta** bag that drives all narrative behavior. Below is the full API.
+Files and directories carry a **Meta** bag that drives all narrative behavior.
 
 ### Meta Properties
 
@@ -132,28 +111,32 @@ Files and directories carry a **Meta** bag that drives all narrative behavior. B
 
 ### RunContext API
 
-Passed to `run()`, `onRead()`, and `onUnlock()` callbacks:
-
 ```ts
 ctx.dispatch(action)         // Queue an action for the reducer
 ctx.schedule(action, delay)  // Queue after N milliseconds (returns cancel function)
+ctx.log(category, text)      // Add a log entry
 ctx.state.inventory          // Read-only snapshot: current inventory
 ctx.state.gamePhase          // Current game phase
 ctx.state.readFiles          // Paths of all files the player has opened
 ```
 
-Actions are processed through a **deferred queue** — `ctx.dispatch` pushes to a queue, and the App component drains it through React's `useReducer` dispatch. This means dispatched actions go through the normal reducer pipeline and trigger re-renders and auto-saves.
+Actions go through a **deferred queue** — `ctx.dispatch` pushes to `deferredActions[]`, and a `useEffect` in App drains it through React's `useReducer` dispatch.
 
 ### Game State
 
 ```ts
 interface State {
-    inventory: Inventory;           // Record<ItemType, { type, quantity }>
-    filesystemRoot: Directory;      // Root of the filesystem tree
-    cwd: Directory;                 // Current working directory
-    file: File | null;              // Currently open file (null = directory view)
-    readFiles: string[];            // Paths of every file the player has opened
-    gamePhase: number;              // Chapter/phase for conditional logic
+    storylineId: string;
+    inventory: Inventory;
+    filesystemRoot: Directory;
+    cwd: Directory;
+    file: File | null;
+    readFiles: string[];
+    gamePhase: number;
+    logEntries: LogEntry[];
+    unreadInventoryCount: number;   // Badge count for inventory icon
+    unreadLogCount: number;         // Badge count for log icon
+    revealCounter: number;          // Bumped on every reveal so views re-filter
 }
 ```
 
@@ -161,6 +144,7 @@ interface State {
 
 | Action | Payload | Effect |
 |---|---|---|
+| `SELECT_STORYLINE` | `string` | Start a new storyline |
 | `INVENTORY_ADD` | `ItemType` | +1 to inventory item |
 | `INVENTORY_REMOVE` | `ItemType` | -1 from inventory item |
 | `ADD_ITEMS` | `Record<ItemType, number>` | Bulk add items |
@@ -168,6 +152,9 @@ interface State {
 | `SET_FILE` | `File \| null` | Open/close a file (fires onRead, revealsOnRead, selfDestruct, run) |
 | `UNLOCK_FILENODE` | `FileNode` | Consume key + unlock (fires onUnlock, revealsOnUnlock) |
 | `REVEAL_FILE` | `string` (path) | Unhide a file/directory by path |
+| `LOG_ADD` | `LogEntry` | Add a log entry |
+| `MARK_INVENTORY_READ` | `null` | Clear inventory badge |
+| `MARK_LOG_READ` | `null` | Clear log badge |
 | `SET_PHASE` | `number` | Set game phase |
 | `SAVE_GAME` | `null` | Persist current state to localStorage |
 | `LOAD_GAME` | `SaveSnapshot` | Restore state from a save snapshot |
@@ -203,21 +190,21 @@ pnpm check && pnpm knip && pnpm dupe && pnpm build
 
 | Script | What it does |
 |---|---|
-| `pnpm check` | Biome linter + formatter (167 files, zero tolerance) |
+| `pnpm check` | Biome linter + formatter (177 files, zero tolerance) |
 | `pnpm check:write` | Auto-fix formatting, imports, and safe lint fixes |
 | `pnpm knip` | Dead code detection (unused exports, deps, files) |
-| `pnpm dupe` | dupehound structural duplicate scan (grade A, 0% slop) |
+| `pnpm dupe` | dupehound structural duplicate scan |
 | `pnpm dupe:check` | CI diff gate — fails if new code duplicates existing functions |
 | `pnpm build` | TypeScript compilation + Vite production build |
 | `pnpm dev` | Vite dev server (hot reload) |
 | `pnpm preview` | Preview the production build locally |
 
-See [AGENTS.md](./AGENTS.md) for code style and contribution rules.
+See [AGENTS.md](./AGENTS.md) for code style and contribution rules. See [STORYLINES.md](./STORYLINES.md) for how to author and register new storylines.
 
 ## Project Structure
 
 ```
-folder-game/
+root/
 ├── .github/workflows/
 │   └── deploy.yml              # GitHub Pages deployment on push to master
 ├── public/                     # Static assets (favicon, manifest, videos)
@@ -230,14 +217,15 @@ folder-game/
 │   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer, directory, or tree view
 │   │   │   ├── FileViewer.tsx       # File renderer (text/image/video/audio/exe/choices)
 │   │   │   └── TreeView.tsx         # Collapsible filesystem tree
-│   │   ├── icons/              # Legacy SVG icons (143 icons, mostly unused)
-│   │   ├── inventory/          # Inventory overlay + item-acquired toast
-│   │   ├── log/                # Log overlay + log-entry toast
+│   │   ├── inventory/          # Inventory overlay
+│   │   ├── log/                # Log overlay
 │   │   ├── storyline/          # Storyline selection screen
 │   │   └── ui/                 # Shared UI (Modal, HeaderBar, FloatingOverlay)
 │   ├── game-files/             # Static game content
-│   │   ├── images/             #   Images referenced by in-game files
-│   │   └── intro/              #   Initial game text files
+│   │   ├── intro/              #   Shared text files
+│   │   └── storylines/         #   Storyline-specific media
+│   │       ├── echoes/         #     images + audio for The Echoes Below
+│   │       └── lockdown/       #     images for The Lockdown
 │   ├── model/                  # Core game logic and data structures
 │   │   ├── data.ts             #   Constants (user names, extension maps)
 │   │   ├── files.ts            #   File, Directory, FileNode, RunContext, Meta
@@ -276,7 +264,7 @@ folder-game/
 ```
 App (ErrorBoundary > AppStore.Provider)
 ├── HeaderBar
-│   ├── Tree/List view toggle (🌳 / 📂)
+│   ├── Tree/List view toggle
 │   ├── Inventory button (📦) → FloatingOverlay > InventoryViewer
 │   ├── Log button (📜) → FloatingOverlay > LogViewer
 │   └── Settings gear (⚙) → Save Now / Reset Game dropdown
@@ -287,25 +275,18 @@ App (ErrorBoundary > AppStore.Provider)
 │   ├── TreeView (collapsible filesystem tree)
 │   └── FileViewer
 │       ├── ExeOutput              (typewriter effect)
-│       │   └── FileContent
 │       ├── PlainTextOutput
-│       │   └── FileContent
-│       │       └── CorruptedFileContent
 │       ├── ImageResourceOutput
 │       ├── VideoResourceOutput
 │       ├── AudioResourceOutput
 │       └── ChoiceOutput           (button actions from meta)
-├── LogToast (auto-dismiss notification)
-└── InventoryToast (item acquired notification)
 ```
 
 ### State Management
 
 Uses React's `useReducer` + `Context`. No external state library.
 
-Actions dispatched from inside callbacks/executables go through a **deferred queue**: `ctx.dispatch()` pushes to `deferredActions[]`, and a `useEffect` in App drains the queue through the real React dispatcher. This ensures all state changes flow through the normal reducer → re-render → auto-save pipeline.
-
-Timer-based actions via `ctx.schedule()` use `setTimeout` behind a registry. All timers are cleared on game reset via `clearAllTimers()`.
+Actions dispatched from inside callbacks/executables go through a **deferred queue**: `ctx.dispatch()` pushes to `deferredActions[]`, and a `useEffect` in App drains the queue through the real React dispatcher. Timer-based actions via `ctx.schedule()` use `setTimeout`. All timers are cleared on game reset via `clearAllTimers()`.
 
 ### Data Model
 
@@ -321,7 +302,6 @@ class File {
     locked: boolean;
     hidden: boolean;
     runState: Record<string, any>; // Persistent executable state
-    // Computed: fullName, root, extension, size, isExecutable
     run(ctx: RunContext): void;   // Executes meta.run with context
 }
 ```
@@ -335,7 +315,6 @@ class Directory {
     parent: Directory | undefined;
     locked: boolean;
     hidden: boolean;
-    // Computed: fullName, fileCount, contents, root
     createDirectory(name, meta?): Directory;
     createFile(name, content, meta?): File;
     fileExists(name): boolean;
@@ -343,31 +322,6 @@ class Directory {
     remove(name): void;
 }
 ```
-
-#### Meta — the narrative engine
-
-```typescript
-type Meta = {
-    [key: string]: any;
-    run?: (this: File, log: LoggerFunction, ctx: RunContext) => void;
-    onRead?: (ctx: RunContext) => void;
-    onUnlock?: (ctx: RunContext) => void;
-    revealsOnRead?: string[];
-    revealsOnUnlock?: string[];
-    choices?: { label: string; action: { type: string; payload: any } }[];
-    runState?: Record<string, any>;
-    key?: string;
-    selfDestruct?: boolean;
-    corrupted?: boolean;
-};
-```
-
-#### Inventory
-
-Pure functions operating on `Record<ItemType, { type, quantity }>`:
-- `addItem(inventory, type)` — returns new inventory with +1
-- `removeItem(inventory, type)` — returns new inventory with -1 (removes at 0)
-- `addItems(inventory, { type: qty })` — bulk add
 
 ### Save System
 
@@ -381,17 +335,19 @@ Pure functions operating on `Record<ItemType, { type, quantity }>`:
 
 | Field | Contents |
 |---|---|
+| `storylineId` | Active storyline |
 | `cwdPath` | Last browsed directory |
 | `gamePhase` | Current chapter/phase |
 | `readFiles` | All files the player has opened |
+| `logEntries` | Player's event log |
 | `inventory` | Item quantities |
-| `hiddenPaths` | Files hidden by selfDestruct |
+| `hiddenStates` | Per-node hidden state (reveals + selfDestruct) |
 | `unlockedPaths` | Nodes the player unlocked |
 | `modifiedContent` | Files changed by executables |
 | `createdFiles` | Runtime-created files (content + meta) |
 | `runStates` | Per-file executable state |
 
-**Auto-save**: Debounced 500ms after every state change. Manual save via Game tab. Reset clears localStorage and reloads the page.
+**Auto-save**: Debounced 500ms after every state change. Manual save via Settings gear. Reset clears localStorage and reloads the page.
 
 ## Setup & Development
 
@@ -428,7 +384,7 @@ All four must pass with zero errors.
 pnpm build
 ```
 
-Outputs to `dist/` — ~11 KB gzipped app JS, ~45 KB gzipped vendor JS, ~2 KB gzipped CSS.
+Outputs to `dist/`.
 
 ## Deployment
 

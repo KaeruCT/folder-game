@@ -42,6 +42,10 @@ All game state lives in `useReducer` + `Context`. The filesystem is class-based 
 
 If you add new mutable state to File/Directory (fields beyond `hidden`, `locked`, `content`, `runState`), update `buildSnapshot` and `applySnapshot` in `model/save.ts`.
 
+## State fields
+
+Beyond the filesystem tree, the state tracks: `storylineId`, `inventory`, `cwd`, `file`, `readFiles`, `gamePhase`, `logEntries`, `unreadInventoryCount`, `unreadLogCount`, `revealCounter`.
+
 ## Narrative System
 
 Every `File` and `Directory` carries a `Meta` bag (`Record<string, any>`) that drives all narrative behavior:
@@ -77,6 +81,7 @@ Actions from callbacks go through a **deferred queue** — `ctx.dispatch` pushes
 
 | Action | Payload | Effect |
 |---|---|---|
+| `SELECT_STORYLINE` | `string` | Start a new storyline |
 | `INVENTORY_ADD` | `ItemType` | +1 to inventory item |
 | `INVENTORY_REMOVE` | `ItemType` | -1 from inventory item |
 | `ADD_ITEMS` | `Record<ItemType, number>` | Bulk add items |
@@ -84,6 +89,9 @@ Actions from callbacks go through a **deferred queue** — `ctx.dispatch` pushes
 | `SET_FILE` | `File \| null` | Open/close file (fires onRead, revealsOnRead, selfDestruct, run) |
 | `UNLOCK_FILENODE` | `FileNode` | Consume key + unlock (fires onUnlock, revealsOnUnlock) |
 | `REVEAL_FILE` | `string` (path) | Unhide a file/directory |
+| `LOG_ADD` | `LogEntry` | Add a log entry |
+| `MARK_INVENTORY_READ` | `null` | Clear inventory badge |
+| `MARK_LOG_READ` | `null` | Clear log badge |
 | `SET_PHASE` | `number` | Set game phase |
 | `SAVE_GAME` | `null` | Persist to localStorage |
 | `LOAD_GAME` | `SaveSnapshot` | Restore from save |
@@ -125,7 +133,9 @@ src/
 │   ├── log/          # Log viewer + log-entry toast
 │   ├── storyline/    # Storyline selection screen
 │   └── ui/           # Shared UI (Modal, HeaderBar, FloatingOverlay)
-├── game-files/       # Static game content (images, text)
+├── game-files/       # Static game content
+│   ├── intro/        #   Shared text files
+│   └── storylines/   #   Storyline-specific media (images, audio)
 ├── App.tsx           # Root: layout, header bar, overlays, auto-save, deferred drain
 ├── reducer.ts        # State + deferred action queue + all actions
 └── index.tsx         # Entry point (createRoot)
