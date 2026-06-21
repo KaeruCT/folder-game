@@ -78,7 +78,12 @@ export function reducer(state: State, action: Action): State {
     switch (action.type) {
         case "SELECT_STORYLINE": {
             const id = action.payload as string;
-            return getInitialState(id);
+            const result = getInitialState(id);
+            if (typeof result === "string") {
+                // Should never happen for valid storyline IDs, but fall back to null state
+                return getNullState();
+            }
+            return result;
         }
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
@@ -214,12 +219,30 @@ export function getNullState(): State {
     };
 }
 
-export function getInitialState(storylineId: string): State {
-    const snapshot = loadSnapshot();
-    if (snapshot) {
+/** Returns a state or an error string. Never returns null — if no save, builds fresh state. */
+export function getInitialState(storylineId: string): State | string {
+    const loaded = loadSnapshot();
+    if (loaded && "error" in loaded) {
+        return loaded.error;
+    }
+
+    if (loaded && "snapshot" in loaded) {
+        const snapshot = loaded.snapshot;
         const id = snapshot.storylineId ?? storylineId;
+
+        // Validate storyline exists
+        try {
+            getFilesystem(id);
+        } catch {
+            return `Save data references a storyline that no longer exists ("${id}").`;
+        }
+
         const root = getFilesystem(id);
-        applySnapshot(root, snapshot);
+        try {
+            applySnapshot(root, snapshot);
+        } catch {
+            return "Save data could not be applied. It may be from a different version.";
+        }
 
         const inventory: Inventory = {};
         for (const [type, qty] of Object.entries(snapshot.inventory)) {
@@ -248,6 +271,7 @@ export function getInitialState(storylineId: string): State {
         };
     }
 
+    // No save exists — build fresh
     const filesystemRoot = getFilesystem(storylineId);
     return {
         storylineId,

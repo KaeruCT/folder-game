@@ -160,14 +160,39 @@ export function saveGame(snapshot: SaveSnapshot): void {
     }
 }
 
-export function loadSnapshot(): SaveSnapshot | null {
+/** Validate a potential snapshot. Returns null if valid, or an error message if invalid. */
+function validateSnapshot(raw: unknown): string | null {
+    if (!raw || typeof raw !== "object") return "Save data is missing or corrupted.";
+
+    const s = raw as Record<string, unknown>;
+
+    if (typeof s.storylineId !== "string" || s.storylineId === "") {
+        return "Save data is missing the storyline identifier.";
+    }
+    if (typeof s.gamePhase !== "number") return "Save data has an invalid game phase.";
+    if (typeof s.cwdPath !== "string") return "Save data has an invalid working directory.";
+    if (!Array.isArray(s.readFiles)) return "Save data has invalid read file tracking.";
+    if (!Array.isArray(s.logEntries)) return "Save data has invalid log entries.";
+    if (!s.inventory || typeof s.inventory !== "object") return "Save data has invalid inventory.";
+    if (!Array.isArray(s.hiddenPaths)) return "Save data has invalid hidden file tracking.";
+    if (!Array.isArray(s.unlockedPaths)) return "Save data has invalid unlock tracking.";
+    if (!s.modifiedContent || typeof s.modifiedContent !== "object") return "Save data has invalid file content.";
+    if (!s.createdFiles || typeof s.createdFiles !== "object") return "Save data has invalid created files.";
+    if (!s.runStates || typeof s.runStates !== "object") return "Save data has invalid executable state.";
+
+    return null;
+}
+
+export function loadSnapshot(): { snapshot: SaveSnapshot } | { error: string } | null {
     try {
         const raw = localStorage.getItem(SAVE_KEY);
         if (!raw) return null;
-        return JSON.parse(raw) as SaveSnapshot;
+        const parsed = JSON.parse(raw) as unknown;
+        const error = validateSnapshot(parsed);
+        if (error) return { error };
+        return { snapshot: parsed as SaveSnapshot };
     } catch {
-        localStorage.removeItem(SAVE_KEY);
-        return null;
+        return { error: "Save data could not be read. It may be corrupted." };
     }
 }
 

@@ -15,7 +15,8 @@ import InventoryViewer from "./component/inventory/InventoryViewer";
 import LogViewer from "./component/log/LogViewer";
 import Navigation, { View } from "./component/navigation/Navigation";
 import StorylineSelect from "./component/storyline/StorylineSelect";
-import { loadSnapshot } from "./model/save";
+import { clearAllTimers } from "./model/files";
+import { deleteSave, loadSnapshot } from "./model/save";
 import { type Action, deferredActions, getInitialState, getNullState, reducer, type State } from "./reducer";
 
 type Store = {
@@ -48,26 +49,38 @@ class ErrorBoundary extends Component<PropsWithChildren, { error: Error | null }
     }
 }
 
-function resolveInitialState(): State {
-    const snapshot = loadSnapshot();
-    if (snapshot) {
-        const id = snapshot.storylineId ?? "lockdown";
-        return getInitialState(id);
+function loadState(): { ok: State } | { error: string } | { empty: true } {
+    const loaded = loadSnapshot();
+    if (loaded && "error" in loaded) return { error: loaded.error };
+    if (loaded && "snapshot" in loaded) {
+        const result = getInitialState(loaded.snapshot.storylineId ?? "lockdown");
+        if (typeof result === "string") return { error: result };
+        return { ok: result };
     }
+    return { empty: true };
+}
+
+function resolveInitial(): State {
+    const result = loadState();
+    if ("ok" in result) return result.ok;
     return getNullState();
 }
 
 function App() {
     const memoizedReducer = useCallback(reducer, []);
-    const [state, dispatch] = useReducer(memoizedReducer, resolveInitialState());
+    const [state, dispatch] = useReducer(memoizedReducer, resolveInitial());
     const [view, setView] = useState(View.FILESYSTEM);
     const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+    const [loadError] = useState(() => {
+        const result = loadState();
+        return "error" in result ? result.error : null;
+    });
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable but explicit is clearer
     const storeValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
 
     useEffect(() => {
-        if (state.storylineId === "") return; // don't auto-save before storyline selected
+        if (state.storylineId === "") return;
         if (saveTimer.current) clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
             dispatch({ type: "SAVE_GAME", payload: null });
@@ -75,8 +88,7 @@ function App() {
         return () => clearTimeout(saveTimer.current);
     }, [state]);
 
-    // Drain deferred actions (from callbacks, executables, and timers)
-    // biome-ignore lint/correctness/useExhaustiveDependencies: state is the trigger
+    // biome-ignore lint/correctness/useExhaustiveDependencies: must drain after every state change
     useEffect(() => {
         while (deferredActions.length > 0) {
             // biome-ignore lint/style/noNonNullAssertion: guarded by while length check
@@ -85,7 +97,37 @@ function App() {
         }
     }, [state]);
 
-    // Show storyline selection if no storyline is active
+    const handleStartOver = useCallback(() => {
+        clearAllTimers();
+        deferredActions.length = 0;
+        deleteSave();
+        window.location.reload();
+    }, []);
+
+    if (loadError) {
+        return (
+            <div className="app">
+                <div className="view-container">
+                    <div style={{ padding: 40, textAlign: "center", maxWidth: 400, margin: "0 auto" }}>
+                        <h2>Save Data Error</h2>
+                        <p style={{ color: "#666", marginBottom: 24 }}>{loadError}</p>
+                        <p style={{ fontSize: 14, color: "#999", marginBottom: 24 }}>
+                            Your saved progress cannot be loaded. You&apos;ll need to start over.
+                        </p>
+                        <button
+                            type="button"
+                            className="styled-button"
+                            onClick={handleStartOver}
+                            style={{ background: "#f44" }}
+                        >
+                            Start Over
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (state.storylineId === "") {
         return (
             <div className="app">
