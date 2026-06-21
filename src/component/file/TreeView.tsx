@@ -12,6 +12,7 @@ interface Props {
 }
 
 function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props) {
+    const { dispatch } = useContext(AppStore);
     const { state } = useContext(AppStore);
     const root = state.filesystemRoot;
     const cwd = state.cwd;
@@ -39,7 +40,16 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                 : [];
 
             function handleClick() {
-                if (isLocked) return;
+                if (isLocked) {
+                    dispatch({ type: "UNLOCK_FILENODE", payload: node });
+                    // After unlock: open files immediately, expand dirs
+                    if (!isDir) {
+                        onFileOpen(node as FileModel);
+                    } else {
+                        onToggleExpand(node.fullName);
+                    }
+                    return;
+                }
                 if (isDir) {
                     onToggleExpand(node.fullName);
                 } else {

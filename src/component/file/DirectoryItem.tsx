@@ -46,6 +46,12 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
     function attemptUnlock() {
         dispatch({ type: "UNLOCK_FILENODE", payload: fileNode });
         setShowModal(false);
+        // Open files immediately; navigate into directories
+        if (fileNode instanceof Directory) {
+            onNavigate(fileNode);
+        } else {
+            onFileOpen(fileNode as File);
+        }
     }
 
     function onClick() {
