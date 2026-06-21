@@ -16,7 +16,9 @@ type ActionType =
     | "ADD_ITEMS"
     | "SET_PHASE"
     | "LOG_ADD"
-    | "SELECT_STORYLINE";
+    | "SELECT_STORYLINE"
+    | "MARK_INVENTORY_READ"
+    | "MARK_LOG_READ";
 
 export interface State {
     storylineId: string;
@@ -27,6 +29,8 @@ export interface State {
     readFiles: string[];
     gamePhase: number;
     logEntries: LogEntry[];
+    unreadInventory: boolean;
+    unreadLog: boolean;
 }
 
 export interface Action {
@@ -86,13 +90,17 @@ export function reducer(state: State, action: Action): State {
             return result;
         }
         case "INVENTORY_ADD":
-            return { ...state, inventory: addItem(inventory, action.payload) };
+            return { ...state, inventory: addItem(inventory, action.payload), unreadInventory: true };
         case "INVENTORY_REMOVE":
             return { ...state, inventory: removeItem(inventory, action.payload) };
         case "ADD_ITEMS":
-            return { ...state, inventory: addItems(inventory, action.payload) };
+            return { ...state, inventory: addItems(inventory, action.payload), unreadInventory: true };
         case "LOG_ADD":
-            return { ...state, logEntries: [...state.logEntries, action.payload as LogEntry] };
+            return { ...state, logEntries: [...state.logEntries, action.payload as LogEntry], unreadLog: true };
+        case "MARK_INVENTORY_READ":
+            return { ...state, unreadInventory: false };
+        case "MARK_LOG_READ":
+            return { ...state, unreadLog: false };
         case "SET_PHASE":
             return { ...state, gamePhase: action.payload as number };
         case "SET_CWD":
@@ -181,6 +189,8 @@ export function reducer(state: State, action: Action): State {
                 readFiles: snapshot.readFiles ?? [],
                 gamePhase: snapshot.gamePhase ?? 0,
                 logEntries: snapshot.logEntries ?? [],
+                unreadInventory: false,
+                unreadLog: false,
             };
         }
         case "SAVE_GAME": {
@@ -216,6 +226,8 @@ export function getNullState(): State {
         readFiles: [],
         gamePhase: 0,
         logEntries: [],
+        unreadInventory: false,
+        unreadLog: false,
     };
 }
 
@@ -268,6 +280,8 @@ export function getInitialState(storylineId: string): State | string {
             readFiles: snapshot.readFiles ?? [],
             gamePhase: snapshot.gamePhase ?? 0,
             logEntries: snapshot.logEntries ?? [],
+            unreadInventory: false,
+            unreadLog: false,
         };
     }
 
@@ -282,5 +296,7 @@ export function getInitialState(storylineId: string): State | string {
         readFiles: [],
         gamePhase: 0,
         logEntries: getInitialLogEntries(storylineId),
+        unreadInventory: false,
+        unreadLog: false,
     };
 }

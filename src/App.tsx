@@ -11,9 +11,7 @@ import {
 } from "react";
 import "./App.scss";
 import FilesystemViewer from "./component/file/FilesystemViewer";
-import InventoryToast from "./component/inventory/InventoryToast";
 import InventoryViewer from "./component/inventory/InventoryViewer";
-import LogToast from "./component/log/LogToast";
 import LogViewer from "./component/log/LogViewer";
 import StorylineSelect from "./component/storyline/StorylineSelect";
 import FloatingOverlay from "./component/ui/FloatingOverlay";
@@ -110,8 +108,16 @@ function App() {
     const [inventoryOpen, setInventoryOpen] = useState(false);
     const [logOpen, setLogOpen] = useState(false);
 
-    const toggleInventory = useCallback(() => setInventoryOpen((prev) => !prev), []);
-    const toggleLog = useCallback(() => setLogOpen((prev) => !prev), []);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable
+    const toggleInventory = useCallback(() => {
+        setInventoryOpen((prev) => !prev);
+        dispatch({ type: "MARK_INVENTORY_READ", payload: null });
+    }, [dispatch]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable
+    const toggleLog = useCallback(() => {
+        setLogOpen((prev) => !prev);
+        dispatch({ type: "MARK_LOG_READ", payload: null });
+    }, [dispatch]);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: dispatch identity is stable but explicit is clearer
     const storeValue = useMemo(() => ({ state, dispatch }), [state, dispatch]);
@@ -189,11 +195,11 @@ function App() {
                         onToggleLog={toggleLog}
                         inventoryOpen={inventoryOpen}
                         logOpen={logOpen}
+                        unreadInventory={state.unreadInventory}
+                        unreadLog={state.unreadLog}
                     />
                     <div className="view-container">
                         <FilesystemViewer showTree={showTree} />
-                        <LogToast />
-                        <InventoryToast />
                     </div>
 
                     {inventoryOpen && (

@@ -14,9 +14,21 @@ interface Props {
     onToggleLog: () => void;
     inventoryOpen: boolean;
     logOpen: boolean;
+    unreadInventory: boolean;
+    unreadLog: boolean;
 }
 
-function HeaderBar({ title, showTree, onToggleTree, onToggleInventory, onToggleLog, inventoryOpen, logOpen }: Props) {
+function HeaderBar({
+    title,
+    showTree,
+    onToggleTree,
+    onToggleInventory,
+    onToggleLog,
+    inventoryOpen,
+    logOpen,
+    unreadInventory,
+    unreadLog,
+}: Props) {
     const { dispatch } = useContext(AppStore);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -55,7 +67,7 @@ function HeaderBar({ title, showTree, onToggleTree, onToggleInventory, onToggleL
 
             <button
                 type="button"
-                className={`header-bar__btn${inventoryOpen ? " header-bar__btn--active" : ""}`}
+                className={`header-bar__btn${inventoryOpen ? " header-bar__btn--active" : ""}${unreadInventory && !inventoryOpen ? " header-bar__btn--unread" : ""}`}
                 onClick={onToggleInventory}
                 title="Inventory"
             >
@@ -64,7 +76,7 @@ function HeaderBar({ title, showTree, onToggleTree, onToggleInventory, onToggleL
 
             <button
                 type="button"
-                className={`header-bar__btn${logOpen ? " header-bar__btn--active" : ""}`}
+                className={`header-bar__btn${logOpen ? " header-bar__btn--active" : ""}${unreadLog && !logOpen ? " header-bar__btn--unread" : ""}`}
                 onClick={onToggleLog}
                 title="Log"
             >

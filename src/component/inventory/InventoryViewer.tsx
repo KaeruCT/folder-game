@@ -16,9 +16,7 @@ function InventoryViewer({ overlay }: Props) {
         if (items.length === 0) {
             return (
                 <div className="inv-empty">
-                    <p className="inv-empty__text">
-                        Your inventory is empty. Explore the filesystem to find keys and items.
-                    </p>
+                    <p>Your inventory is empty. Explore the filesystem to find keys and items.</p>
                 </div>
             );
         }

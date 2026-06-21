@@ -34,7 +34,8 @@
         color: var(--text-secondary);
         transition:
             background 0.1s,
-            color 0.1s;
+            color 0.1s,
+            box-shadow 0.3s;
 
         &:hover {
             background: var(--bg-hover);
@@ -44,6 +45,22 @@
         &--active {
             background: var(--bg-elevated);
             color: var(--accent);
+        }
+
+        &--unread {
+            color: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+            animation: unread-pulse 2s ease-in-out infinite;
+        }
+    }
+
+    @keyframes unread-pulse {
+        0%,
+        100% {
+            box-shadow: 0 0 6px var(--accent-glow);
+        }
+        50% {
+            box-shadow: 0 0 14px var(--accent-glow);
         }
     }
 
