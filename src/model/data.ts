@@ -52,3 +52,5 @@ export const SUFFIXES = ["89", "1994", "25", "_hh", "xxx", "333", "41", "CA", "V
 export const IMAGE_EXTENSIONS = ["jpg", "jpeg", "gif", "png"];
 
 export const VIDEO_EXTENSIONS = ["webm", "mp4"];
+
+export const AUDIO_EXTENSIONS = ["mp3", "ogg", "wav", "flac"];

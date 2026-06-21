@@ -13,6 +13,16 @@ export function addItem(inventory: Inventory, itemType: ItemType): Inventory {
     };
 }
 
+export function addItems(inventory: Inventory, items: Record<ItemType, number>): Inventory {
+    let result = inventory;
+    for (const [type, qty] of Object.entries(items)) {
+        for (let i = 0; i < qty; i++) {
+            result = addItem(result, type);
+        }
+    }
+    return result;
+}
+
 export function removeItem(inventory: Inventory, itemType: ItemType): Inventory {
     const item = inventory[itemType];
     if (!item) return inventory;

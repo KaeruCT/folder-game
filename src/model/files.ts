@@ -4,26 +4,49 @@ export type FileNode = Directory | File;
 
 type LoggerFunction = (line: string) => void;
 
-type Meta = {
+export interface RunContext {
+    // biome-ignore lint/suspicious/noExplicitAny: generic action dispatch
+    dispatch: (action: { type: string; payload: any }) => any;
+    state: {
+        inventory: Record<string, { type: string; quantity: number }>;
+        gamePhase: number;
+        readFiles: string[];
+    };
+}
+
+export type Meta = {
     // biome-ignore lint/suspicious/noExplicitAny: intentionally flexible metadata bag
     [key: string]: any;
-    run?: (this: File, log: LoggerFunction) => void;
+    run?: (this: File, log: LoggerFunction, ctx: RunContext) => void;
+    onRead?: (ctx: RunContext) => void;
+    onUnlock?: (ctx: RunContext) => void;
+    revealsOnRead?: string[];
+    revealsOnUnlock?: string[];
+    // biome-ignore lint/suspicious/noExplicitAny: generic action payload
+    choices?: { label: string; action: { type: string; payload: any } }[];
+    // biome-ignore lint/suspicious/noExplicitAny: flexible run state bag
+    runState?: Record<string, any>;
 };
 
 export class File {
     readonly name: string;
     content: string;
-    tempContent: string = ""; // used only by exes that log output
+    tempContent: string = "";
     readonly parent: Directory;
     readonly meta: Meta;
     locked = false;
     hidden = false;
+    // biome-ignore lint/suspicious/noExplicitAny: flexible run state bag
+    runState: Record<string, any> = {};
 
     constructor(name: string, content: string, parent: Directory, meta: Meta = {}) {
         this.name = name;
         this.content = content;
         this.parent = parent;
         this.meta = meta;
+        if (meta.runState) {
+            this.runState = meta.runState;
+        }
         setLock(this, meta);
     }
 
@@ -47,10 +70,10 @@ export class File {
         return typeof this.meta.run === "function";
     }
 
-    run() {
+    run(ctx: RunContext) {
         if (!this.isExecutable) return;
         this.tempContent = "";
-        this.meta.run?.call(this, this.output);
+        this.meta.run?.call(this, this.output, ctx);
         if (this.tempContent) {
             this.content = this.tempContent;
         }
@@ -165,6 +188,19 @@ function setLock(node: FileNode, meta: Meta) {
     if (meta.key || meta.password) {
         node.locked = true;
     }
+}
+
+/** Find a node by its full path (e.g. "$ROOT/users/evan/diary/may1.txt"). */
+export function findNode(root: Directory, fullPath: string): FileNode | undefined {
+    const parts = fullPath.split(SEPARATOR).filter(Boolean);
+    let current: FileNode | undefined = root;
+
+    for (const part of parts) {
+        if (!(current instanceof Directory)) return undefined;
+        current = current.getFileNode(part);
+        if (!current) return undefined;
+    }
+    return current;
 }
 
 /**

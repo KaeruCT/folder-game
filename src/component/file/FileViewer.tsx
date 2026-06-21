@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import "./FileViewer.scss";
-import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
+import { AppStore } from "../../App";
+import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import type { File } from "../../model/files";
 
 function corruptContent(content: string): string {
@@ -107,11 +108,66 @@ function VideoResourceOutput({ file }: OutputProps) {
     );
 }
 
+function AudioResourceOutput({ file }: OutputProps) {
+    return (
+        <div className="content media-content" style={{ background: "transparent", padding: 20 }}>
+            {/* biome-ignore lint/a11y/useMediaCaption: game content, captions not applicable */}
+            <audio src={file.content} controls autoPlay style={{ width: "100%" }} />
+        </div>
+    );
+}
+
+function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
+    const { dispatch } = useContext(AppStore);
+    // biome-ignore lint/suspicious/noExplicitAny: generic action payload from meta
+    const choices = file.meta.choices as { label: string; action: { type: string; payload: any } }[] | undefined;
+
+    if (!choices || choices.length === 0) {
+        return <PlainTextOutput file={file} />;
+    }
+
+    return (
+        <div className="content file-content">
+            <FileContent content={file.content} file={file} />
+            <div style={{ paddingTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                {choices.map((choice) => (
+                    <button
+                        key={choice.label}
+                        type="button"
+                        className="styled-button"
+                        onClick={() => {
+                            // biome-ignore lint/suspicious/noExplicitAny: generic action from meta
+                            dispatch(choice.action as any);
+                            onClose();
+                        }}
+                    >
+                        {choice.label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 interface Props {
     file: File;
     onClose: () => void;
 }
 function FileViewer({ file, onClose }: Props) {
+    if (file.meta.choices) {
+        return (
+            <div className="window file-viewer">
+                <div className="title">
+                    {file.name}
+                    <button type="button" className="close-button" onClick={() => onClose()} title="close">
+                        &times;
+                    </button>
+                </div>
+                <ChoiceOutput file={file} onClose={onClose} />
+            </div>
+        );
+    }
+
     let Output = PlainTextOutput;
 
     if (file.isExecutable || file.extension === "exe") {
@@ -124,6 +180,10 @@ function FileViewer({ file, onClose }: Props) {
 
     if (VIDEO_EXTENSIONS.includes(file.extension)) {
         Output = VideoResourceOutput;
+    }
+
+    if (AUDIO_EXTENSIONS.includes(file.extension)) {
+        Output = AudioResourceOutput;
     }
 
     return (

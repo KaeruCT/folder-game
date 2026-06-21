@@ -1,6 +1,6 @@
-import { Directory, type File, type FileNode, unlockFileNode } from "./model/files";
+import { Directory, type File, type FileNode, findNode, unlockFileNode } from "./model/files";
 import { getFilesystem, getInventory } from "./model/game";
-import { addItem, type Inventory, removeItem } from "./model/inventory";
+import { addItem, addItems, type Inventory, removeItem } from "./model/inventory";
 import { applySnapshot, buildSnapshot, loadSnapshot, type SaveSnapshot, saveGame } from "./model/save";
 
 type ActionType =
@@ -10,13 +10,18 @@ type ActionType =
     | "SET_FILE"
     | "UNLOCK_FILENODE"
     | "LOAD_GAME"
-    | "SAVE_GAME";
+    | "SAVE_GAME"
+    | "REVEAL_FILE"
+    | "ADD_ITEMS"
+    | "SET_PHASE";
 
 export interface State {
     inventory: Inventory;
     filesystemRoot: Directory;
     cwd: Directory;
     file: File | null;
+    readFiles: string[];
+    gamePhase: number;
 }
 
 export interface Action {
@@ -26,25 +31,55 @@ export interface Action {
 }
 
 export function reducer(state: State, action: Action): State {
-    let { inventory, filesystemRoot } = state;
+    let { inventory, filesystemRoot, readFiles, gamePhase } = state;
     switch (action.type) {
         case "INVENTORY_ADD":
             return { ...state, inventory: addItem(inventory, action.payload) };
         case "INVENTORY_REMOVE":
             return { ...state, inventory: removeItem(inventory, action.payload) };
+        case "ADD_ITEMS":
+            return { ...state, inventory: addItems(inventory, action.payload) };
+        case "SET_PHASE":
+            return { ...state, gamePhase: action.payload as number };
         case "SET_CWD":
             return { ...state, cwd: action.payload as Directory };
+        case "REVEAL_FILE": {
+            const path = action.payload as string;
+            const node = findNode(filesystemRoot, path);
+            if (node) node.hidden = false;
+            return { ...state, filesystemRoot };
+        }
         case "SET_FILE": {
             const file = action.payload as File;
             if (file) {
+                if (!readFiles.includes(file.fullName)) {
+                    readFiles = [...readFiles, file.fullName];
+                }
+
+                const ctx = {
+                    // biome-ignore lint/suspicious/noExplicitAny: generic dispatch bridge
+                    dispatch: (a: { type: string; payload: any }) => reducer(state, a as Action),
+                    state: { inventory, gamePhase, readFiles },
+                };
+
+                if (file.meta.onRead) {
+                    file.meta.onRead(ctx);
+                }
+                if (file.meta.revealsOnRead) {
+                    for (const revealPath of file.meta.revealsOnRead) {
+                        const node = findNode(filesystemRoot, revealPath);
+                        if (node) node.hidden = false;
+                    }
+                }
+
                 if (file.meta.selfDestruct) {
                     file.hidden = true;
                 }
                 if (file.isExecutable) {
-                    file.run();
+                    file.run(ctx);
                 }
             }
-            return { ...state, file, filesystemRoot: file ? file.root : filesystemRoot };
+            return { ...state, file, filesystemRoot: file ? file.root : filesystemRoot, readFiles };
         }
         case "UNLOCK_FILENODE": {
             const fileNode: FileNode = action.payload as FileNode;
@@ -52,6 +87,22 @@ export function reducer(state: State, action: Action): State {
             if (inventory[key]) {
                 inventory = removeItem(inventory, key);
                 filesystemRoot = unlockFileNode(fileNode);
+
+                const ctx = {
+                    // biome-ignore lint/suspicious/noExplicitAny: generic dispatch bridge
+                    dispatch: (a: { type: string; payload: any }) => reducer(state, a as Action),
+                    state: { inventory, gamePhase, readFiles },
+                };
+
+                if (fileNode.meta.onUnlock) {
+                    fileNode.meta.onUnlock(ctx);
+                }
+                if (fileNode.meta.revealsOnUnlock) {
+                    for (const revealPath of fileNode.meta.revealsOnUnlock) {
+                        const node = findNode(filesystemRoot, revealPath);
+                        if (node) node.hidden = false;
+                    }
+                }
             }
             return { ...state, filesystemRoot, inventory };
         }
@@ -75,11 +126,25 @@ export function reducer(state: State, action: Action): State {
                 }
             }
 
-            return { filesystemRoot: freshRoot, inventory: loadedInventory, cwd, file: null };
+            return {
+                filesystemRoot: freshRoot,
+                inventory: loadedInventory,
+                cwd,
+                file: null,
+                readFiles: snapshot.readFiles ?? [],
+                gamePhase: snapshot.gamePhase ?? 0,
+            };
         }
         case "SAVE_GAME": {
             const freshRoot = getFilesystem();
-            const snapshot = buildSnapshot(filesystemRoot, state.cwd, state.inventory, freshRoot);
+            const snapshot = buildSnapshot(
+                filesystemRoot,
+                state.cwd,
+                state.gamePhase,
+                state.readFiles,
+                state.inventory,
+                freshRoot,
+            );
             saveGame(snapshot);
             return state;
         }
@@ -109,7 +174,14 @@ export function getInitialState(): State {
             }
         }
 
-        return { filesystemRoot: root, inventory, cwd, file: null };
+        return {
+            filesystemRoot: root,
+            inventory,
+            cwd,
+            file: null,
+            readFiles: snapshot.readFiles ?? [],
+            gamePhase: snapshot.gamePhase ?? 0,
+        };
     }
 
     const filesystemRoot = getFilesystem();
@@ -118,5 +190,7 @@ export function getInitialState(): State {
         filesystemRoot,
         cwd: filesystemRoot,
         file: null,
+        readFiles: [],
+        gamePhase: 0,
     };
 }

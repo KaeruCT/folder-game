@@ -1,12 +1,17 @@
-import { Directory, File, type FileNode } from "./files";
+import { Directory, File, findNode } from "./files";
 
 export interface SaveSnapshot {
     cwdPath: string;
+    gamePhase: number;
+    readFiles: string[];
     inventory: Record<string, number>;
     hiddenPaths: string[];
     unlockedPaths: string[];
     modifiedContent: Record<string, string>;
-    createdFiles: Record<string, string>;
+    // biome-ignore lint/suspicious/noExplicitAny: serialized meta bag
+    createdFiles: Record<string, { content: string; meta?: Record<string, any> }>;
+    // biome-ignore lint/suspicious/noExplicitAny: serialized run state
+    runStates: Record<string, Record<string, any>>;
 }
 
 const SAVE_KEY = "folder-game-save";
@@ -15,16 +20,21 @@ const SAVE_KEY = "folder-game-save";
 export function buildSnapshot(
     root: Directory,
     cwd: Directory,
+    gamePhase: number,
+    readFiles: string[],
     inventory: Record<string, { quantity: number }>,
     freshRoot: Directory,
 ): SaveSnapshot {
     const snapshot: SaveSnapshot = {
         cwdPath: cwd.fullName,
+        gamePhase,
+        readFiles: [...readFiles],
         inventory: {},
         hiddenPaths: [],
         unlockedPaths: [],
         modifiedContent: {},
         createdFiles: {},
+        runStates: {},
     };
 
     for (const [type, item] of Object.entries(inventory)) {
@@ -33,6 +43,17 @@ export function buildSnapshot(
 
     diffTrees(root, freshRoot, snapshot);
     return snapshot;
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: meta deserialization — intentionally flexible
+function stripMeta(meta: Record<string, any>): Record<string, any> {
+    // biome-ignore lint/suspicious/noExplicitAny: meta deserialization
+    const cleaned: Record<string, any> = {};
+    for (const [key, value] of Object.entries(meta)) {
+        if (typeof value === "function") continue; // skip callbacks
+        cleaned[key] = value;
+    }
+    return cleaned;
 }
 
 function diffTrees(current: Directory, fresh: Directory, snapshot: SaveSnapshot) {
@@ -44,8 +65,10 @@ function diffTrees(current: Directory, fresh: Directory, snapshot: SaveSnapshot)
             const freshFile = freshNode instanceof File ? freshNode : undefined;
 
             if (!freshFile) {
-                // Runtime-created file
-                snapshot.createdFiles[path] = node.content;
+                snapshot.createdFiles[path] = {
+                    content: node.content,
+                    meta: stripMeta(node.meta),
+                };
                 continue;
             }
 
@@ -55,9 +78,12 @@ function diffTrees(current: Directory, fresh: Directory, snapshot: SaveSnapshot)
             if (node.content !== freshFile.content) {
                 snapshot.modifiedContent[path] = node.content;
             }
+            if (Object.keys(node.runState).length > 0) {
+                snapshot.runStates[path] = { ...node.runState };
+            }
         }
 
-        if (node.locked === false) {
+        if (node.locked === false && freshNode) {
             snapshot.unlockedPaths.push(path);
         }
 
@@ -67,7 +93,7 @@ function diffTrees(current: Directory, fresh: Directory, snapshot: SaveSnapshot)
     }
 }
 
-/** Apply a save snapshot to a fresh filesystem tree (mutates in place — call on fresh copy). */
+/** Apply a save snapshot to a fresh filesystem tree. */
 export function applySnapshot(root: Directory, snapshot: SaveSnapshot): void {
     for (const path of snapshot.unlockedPaths) {
         const node = findNode(root, path);
@@ -81,24 +107,20 @@ export function applySnapshot(root: Directory, snapshot: SaveSnapshot): void {
         const node = findNode(root, path);
         if (node instanceof File) node.content = content;
     }
-    for (const [path, content] of Object.entries(snapshot.createdFiles)) {
-        createFileAt(root, path, content);
+    for (const [path, data] of Object.entries(snapshot.createdFiles)) {
+        const node = createFileAt(root, path, data.content);
+        if (node && data.meta) {
+            Object.assign(node.meta, data.meta);
+            if (data.meta.key) node.locked = true;
+        }
+    }
+    for (const [path, runState] of Object.entries(snapshot.runStates)) {
+        const node = findNode(root, path);
+        if (node instanceof File) node.runState = { ...runState };
     }
 }
 
-function findNode(root: Directory, fullPath: string): FileNode | undefined {
-    const parts = fullPath.split("/").filter(Boolean);
-    let current: FileNode | undefined = root;
-
-    for (const part of parts) {
-        if (!(current instanceof Directory)) return undefined;
-        current = current.getFileNode(part);
-        if (!current) return undefined;
-    }
-    return current;
-}
-
-function createFileAt(root: Directory, fullPath: string, content: string): void {
+function createFileAt(root: Directory, fullPath: string, content: string): File | undefined {
     const parts = fullPath.split("/").filter(Boolean);
     // biome-ignore lint/style/noNonNullAssertion: split + filter guarantees at least one element
     const filename = parts.pop()!;
@@ -113,8 +135,14 @@ function createFileAt(root: Directory, fullPath: string, content: string): void 
     }
 
     if (!dir.fileExists(filename)) {
-        dir.createFile(filename, content);
+        return dir.createFile(filename, content);
     }
+    const existing = dir.getFileNode(filename);
+    if (existing instanceof File) {
+        existing.content = content;
+        return existing;
+    }
+    return undefined;
 }
 
 export function saveGame(snapshot: SaveSnapshot): void {

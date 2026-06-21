@@ -55,7 +55,7 @@ export function getFilesystem(): Directory {
     const safe = system.createDirectory("safe");
     safe.createFile(lockFile, "", {
         selfDestruct: true,
-        run(log) {
+        run(log, _ctx) {
             const count = randInt(7000, 8000);
             log("running lockdown routine");
             log("...");
@@ -77,7 +77,7 @@ export function getFilesystem(): Directory {
     });
 
     safe.createFile("user_info.exe", "", {
-        run(log) {
+        run(log, _ctx) {
             const parent = this.parent;
             const filename = "user_report.txt";
             const locked = parent.getFileNode(lockFile).hidden;
