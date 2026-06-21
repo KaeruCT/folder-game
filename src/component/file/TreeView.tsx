@@ -27,17 +27,18 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
             const isCwd = node === cwd;
             const isLocked = node.locked;
 
-            const children = isDir
-                ? node.contents
-                      .filter((c) => !c.hidden)
-                      .sort((a, b) => {
-                          const aIsDir = a instanceof Directory;
-                          const bIsDir = b instanceof Directory;
-                          if (aIsDir && !bIsDir) return -1;
-                          if (!aIsDir && bIsDir) return 1;
-                          return a.name.localeCompare(b.name);
-                      })
-                : [];
+            const children =
+                isDir && !isLocked
+                    ? node.contents
+                          .filter((c) => !c.hidden)
+                          .sort((a, b) => {
+                              const aIsDir = a instanceof Directory;
+                              const bIsDir = b instanceof Directory;
+                              if (aIsDir && !bIsDir) return -1;
+                              if (!aIsDir && bIsDir) return 1;
+                              return a.name.localeCompare(b.name);
+                          })
+                    : [];
 
             function handleClick() {
                 if (isLocked) {
@@ -85,7 +86,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                     title={isLocked ? `${node.name} (locked)` : node.name}
                 >
                     <span className="tree-node__arrow">
-                        {isDir ? (isExpanded ? "▼" : children.length > 0 || isLocked ? "▶" : " ") : " "}
+                        {isDir && !isLocked ? (isExpanded ? "▼" : children.length > 0 ? "▶" : " ") : " "}
                     </span>
                     <span className="tree-node__icon">
                         {isLocked ? (
