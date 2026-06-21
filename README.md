@@ -7,6 +7,7 @@ A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate di
 - [Overview](#overview)
 - [Game Story](#game-story)
 - [Gameplay Mechanics](#gameplay-mechanics)
+- [Narrative System](#narrative-system)
 - [Tech Stack](#tech-stack)
 - [Quality Pipeline](#quality-pipeline)
 - [Project Structure](#project-structure)
@@ -14,15 +15,16 @@ A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate di
   - [Component Tree](#component-tree)
   - [State Management](#state-management)
   - [Data Model](#data-model)
+  - [Save System](#save-system)
 - [Setup & Development](#setup--development)
 - [Deployment](#deployment)
 - [License](#license)
 
 ## Overview
 
-**folder-game** is a single-page React application that presents a fake operating system desktop with a filesystem browser. The player navigates a mock directory tree, opens files, runs executables, and uses inventory items (keys) to unlock secured content. Files can self-destruct, execute with simulated console output, display images/videos, or become corrupted.
+**folder-game** is a single-page React application that presents a fake operating system desktop with a filesystem browser. The player navigates a mock directory tree, opens files, runs executables, and uses inventory items (keys) to unlock secured content. Files can self-destruct, execute with simulated console output, display images/videos/audio, or become corrupted.
 
-Built for mobile — touch-friendly, notch-safe, 44px tap targets, no pull-to-refresh.
+Built for mobile — touch-friendly, notch-safe, 44px tap targets, no pull-to-refresh. Progress auto-saves to `localStorage`.
 
 ## Game Story
 
@@ -47,27 +49,109 @@ The player starts at the root directory (`$ROOT/`). Clicking a directory navigat
 
 ### Executable Files (`.exe`)
 
-Files with the `.exe` extension or a `run` function in their metadata are **executables**. When opened, instead of displaying raw content, they simulate console output line-by-line with a typewriter effect. For example, `user_info.exe` generates a user report file after displaying simulated terminal output.
+Files with the `.exe` extension or a `run` function in their metadata are **executables**. When opened, instead of displaying raw content, they simulate console output line-by-line with a typewriter effect. Executables receive a `RunContext` with access to:
+- `ctx.dispatch(action)` — queue an action to be processed by the reducer
+- `ctx.schedule(action, delayMs)` — dispatch an action after a delay (returns cancel function)
+- `ctx.state` — read-only snapshot of inventory, gamePhase, and readFiles
+- `this.runState` — mutable state bag persisted across save/load
 
 ### Locked Files
 
-Files and directories can be `locked` (requiring a key to access). Clicking a locked item opens a modal asking to confirm unlocking. If the player's inventory has the required key, the item unlocks and the key is consumed. Keys cannot be reused.
+Files and directories can be `locked` (requiring a key to access). Clicking a locked item opens a modal asking to confirm unlocking. If the player's inventory has the required key, the item unlocks and the key is consumed. Keys cannot be reused. Unlocking fires `onUnlock` callbacks and `revealsOnUnlock`.
 
 ### Self-Destructing Files
 
-Files with the `selfDestruct` metadata flag become hidden after the first read. The `instructions.txt` file uses this to reinforce the urgency of the narrative.
+Files with the `selfDestruct` metadata flag become hidden after the first read.
 
 ### Corrupted Files
 
-Files with the `corrupted` metadata flag display garbled content that animates randomly (character case flips, substitutions, insertions), simulating data corruption. `lock.exe` uses this before the file is properly unlocked/executed.
+Files with the `corrupted` metadata flag display garbled content that animates randomly (character case flips, substitutions, insertions), simulating data corruption.
 
 ### Inventory System
 
-The player has an inventory of **items** (keyed by type with a quantity). Items are used to unlock locked file nodes. The game starts with 2 `diary_entry` keys and 1 `sys` key. Locking down the system awards additional keys.
+The player has an inventory of **items** (keyed by type with a quantity). Items are used to unlock locked file nodes. The game starts with 2 `diary_entry` keys and 1 `sys` key. Locking down the system awards additional keys. Items can be added/removed programmatically via `ADD_ITEMS` / `INVENTORY_REMOVE` actions.
 
 ### Media Files
 
-Files with image extensions (`jpg`, `jpeg`, `gif`, `png`) render as images. Files with video extensions (`webm`, `mp4`) render as HTML5 video players.
+| Extension | Rendered as |
+|---|---|
+| `jpg`, `jpeg`, `gif`, `png` | `<img>` |
+| `webm`, `mp4` | `<video>` player |
+| `mp3`, `ogg`, `wav`, `flac` | `<audio>` player |
+
+### Player Choices
+
+Files with `meta.choices` render button options below their content. Each choice dispatches an action when clicked. Example:
+
+```ts
+createFile("door.txt", "You see a locked door.", {
+    choices: [
+        { label: "Pick the lock", action: { type: "REVEAL_FILE", payload: "$ROOT/room" } },
+        { label: "Walk away",     action: { type: "SET_PHASE", payload: 2 } },
+    ],
+});
+```
+
+## Narrative System
+
+Files and directories carry a **Meta** bag that drives all narrative behavior. Below is the full API.
+
+### Meta Properties
+
+| Property | Type | On | Effect |
+|---|---|---|---|
+| `key` | `string` | File/Dir | Locks the node; requires matching inventory item to unlock |
+| `selfDestruct` | `boolean` | File | Hides file after first read |
+| `corrupted` | `boolean` | File | Renders garbled flickering text |
+| `run` | `(log, ctx) => void` | File | Makes file executable; typewriter output, can mutate tree and dispatch actions |
+| `onRead` | `(ctx) => void` | File | Callback fired when file is opened |
+| `onUnlock` | `(ctx) => void` | File/Dir | Callback fired when node is unlocked |
+| `revealsOnRead` | `string[]` | File | Paths to unhide when this file is opened |
+| `revealsOnUnlock` | `string[]` | File/Dir | Paths to unhide when this node is unlocked |
+| `choices` | `{label, action}[]` | File | Renders choice buttons; dispatches on click |
+| `runState` | `Record<string, any>` | File | Persistent state bag for executables (survives save/load) |
+
+### RunContext API
+
+Passed to `run()`, `onRead()`, and `onUnlock()` callbacks:
+
+```ts
+ctx.dispatch(action)         // Queue an action for the reducer
+ctx.schedule(action, delay)  // Queue after N milliseconds (returns cancel function)
+ctx.state.inventory          // Read-only snapshot: current inventory
+ctx.state.gamePhase          // Current game phase
+ctx.state.readFiles          // Paths of all files the player has opened
+```
+
+Actions are processed through a **deferred queue** — `ctx.dispatch` pushes to a queue, and the App component drains it through React's `useReducer` dispatch. This means dispatched actions go through the normal reducer pipeline and trigger re-renders and auto-saves.
+
+### Game State
+
+```ts
+interface State {
+    inventory: Inventory;           // Record<ItemType, { type, quantity }>
+    filesystemRoot: Directory;      // Root of the filesystem tree
+    cwd: Directory;                 // Current working directory
+    file: File | null;              // Currently open file (null = directory view)
+    readFiles: string[];            // Paths of every file the player has opened
+    gamePhase: number;              // Chapter/phase for conditional logic
+}
+```
+
+### All Actions
+
+| Action | Payload | Effect |
+|---|---|---|
+| `INVENTORY_ADD` | `ItemType` | +1 to inventory item |
+| `INVENTORY_REMOVE` | `ItemType` | -1 from inventory item |
+| `ADD_ITEMS` | `Record<ItemType, number>` | Bulk add items |
+| `SET_CWD` | `Directory` | Change current working directory |
+| `SET_FILE` | `File \| null` | Open/close a file (fires onRead, revealsOnRead, selfDestruct, run) |
+| `UNLOCK_FILENODE` | `FileNode` | Consume key + unlock (fires onUnlock, revealsOnUnlock) |
+| `REVEAL_FILE` | `string` (path) | Unhide a file/directory by path |
+| `SET_PHASE` | `number` | Set game phase |
+| `SAVE_GAME` | `null` | Persist current state to localStorage |
+| `LOAD_GAME` | `SaveSnapshot` | Restore state from a save snapshot |
 
 ## Tech Stack
 
@@ -99,7 +183,7 @@ pnpm check && pnpm knip && pnpm dupe && pnpm build
 
 | Script | What it does |
 |---|---|
-| `pnpm check` | Biome linter + formatter (166 files, zero tolerance) |
+| `pnpm check` | Biome linter + formatter (167 files, zero tolerance) |
 | `pnpm check:write` | Auto-fix formatting, imports, and safe lint fixes |
 | `pnpm knip` | Dead code detection (unused exports, deps, files) |
 | `pnpm dupe` | dupehound structural duplicate scan (grade A, 0% slop) |
@@ -124,7 +208,7 @@ folder-game/
 │   │   │   ├── DirectoryItem.tsx    # Single file/directory entry
 │   │   │   ├── DirectoryView.tsx    # Directory contents listing
 │   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer or directory view
-│   │   │   └── FileViewer.tsx       # File content renderer (text/image/video/exe)
+│   │   │   └── FileViewer.tsx       # File renderer (text/image/video/audio/exe/choices)
 │   │   ├── icons/              # SVG icons for file types and UI elements (143 icons)
 │   │   ├── inventory/          # Inventory panel
 │   │   ├── navigation/         # Bottom navigation bar
@@ -134,19 +218,20 @@ folder-game/
 │   │   └── intro/              #   Initial game text files
 │   ├── model/                  # Core game logic and data structures
 │   │   ├── data.ts             #   Constants (user names, extension maps)
-│   │   ├── files.ts            #   File, Directory, and FileNode classes
+│   │   ├── files.ts            #   File, Directory, FileNode, RunContext, Meta
 │   │   ├── game.ts             #   Game initialization (filesystem + inventory)
-│   │   ├── inventory.ts        #   Inventory item management
+│   │   ├── inventory.ts        #   Pure inventory functions (add/remove/addItems)
+│   │   ├── save.ts             #   Save/load delta snapshots (localStorage)
 │   │   └── util.ts             #   Random generation helpers
-│   ├── App.tsx                 # Root component + context provider + view router
-│   ├── reducer.ts              # Game state reducer (useReducer)
-│   ├── index.tsx               # React 18 entry point (createRoot)
-│   └── vite-env.d.ts           # Vite type declarations
+│   ├── App.tsx                 #   Root: Provider, ErrorBoundary, auto-save, deferred action drain, tab routing
+│   ├── reducer.ts              #   Game state reducer + deferred action queue
+│   ├── index.tsx               #   React 18 entry point (createRoot)
+│   └── vite-env.d.ts           #   Vite type declarations
 ├── index.html                  # Vite HTML entry point
-├── vite.config.ts              # Vite configuration
+├── vite.config.ts              # Vite config (base, chunks, SCSS modern API)
 ├── biome.json                  # Biome linter + formatter config
 ├── knip.json                   # Knip dead code detection config
-├── tsconfig.json               # TypeScript configuration
+├── tsconfig.json               # TypeScript (strict, incremental)
 ├── package.json
 ├── pnpm-lock.yaml
 ├── AGENTS.md                   # Agent instructions
@@ -159,52 +244,32 @@ folder-game/
 ### Component Tree
 
 ```
-App (AppStore.Provider)
+App (ErrorBoundary > AppStore.Provider)
 ├── FilesystemViewer
 │   ├── DirectoryView
 │   │   └── DirectoryItem (× N per listing)
-│   │       └── Modal (for unlock confirmation)
+│   │       └── Modal (unlock confirmation)
 │   └── FileViewer
-│       ├── ExeOutput          (executable files / typewriter effect)
+│       ├── ExeOutput              (typewriter effect)
+│       │   └── FileContent
+│       ├── PlainTextOutput
 │       │   └── FileContent
 │       │       └── CorruptedFileContent
-│       ├── PlainTextOutput    (default text files)
-│       │   └── FileContent
-│       ├── ImageResourceOutput (image extensions)
-│       └── VideoResourceOutput (video extensions)
+│       ├── ImageResourceOutput
+│       ├── VideoResourceOutput
+│       ├── AudioResourceOutput
+│       └── ChoiceOutput           (button choices from meta)
 ├── InventoryViewer
-└── Navigation (tab bar: Filesystem / Inventory / Log)
+└── Navigation (Filesystem / Inventory / Game)
 ```
 
 ### State Management
 
 Uses React's `useReducer` + `Context`. No external state library.
 
-**State shape:**
+Actions dispatched from inside callbacks/executables go through a **deferred queue**: `ctx.dispatch()` pushes to `deferredActions[]`, and a `useEffect` in App drains the queue through the real React dispatcher. This ensures all state changes flow through the normal reducer → re-render → auto-save pipeline.
 
-```typescript
-interface State {
-    inventory: Inventory;           // Record<ItemType, { type, quantity }>
-    filesystemRoot: Directory;      // Root of the entire directory tree
-    cwd: Directory;                 // Current working directory
-    file: File | null;              // Currently open file (null = directory view)
-}
-```
-
-**Actions:**
-
-| Action | Payload | Effect |
-|---|---|---|
-| `INVENTORY_ADD` | `ItemType` | Adds 1 to an inventory item's quantity |
-| `INVENTORY_REMOVE` | `ItemType` | Removes 1 from an inventory item's quantity |
-| `SET_CWD` | `Directory` | Changes the current working directory |
-| `SET_FILE` | `File \| null` | Opens a file (handles self-destruct + auto-run) or closes to directory view |
-| `UNLOCK_FILENODE` | `FileNode` | Consumes a matching inventory key to unlock a locked file or directory |
-
-**Key behaviors:**
-
-- **SET_FILE**: When a File is opened, it checks `file.meta.selfDestruct` (hides the file after read) and `file.isExecutable` (automatically runs the file). It also updates the filesystem root reference so mutations propagate.
-- **UNLOCK_FILENODE**: Looks up the file node's `meta.key` in the player's inventory. If the key exists, it removes the key and unlocks the node. Otherwise, nothing happens (modal closes without effect).
+Timer-based actions via `ctx.schedule()` use `setTimeout` behind a registry. All timers are cleared on game reset via `clearAllTimers()`.
 
 ### Data Model
 
@@ -213,14 +278,15 @@ interface State {
 ```typescript
 class File {
     readonly name: string;
-    content: string;           // Raw text content or imported asset path
-    tempContent: string;       // Buffer for executable output
+    content: string;              // Raw text or imported asset path
+    tempContent: string;          // Buffer for executable output
     readonly parent: Directory;
-    readonly meta: Meta;       // Arbitrary metadata (key, selfDestruct, corrupted, run, etc.)
+    readonly meta: Meta;          // All narrative behavior
     locked: boolean;
     hidden: boolean;
+    runState: Record<string, any>; // Persistent executable state
     // Computed: fullName, root, extension, size, isExecutable
-    run(): void;               // Executes meta.run if defined
+    run(ctx: RunContext): void;   // Executes meta.run with context
 }
 ```
 
@@ -234,73 +300,62 @@ class Directory {
     locked: boolean;
     hidden: boolean;
     // Computed: fullName, fileCount, contents, root
-    createDirectory(name: string, meta?: Meta): Directory;
-    createFile(name: string, content: string, meta?: Meta): File;
-    fileExists(name: string): boolean;
-    getFileNode(name: string): FileNode;
-    remove(name: string): void;
+    createDirectory(name, meta?): Directory;
+    createFile(name, content, meta?): File;
+    fileExists(name): boolean;
+    getFileNode(name): FileNode;
+    remove(name): void;
 }
 ```
 
-#### Meta (File/Directory metadata)
+#### Meta — the narrative engine
 
 ```typescript
 type Meta = {
     [key: string]: any;
-    run?: (this: File, log: (line: string) => void) => void;
+    run?: (this: File, log: LoggerFunction, ctx: RunContext) => void;
+    onRead?: (ctx: RunContext) => void;
+    onUnlock?: (ctx: RunContext) => void;
+    revealsOnRead?: string[];
+    revealsOnUnlock?: string[];
+    choices?: { label: string; action: { type: string; payload: any } }[];
+    runState?: Record<string, any>;
+    key?: string;
+    selfDestruct?: boolean;
+    corrupted?: boolean;
 };
 ```
 
-Used properties: `key` (lock type), `selfDestruct` (hide after read), `corrupted` (garbled display).
-
 #### Inventory
 
-```typescript
-type ItemType = string;
-type Inventory = Record<ItemType, { type: ItemType; quantity: number }>;
-```
+Pure functions operating on `Record<ItemType, { type, quantity }>`:
+- `addItem(inventory, type)` — returns new inventory with +1
+- `removeItem(inventory, type)` — returns new inventory with -1 (removes at 0)
+- `addItems(inventory, { type: qty })` — bulk add
 
-Functions: `addItem(inventory, itemType)` increments quantity; `removeItem(inventory, itemType)` decrements and removes at zero.
+### Save System
 
-### Game Data Initialization
+`model/save.ts` implements delta-based snapshots to `localStorage`:
 
-`getFilesystem()` in `model/game.ts` builds the directory tree:
+1. **Build snapshot**: Compare the current tree against a fresh initial tree — extract only what changed
+2. **Persist**: Serialize to JSON via `localStorage.setItem()`
+3. **Restore**: On app init, check `localStorage`; if saved state exists, build fresh tree and apply deltas
 
-```
-$ROOT/
-├── help/
-│   ├── instructions.txt    [selfDestruct]
-│   ├── 1.png
-│   ├── 4.png
-│   └── 6.png
-├── trash/
-│   ├── ed.gif
-│   ├── 7.png
-│   └── 8.png
-├── users/
-│   └── evan/
-│       ├── diary/
-│       │   ├── may1.txt     [key: diary_entry]
-│       │   ├── may5.txt     [key: diary_entry]
-│       │   ├── may8.txt     [key: diary_entry]
-│       │   └── person.jpg
-│       └── porn/
-│           ├── italian.mp4
-│           └── smell.mp4
-├── programs/
-│   └── lock.exe             [selfDestruct, corrupted]
-└── sys/
-    ├── share/               [key: sys]
-    ├── lib/                 [key: sys]
-    ├── cache/               [key: sys]
-    ├── local/               [key: sys]
-    ├── net/                 [key: sys]
-    └── safe/
-        ├── lucky7.exe       [selfDestruct, executable: runs lockdown routine]
-        └── user_info.exe    [executable: generates user report]
-```
+**What's persisted:**
 
-Initial inventory: 2× `diary_entry`, 1× `sys`.
+| Field | Contents |
+|---|---|
+| `cwdPath` | Last browsed directory |
+| `gamePhase` | Current chapter/phase |
+| `readFiles` | All files the player has opened |
+| `inventory` | Item quantities |
+| `hiddenPaths` | Files hidden by selfDestruct |
+| `unlockedPaths` | Nodes the player unlocked |
+| `modifiedContent` | Files changed by executables |
+| `createdFiles` | Runtime-created files (content + meta) |
+| `runStates` | Per-file executable state |
+
+**Auto-save**: Debounced 500ms after every state change. Manual save via Game tab. Reset clears localStorage and reloads the page.
 
 ## Setup & Development
 
@@ -337,7 +392,7 @@ All four must pass with zero errors.
 pnpm build
 ```
 
-Outputs to `dist/` — 54 KB gzipped JS, 2 KB gzipped CSS.
+Outputs to `dist/` — ~11 KB gzipped app JS, ~45 KB gzipped vendor JS, ~2 KB gzipped CSS.
 
 ## Deployment
 
@@ -347,7 +402,7 @@ Pushes to `master` automatically deploy to GitHub Pages via the workflow in `.gi
 https://kaeruct.github.io/folder-game/
 ```
 
-The workflow uses `pnpm install --frozen-lockfile` → `pnpm build` → GitHub Pages artifact deployment. No branch juggling — deploys directly from the workflow run.
+The workflow uses `pnpm install --frozen-lockfile` → `pnpm build` → GitHub Pages artifact deployment.
 
 ## License
 
