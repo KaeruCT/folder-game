@@ -2,9 +2,11 @@ import type { Directory } from "./files";
 import type { Inventory } from "./inventory";
 import type { LogEntry } from "./log";
 import type { Storyline } from "./storyline";
+import echoesStoryline from "./storylines/echoes";
 import lockdownStoryline from "./storylines/lockdown";
 
 const storylines: Record<string, Storyline> = {
+    echoes: echoesStoryline,
     lockdown: lockdownStoryline,
 };
 
