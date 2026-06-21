@@ -31,6 +31,8 @@ export interface State {
     logEntries: LogEntry[];
     unreadInventoryCount: number;
     unreadLogCount: number;
+    /** Bumped on every REVEAL_FILE so directory/tree views re-filter hidden nodes. */
+    revealCounter: number;
 }
 
 export interface Action {
@@ -121,7 +123,7 @@ export function reducer(state: State, action: Action): State {
             const path = action.payload as string;
             const node = findNode(filesystemRoot, path);
             if (node) node.hidden = false;
-            return { ...state, filesystemRoot };
+            return { ...state, filesystemRoot, revealCounter: state.revealCounter + 1 };
         }
         case "SET_FILE": {
             const file = action.payload as File;
@@ -203,6 +205,7 @@ export function reducer(state: State, action: Action): State {
                 logEntries: snapshot.logEntries ?? [],
                 unreadInventoryCount: 0,
                 unreadLogCount: 0,
+                revealCounter: 0,
             };
         }
         case "SAVE_GAME": {
@@ -240,6 +243,7 @@ export function getNullState(): State {
         logEntries: [],
         unreadInventoryCount: 0,
         unreadLogCount: 0,
+        revealCounter: 0,
     };
 }
 
@@ -294,6 +298,7 @@ export function getInitialState(storylineId: string): State | string {
             logEntries: snapshot.logEntries ?? [],
             unreadInventoryCount: 0,
             unreadLogCount: 0,
+            revealCounter: 0,
         };
     }
 
@@ -312,5 +317,6 @@ export function getInitialState(storylineId: string): State | string {
         logEntries: freshLogEntries,
         unreadInventoryCount: Object.keys(freshInventory).length,
         unreadLogCount: freshLogEntries.length,
+        revealCounter: 0,
     };
 }

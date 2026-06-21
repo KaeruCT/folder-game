@@ -8,13 +8,15 @@ interface Props {
     onFileOpen: (file: FileModel) => void;
     expanded: Set<string>;
     onToggleExpand: (path: string) => void;
+    revealCounter: number;
 }
 
-function TreeView({ onFileOpen, expanded, onToggleExpand }: Props) {
+function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props) {
     const { state } = useContext(AppStore);
     const root = state.filesystemRoot;
     const cwd = state.cwd;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: revealCounter is a state primitive, changes trigger re-renders
     const tree = useMemo(() => {
         function renderNode(node: FileNode, depth: number): React.ReactNode {
             if (node.hidden) return null;
@@ -100,7 +102,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand }: Props) {
 
         // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul role="tree"> is the WAI-ARIA recommended tree pattern
         return <ul role="tree">{renderNode(root, 0)}</ul>;
-    }, [root, cwd, expanded, onFileOpen, onToggleExpand]);
+    }, [root, cwd, expanded, onFileOpen, onToggleExpand, revealCounter]);
 
     return (
         <div className="window tree">

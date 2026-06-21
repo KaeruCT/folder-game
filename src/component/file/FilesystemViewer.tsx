@@ -99,8 +99,22 @@ function TreeModeView({
     }, []);
 
     if (showTree) {
-        return <TreeView onFileOpen={onFileOpen} expanded={expanded} onToggleExpand={toggleExpand} />;
+        return (
+            <TreeView
+                onFileOpen={onFileOpen}
+                expanded={expanded}
+                onToggleExpand={toggleExpand}
+                revealCounter={state.revealCounter}
+            />
+        );
     }
 
-    return <DirectoryView directory={cwd} onNavigate={onNavigate} onFileOpen={onFileOpen} />;
+    return (
+        <DirectoryView
+            directory={cwd}
+            onNavigate={onNavigate}
+            onFileOpen={onFileOpen}
+            revealCounter={state.revealCounter}
+        />
+    );
 }

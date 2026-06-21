@@ -7,9 +7,11 @@ interface Props {
     directory: Directory;
     onNavigate: (directory: Directory) => void;
     onFileOpen: (file: File) => void;
+    revealCounter: number;
 }
 
-function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
+function DirectoryView({ directory, onNavigate, onFileOpen, revealCounter }: Props) {
+    // biome-ignore lint/correctness/useExhaustiveDependencies: revealCounter is a state primitive, changes trigger re-renders
     const fileNodes = useMemo(() => {
         const available = directory.contents.filter((fn) => !fn.hidden);
         const nodes = [...available].sort((a, b) => {
@@ -23,7 +25,7 @@ function DirectoryView({ directory, onNavigate, onFileOpen }: Props) {
             nodes.unshift(directory.parent);
         }
         return nodes;
-    }, [directory]);
+    }, [directory, revealCounter]);
 
     return (
         <div className="window directory">
