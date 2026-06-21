@@ -192,13 +192,15 @@ function getRoot(node: FileNode): Directory {
 }
 
 function getFullName(node: FileNode): string {
+    // The root directory has no parent — display as /
+    if (!node.parent) return "/";
     let fullName = node.name;
     let parent = node.parent;
-    while (parent) {
+    while (parent?.parent) {
         fullName = `${parent.name}${SEPARATOR}${fullName}`;
         parent = parent.parent;
     }
-    return fullName;
+    return `/${fullName}`;
 }
 
 function setLock(node: FileNode, meta: Meta) {
@@ -207,9 +209,11 @@ function setLock(node: FileNode, meta: Meta) {
     }
 }
 
-/** Find a node by its full path (e.g. "$ROOT/users/evan/diary/may1.txt"). */
+/** Find a node by its full path. The `$ROOT` prefix (if present) is stripped. */
 export function findNode(root: Directory, fullPath: string): FileNode | undefined {
-    const parts = fullPath.split(SEPARATOR).filter(Boolean);
+    const rawParts = fullPath.split(SEPARATOR).filter(Boolean);
+    // Skip leading $ROOT sentinel — it means "start from root"
+    const parts = rawParts[0] === "$ROOT" ? rawParts.slice(1) : rawParts;
     let current: FileNode | undefined = root;
 
     for (const part of parts) {
