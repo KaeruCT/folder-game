@@ -113,8 +113,8 @@ const storyline: Storyline = {
         });
 
         const porn = evan.createDirectory("porn");
-        porn.createFile("italian.mp4", "/vid/italian.mp4");
-        porn.createFile("smell.mp4", "/vid/smell.mp4");
+        porn.createFile("italian.mp4", "vid/italian.mp4");
+        porn.createFile("smell.mp4", "vid/smell.mp4");
 
         const programs = root.createDirectory("programs");
         programs.createFile("lock.exe", lockExe, {
@@ -182,7 +182,7 @@ const storyline: Storyline = {
                         c.log("goal", "A hidden truth directory has been unlocked. The evidence is inside.");
                     },
                 });
-                this.root.createFile("gnu.webm", "/vid/gnu.webm");
+                this.root.createFile("gnu.webm", "vid/gnu.webm");
                 ctx.log("milestone", "Lockdown complete. New files appeared in the root directory.");
             },
         });
