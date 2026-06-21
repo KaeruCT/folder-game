@@ -8,7 +8,8 @@ export interface SaveSnapshot {
     readFiles: string[];
     logEntries: LogEntry[];
     inventory: Record<string, number>;
-    hiddenPaths: string[];
+    /** Paths where hidden state differs from fresh. value = current hidden state. */
+    hiddenStates: Record<string, boolean>;
     unlockedPaths: string[];
     modifiedContent: Record<string, string>;
     // biome-ignore lint/suspicious/noExplicitAny: serialized meta bag
@@ -37,7 +38,7 @@ export function buildSnapshot(
         readFiles: [...readFiles],
         logEntries: [...logEntries],
         inventory: {},
-        hiddenPaths: [],
+        hiddenStates: {},
         unlockedPaths: [],
         modifiedContent: {},
         createdFiles: {},
@@ -76,17 +77,27 @@ function diffTrees(current: Directory, fresh: Directory, snapshot: SaveSnapshot)
                     content: node.content,
                     meta: stripMeta(node.meta),
                 };
+                // Dynamically created files may be hidden — capture that too
+                if (node.hidden) {
+                    snapshot.hiddenStates[path] = true;
+                }
                 continue;
             }
 
             if (node.hidden !== freshFile.hidden) {
-                snapshot.hiddenPaths.push(path);
+                snapshot.hiddenStates[path] = node.hidden;
             }
             if (node.content !== freshFile.content) {
                 snapshot.modifiedContent[path] = node.content;
             }
             if (Object.keys(node.runState).length > 0) {
                 snapshot.runStates[path] = { ...node.runState };
+            }
+        } else if (node instanceof Directory) {
+            const freshDir = freshNode instanceof Directory ? freshNode : undefined;
+
+            if (freshDir && node.hidden !== freshDir.hidden) {
+                snapshot.hiddenStates[path] = node.hidden;
             }
         }
 
@@ -106,9 +117,9 @@ export function applySnapshot(root: Directory, snapshot: SaveSnapshot): void {
         const node = findNode(root, path);
         if (node) node.locked = false;
     }
-    for (const path of snapshot.hiddenPaths) {
+    for (const [path, hidden] of Object.entries(snapshot.hiddenStates)) {
         const node = findNode(root, path);
-        if (node instanceof File) node.hidden = true;
+        if (node) node.hidden = hidden;
     }
     for (const [path, content] of Object.entries(snapshot.modifiedContent)) {
         const node = findNode(root, path);
@@ -174,7 +185,7 @@ function validateSnapshot(raw: unknown): string | null {
     if (!Array.isArray(s.readFiles)) return "Save data has invalid read file tracking.";
     if (!Array.isArray(s.logEntries)) return "Save data has invalid log entries.";
     if (!s.inventory || typeof s.inventory !== "object") return "Save data has invalid inventory.";
-    if (!Array.isArray(s.hiddenPaths)) return "Save data has invalid hidden file tracking.";
+    if (!s.hiddenStates || typeof s.hiddenStates !== "object") return "Save data has invalid hidden state tracking.";
     if (!Array.isArray(s.unlockedPaths)) return "Save data has invalid unlock tracking.";
     if (!s.modifiedContent || typeof s.modifiedContent !== "object") return "Save data has invalid file content.";
     if (!s.createdFiles || typeof s.createdFiles !== "object") return "Save data has invalid created files.";
