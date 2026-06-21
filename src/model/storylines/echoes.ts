@@ -107,11 +107,11 @@ const storyline: Storyline = {
             },
         });
 
-        // Expedition reports
+        // Expedition reports — report_1 is public; reports 2&3 require clearance
         const expeditions = research.createDirectory("expeditions");
         expeditions.createFile("report_1.txt", EXPEDITION_1);
-        expeditions.createFile("report_2.txt", EXPEDITION_2, {
-            key: "expedition_clearance",
+        const restricted = expeditions.createDirectory("restricted", { key: "expedition_clearance" });
+        restricted.createFile("report_2.txt", EXPEDITION_2, {
             onRead(ctx) {
                 ctx.dispatch({ type: "ADD_ITEMS", payload: { echo_cipher: 1 } });
                 ctx.log(
@@ -125,8 +125,7 @@ const storyline: Storyline = {
                 ctx.log("goal", "Open the sacred texts directory to read the decrypted fragments.");
             },
         });
-        expeditions.createFile("report_3.txt", EXPEDITION_3, {
-            key: "expedition_clearance",
+        restricted.createFile("report_3.txt", EXPEDITION_3, {
             onRead(ctx) {
                 ctx.dispatch({ type: "ADD_ITEMS", payload: { kael_contact: 1 } });
                 ctx.log(
