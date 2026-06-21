@@ -7,18 +7,18 @@
         height: 100%;
         padding: 24px;
         text-align: center;
-        color: #888;
 
         &__icon {
-            font-size: 48px;
+            font-size: 40px;
             margin-bottom: 16px;
-            opacity: 0.5;
+            opacity: 0.3;
         }
 
         &__text {
-            font-size: 14px;
+            font-size: 13px;
             line-height: 1.5;
             max-width: 260px;
+            color: var(--text-muted);
         }
     }
 
@@ -28,7 +28,7 @@
         padding: 12px 16px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
 }
 
@@ -37,29 +37,29 @@
     align-items: flex-start;
     gap: 12px;
     padding: 14px 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e8e8eb;
+    background: var(--bg-elevated);
+    border-radius: 2px;
+    border: 1px solid var(--border);
     transition:
         background 0.15s,
         border-color 0.15s;
 
     &:hover {
-        background: #f0f2f5;
-        border-color: #d8dadf;
+        background: var(--bg-hover);
+        border-color: var(--text-muted);
     }
 
     &__icon {
-        font-size: 28px;
+        font-size: 24px;
         flex-shrink: 0;
         width: 40px;
         height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #fff;
-        border-radius: 8px;
-        border: 1px solid #e8e8eb;
+        background: var(--bg-surface);
+        border-radius: 2px;
+        border: 1px solid var(--border);
     }
 
     &__body {
@@ -68,27 +68,27 @@
     }
 
     &__name {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        color: #1a1a1a;
+        color: var(--text-primary);
         margin-bottom: 3px;
     }
 
     &__desc {
-        font-size: 12px;
-        color: #777;
+        font-size: 11px;
+        color: var(--text-muted);
         line-height: 1.4;
     }
 
     &__qty {
         flex-shrink: 0;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        color: #fff;
-        background: #555;
-        border-radius: 10px;
-        padding: 2px 8px;
-        min-width: 24px;
+        color: var(--bg-root);
+        background: var(--accent);
+        border-radius: 2px;
+        padding: 2px 7px;
+        min-width: 22px;
         text-align: center;
         margin-top: 2px;
     }

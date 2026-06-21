@@ -6,17 +6,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    font-family: var(--font-mono);
 
     h1 {
         margin: 0 0 8px;
-        font-size: 28px;
+        font-size: 24px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-shadow: 0 0 20px var(--accent-glow);
     }
 }
 
 .storyline-subtitle {
-    color: #666;
-    margin: 0 0 32px;
-    font-size: 16px;
+    color: var(--text-muted);
+    margin: 0 0 40px;
+    font-size: 13px;
+    letter-spacing: 1px;
 }
 
 .storyline-list {
@@ -31,26 +37,32 @@
     cursor: pointer;
     text-align: left;
     padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 8px;
-    background: #fff;
-    transition: border-color 0.15s, background 0.15s;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: var(--bg-surface);
+    transition:
+        border-color 0.15s,
+        background 0.15s,
+        box-shadow 0.15s;
 
     &:hover,
     &:active {
-        border-color: #26b1f1;
-        background: #f0f9ff;
+        border-color: var(--accent);
+        background: var(--bg-elevated);
+        box-shadow: var(--shadow-glow);
     }
 }
 
 .storyline-card__name {
-    font-weight: bold;
-    font-size: 18px;
+    font-weight: 700;
+    font-size: 16px;
     margin-bottom: 4px;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
 }
 
 .storyline-card__desc {
-    color: #666;
-    font-size: 14px;
-    line-height: 1.4;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
 }

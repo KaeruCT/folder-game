@@ -47,7 +47,7 @@ function LogViewer() {
                         type="button"
                         className="styled-button"
                         onClick={handleReset}
-                        style={{ background: "#f44" }}
+                        style={{ background: "var(--color-goal)" }}
                     >
                         Reset Game
                     </button>
@@ -79,7 +79,12 @@ function LogViewer() {
                 >
                     Save Now
                 </button>
-                <button type="button" className="styled-button" onClick={handleReset} style={{ background: "#f44" }}>
+                <button
+                    type="button"
+                    className="styled-button"
+                    onClick={handleReset}
+                    style={{ background: "var(--color-goal)" }}
+                >
                     Reset Game
                 </button>
             </div>

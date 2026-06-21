@@ -4,6 +4,7 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
+    background: var(--bg-root);
 
     .view-container {
         flex: 1;

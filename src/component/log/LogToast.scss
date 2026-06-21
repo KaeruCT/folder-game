@@ -1,5 +1,3 @@
-@use "../../App";
-
 .log-toast {
     position: absolute;
     bottom: 12px;
@@ -9,81 +7,78 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px 16px;
-    background: #1a1a1a;
-    color: #eee;
-    border-radius: 6px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    padding: 14px 16px;
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border-radius: 2px;
+    box-shadow: var(--shadow-elevated);
     cursor: pointer;
-    animation: toast-in 0.25s ease-out;
-    font-family:
-        "Source Code Pro",
-        ui-monospace,
-        monospace;
+    animation: toast-in 0.2s ease-out;
+    font-family: var(--font-mono);
     line-height: 1.5;
 
     &:hover {
-        background: #222;
+        background: var(--bg-hover);
     }
 
     &--story {
-        border-left: 3px solid #4a90d9;
+        border-left: 2px solid var(--color-story);
     }
 
     &--goal {
-        border-left: 3px solid #e0554a;
+        border-left: 2px solid var(--color-goal);
     }
 
     &--milestone {
-        border-left: 3px solid #3cb35a;
+        border-left: 2px solid var(--color-milestone);
     }
 
     &--system {
-        border-left: 3px solid #9b5de5;
+        border-left: 2px solid var(--color-system);
     }
 
     &__badge {
         flex-shrink: 0;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.6px;
-        padding: 2px 8px;
-        border-radius: 3px;
-        margin-top: 2px;
+        letter-spacing: 0.8px;
+        padding: 2px 7px;
+        border-radius: 2px;
+        margin-top: 1px;
     }
 
     &--story &__badge {
-        background: rgba(74, 144, 217, 0.2);
-        color: #4a90d9;
+        background: var(--color-story-dim);
+        color: var(--color-story);
     }
 
     &--goal &__badge {
-        background: rgba(224, 85, 74, 0.2);
-        color: #e0554a;
+        background: var(--color-goal-dim);
+        color: var(--color-goal);
     }
 
     &--milestone &__badge {
-        background: rgba(60, 179, 90, 0.2);
-        color: #3cb35a;
+        background: var(--color-milestone-dim);
+        color: var(--color-milestone);
     }
 
     &--system &__badge {
-        background: rgba(155, 93, 229, 0.2);
-        color: #9b5de5;
+        background: var(--color-system-dim);
+        color: var(--color-system);
     }
 
     &__text {
         flex: 1;
-        font-size: 13px;
-        color: #ddd;
+        font-size: 12px;
+        color: var(--text-secondary);
     }
 
     &__close {
         flex-shrink: 0;
         background: none;
         border: none;
-        color: #888;
+        color: var(--text-muted);
         font-size: 18px;
         line-height: 1;
         padding: 0 4px;
@@ -91,7 +86,7 @@
         margin-top: -2px;
 
         &:hover {
-            color: #fff;
+            color: var(--text-primary);
         }
     }
 }
@@ -99,7 +94,7 @@
 @keyframes toast-in {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;

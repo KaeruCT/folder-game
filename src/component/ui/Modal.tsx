@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react";
-import "./Modal.scss";
 
 interface ModalProps {
     show: boolean;

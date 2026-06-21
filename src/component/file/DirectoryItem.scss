@@ -2,39 +2,49 @@
     position: relative;
     cursor: pointer;
     touch-action: manipulation;
+    color: var(--text-secondary);
+    transition:
+        background 0.12s,
+        color 0.12s;
 
     &:focus-visible {
-        outline: #6af 2px solid;
+        outline: 1px solid var(--accent);
+        outline-offset: -1px;
     }
 
     &:hover {
-        background: #d6eeff;
+        background: var(--bg-hover);
+        color: var(--text-primary);
     }
+
     &:active {
-        background: #bee4fc;
+        background: var(--bg-elevated);
     }
 
     &.locked {
-        opacity: 0.5;
+        opacity: 0.45;
+
         &::after {
             position: absolute;
             display: block;
             background-image: url("../icons/lock.svg");
             background-size: contain;
             background-repeat: no-repeat;
-            width: 20px;
-            height: 20px;
-            bottom: 32px;
+            width: 16px;
+            height: 16px;
+            bottom: 28px;
             right: 4px;
             content: "";
+            filter: brightness(0.7);
         }
     }
 
     img {
         display: block;
-        margin: 0 auto 8px;
-        width: 48px;
-        height: 48px;
+        margin: 0 auto 6px;
+        width: 44px;
+        height: 44px;
+        opacity: 0.75;
     }
 
     width: 30%;
@@ -42,9 +52,9 @@
     min-height: 96px;
     text-align: center;
     margin: 4px;
-    padding: 8px;
-    font-size: 12px;
-    border-radius: 4px;
+    padding: 8px 4px;
+    font-size: 11px;
+    border-radius: 2px;
     word-break: break-word;
     overflow-wrap: break-word;
 }

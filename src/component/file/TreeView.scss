@@ -3,10 +3,7 @@
         height: 100%;
         overflow-y: auto;
         padding: 8px 0;
-        font-family:
-            "Source Code Pro",
-            ui-monospace,
-            monospace;
+        font-family: var(--font-mono);
         font-size: 13px;
         user-select: none;
 
@@ -21,32 +18,37 @@
 .tree-node {
     cursor: pointer;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.8;
-
-    &:hover {
-        background: rgba(0, 0, 0, 0.04);
-    }
 
     &__row {
         display: flex;
         align-items: center;
         gap: 4px;
-        padding: 1px 12px;
+        padding: 2px 12px;
+        margin: 0 4px;
+        border-radius: 2px;
+        transition: background 0.1s;
+
+        &:hover {
+            background: var(--bg-hover);
+        }
+
+        &:focus-visible {
+            outline: 1px solid var(--accent);
+            outline-offset: -1px;
+        }
     }
 
     &__arrow {
         flex-shrink: 0;
         width: 14px;
         text-align: center;
-        font-size: 9px;
-        color: #888;
+        font-size: 8px;
+        color: var(--text-muted);
     }
 
     &__icon {
         flex-shrink: 0;
-        font-size: 13px;
+        font-size: 12px;
     }
 
     &__name {
@@ -60,43 +62,34 @@
         margin-left: 2px;
     }
 
-    // Directory styles
     &--dir {
-        color: #1a56c4;
-        font-weight: 500;
-    }
-
-    // Current working directory
-    &--cwd {
-        background: rgba(26, 86, 196, 0.08);
-        border-radius: 3px;
+        color: var(--text-secondary);
 
         .tree-node__name {
+            font-weight: 600;
+        }
+    }
+
+    &--cwd {
+        .tree-node__row {
+            background: var(--accent-dim);
+        }
+
+        .tree-node__name {
+            color: var(--accent);
             font-weight: 700;
         }
     }
 
-    // File styles
     &--file {
-        color: #333;
-
-        &:hover {
-            color: #111;
-        }
+        color: var(--text-primary);
     }
 
-    // Locked nodes
     &--locked {
-        color: #999;
-        font-style: italic;
-
-        .tree-node__lock {
-            opacity: 0.6;
-        }
+        opacity: 0.4;
     }
 
-    // Children indentation
     &__children {
-        // indentation handled by padding on each row
+        // indentation via padding on row
     }
 }

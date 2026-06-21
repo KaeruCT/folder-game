@@ -39,8 +39,8 @@ class ErrorBoundary extends Component<PropsWithChildren, { error: Error | null }
         if (this.state.error) {
             return (
                 <div className="crash-screen" style={{ padding: 40, textAlign: "center" }}>
-                    <h2>Something broke</h2>
-                    <p>{this.state.error.message}</p>
+                    <h2 style={{ color: "var(--color-goal)" }}>Something broke</h2>
+                    <p style={{ color: "var(--text-secondary)" }}>{this.state.error.message}</p>
                     <button type="button" className="styled-button" onClick={() => this.setState({ error: null })}>
                         Retry
                     </button>
@@ -111,16 +111,16 @@ function App() {
             <div className="app">
                 <div className="view-container">
                     <div style={{ padding: 40, textAlign: "center", maxWidth: 400, margin: "0 auto" }}>
-                        <h2>Save Data Error</h2>
-                        <p style={{ color: "#666", marginBottom: 24 }}>{loadError}</p>
-                        <p style={{ fontSize: 14, color: "#999", marginBottom: 24 }}>
+                        <h2 style={{ color: "var(--color-goal)" }}>Save Data Error</h2>
+                        <p style={{ color: "var(--text-secondary)", marginBottom: 24 }}>{loadError}</p>
+                        <p style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 24 }}>
                             Your saved progress cannot be loaded. You&apos;ll need to start over.
                         </p>
                         <button
                             type="button"
                             className="styled-button"
                             onClick={handleStartOver}
-                            style={{ background: "#f44" }}
+                            style={{ background: "var(--color-goal)" }}
                         >
                             Start Over
                         </button>
