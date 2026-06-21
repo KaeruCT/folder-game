@@ -8,19 +8,21 @@ A mystery/puzzle game that simulates a hacked computer's filesystem. Navigate di
 - [Game Story](#game-story)
 - [Gameplay Mechanics](#gameplay-mechanics)
 - [Tech Stack](#tech-stack)
+- [Quality Pipeline](#quality-pipeline)
 - [Project Structure](#project-structure)
 - [Architecture](#architecture)
   - [Component Tree](#component-tree)
   - [State Management](#state-management)
   - [Data Model](#data-model)
 - [Setup & Development](#setup--development)
-- [Available Scripts](#available-scripts)
-- [Webpack Configuration](#webpack-configuration)
+- [Deployment](#deployment)
 - [License](#license)
 
 ## Overview
 
 **folder-game** is a single-page React application that presents a fake operating system desktop with a filesystem browser. The player navigates a mock directory tree, opens files, runs executables, and uses inventory items (keys) to unlock secured content. Files can self-destruct, execute with simulated console output, display images/videos, or become corrupted.
+
+Built for mobile — touch-friendly, notch-safe, 44px tap targets, no pull-to-refresh.
 
 ## Game Story
 
@@ -69,78 +71,85 @@ Files with image extensions (`jpg`, `jpeg`, `gif`, `png`) render as images. File
 
 ## Tech Stack
 
-| Dependency | Version | Purpose |
-|---|---|---|
-| React | ^16.13.1 | UI framework |
-| TypeScript | ~3.7.2 | Type checking |
-| @craco/craco | ^5.6.4 | CRA configuration override (webpack customization) |
-| immer | ^7.0.3 | Immutable state updates |
-| lodash | ^4.17.15 | Utility functions (sortBy) |
-| node-sass | ^4.14.1 | SCSS compilation |
-| raw-loader | ^4.0.1 | Import `.txt` files as raw strings |
-| react-scripts | 3.4.1 | Create React App toolchain |
-| @testing-library/react | ^9.3.2 | Component testing |
+| Dependency | Purpose |
+|---|---|
+| React 18 | UI framework |
+| TypeScript 5 | Type checking (strict mode) |
+| Vite 5 | Bundler + dev server |
+| pnpm | Package manager |
+| SCSS (dart-sass) | Styling |
+
+**Quality tools:**
+
+| Tool | Purpose |
+|---|---|
+| Biome 2 | Linter + formatter (Rust) |
+| Knip | Dead code detection (Rust) |
+| dupehound | Structural duplicate detection (Rust) |
+
+No external state library — uses `useReducer` + `Context`. No runtime dependencies beyond React.
+
+## Quality Pipeline
+
+Every change must pass all four checks before being considered done:
+
+```sh
+pnpm check && pnpm knip && pnpm dupe && pnpm build
+```
+
+| Script | What it does |
+|---|---|
+| `pnpm check` | Biome linter + formatter (166 files, zero tolerance) |
+| `pnpm check:write` | Auto-fix formatting, imports, and safe lint fixes |
+| `pnpm knip` | Dead code detection (unused exports, deps, files) |
+| `pnpm dupe` | dupehound structural duplicate scan (grade A, 0% slop) |
+| `pnpm dupe:check` | CI diff gate — fails if new code duplicates existing functions |
+| `pnpm build` | TypeScript compilation + Vite production build |
+| `pnpm dev` | Vite dev server (hot reload) |
+| `pnpm preview` | Preview the production build locally |
+
+See [AGENTS.md](./AGENTS.md) for code style and contribution rules.
 
 ## Project Structure
 
 ```
 folder-game/
-├── public/                          # Static assets (HTML, favicon, manifest)
-│   └── index.html
+├── .github/workflows/
+│   └── deploy.yml              # GitHub Pages deployment on push to master
+├── public/                     # Static assets (favicon, manifest, videos)
+│   └── vid/                    #   In-game video files
 ├── src/
 │   ├── component/
-│   │   ├── file/                    # Filesystem browsing components
-│   │   │   ├── DirectoryItem.tsx     #   Single file/directory entry in a listing
-│   │   │   ├── DirectoryItem.scss
-│   │   │   ├── DirectoryView.tsx     #   Directory contents listing
-│   │   │   ├── DirectoryView.scss
-│   │   │   ├── FilesystemViewer.tsx  #   Top-level: file viewer or directory view
-│   │   │   ├── FileViewer.tsx        #   Renders file content (text/image/video/exe)
-│   │   │   └── FileViewer.scss
-│   │   ├── icons/                   # SVG icons for file types and UI elements
-│   │   │   ├── folder.svg, folder-1..3.svg
-│   │   │   ├── text.svg, text-1..5.svg
-│   │   │   ├── pdf.svg, pdf-1..5.svg
-│   │   │   ├── excel.svg, excel-1..5.svg
-│   │   │   ├── ai.svg, ai-1..5.svg
-│   │   │   ├── ps.svg, ps-1..5.svg
-│   │   │   ├── browser.svg, filesystem.svg, inventory.svg, log.svg
-│   │   │   └── ... (100+ icons)
-│   │   ├── inventory/               # Inventory panel
-│   │   │   ├── InventoryViewer.tsx
-│   │   │   └── InventoryViewer.scss
-│   │   ├── navigation/              # Bottom navigation bar
-│   │   │   ├── Navigation.tsx
-│   │   │   └── Navigation.scss
-│   │   └── ui/                      # Shared UI primitives
-│   │       ├── Modal.tsx
-│   │       └── Modal.scss
-│   ├── game-files/                  # Static game content
-│   │   ├── images/                  #   Images referenced by in-game files
-│   │   │   ├── 1.png, 4.png, 6.png, 7.png, 8.png
-│   │   │   ├── art.jpg, ed.gif, erik.jpg
-│   │   └── intro/                   #   Initial game text files
-│   │       ├── instructions.txt     #     First file the player reads
-│   │       ├── lock.exe.txt         #     Content for the fake lock.exe
-│   │       └── lockout.txt          #     Revealed after lockdown
-│   ├── model/                       # Core game logic and data structures
-│   │   ├── data.ts                  #   Constants: user name lists, file extension maps
-│   │   ├── files.ts                 #   File, Directory, and FileNode classes
-│   │   ├── game.ts                  #   Game initialization (filesystem + inventory)
-│   │   ├── inventory.ts             #   Inventory item management
-│   │   └── util.ts                  #   Random generation helpers
-│   ├── App.tsx                      # Root component (context provider + view router)
-│   ├── App.scss
-│   ├── reducer.ts                   # Game state reducer (useReducer)
-│   ├── index.tsx                    # React entry point
-│   ├── index.scss                   # Global styles
-│   ├── react-app-env.d.ts           # CRA TypeScript declarations
-│   ├── serviceWorker.ts             # CRA service worker (unused)
-│   └── setupTests.ts                # Test setup
-├── craco.config.js                  # CRACO/webpack override (raw-loader for .txt)
-├── tsconfig.json                    # TypeScript configuration
+│   │   ├── file/               # Filesystem browsing components
+│   │   │   ├── DirectoryItem.tsx    # Single file/directory entry
+│   │   │   ├── DirectoryView.tsx    # Directory contents listing
+│   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer or directory view
+│   │   │   └── FileViewer.tsx       # File content renderer (text/image/video/exe)
+│   │   ├── icons/              # SVG icons for file types and UI elements (143 icons)
+│   │   ├── inventory/          # Inventory panel
+│   │   ├── navigation/         # Bottom navigation bar
+│   │   └── ui/                 # Shared UI primitives (Modal)
+│   ├── game-files/             # Static game content
+│   │   ├── images/             #   Images referenced by in-game files
+│   │   └── intro/              #   Initial game text files
+│   ├── model/                  # Core game logic and data structures
+│   │   ├── data.ts             #   Constants (user names, extension maps)
+│   │   ├── files.ts            #   File, Directory, and FileNode classes
+│   │   ├── game.ts             #   Game initialization (filesystem + inventory)
+│   │   ├── inventory.ts        #   Inventory item management
+│   │   └── util.ts             #   Random generation helpers
+│   ├── App.tsx                 # Root component + context provider + view router
+│   ├── reducer.ts              # Game state reducer (useReducer)
+│   ├── index.tsx               # React 18 entry point (createRoot)
+│   └── vite-env.d.ts           # Vite type declarations
+├── index.html                  # Vite HTML entry point
+├── vite.config.ts              # Vite configuration
+├── biome.json                  # Biome linter + formatter config
+├── knip.json                   # Knip dead code detection config
+├── tsconfig.json               # TypeScript configuration
 ├── package.json
-├── yarn.lock
+├── pnpm-lock.yaml
+├── AGENTS.md                   # Agent instructions
 ├── .gitignore
 └── LICENSE
 ```
@@ -156,7 +165,7 @@ App (AppStore.Provider)
 │   │   └── DirectoryItem (× N per listing)
 │   │       └── Modal (for unlock confirmation)
 │   └── FileViewer
-│       ├── ExeOutput          (executable files)
+│       ├── ExeOutput          (executable files / typewriter effect)
 │       │   └── FileContent
 │       │       └── CorruptedFileContent
 │       ├── PlainTextOutput    (default text files)
@@ -164,21 +173,21 @@ App (AppStore.Provider)
 │       ├── ImageResourceOutput (image extensions)
 │       └── VideoResourceOutput (video extensions)
 ├── InventoryViewer
-└── Navigation (tab bar)
+└── Navigation (tab bar: Filesystem / Inventory / Log)
 ```
 
 ### State Management
 
-The app uses React's `useReducer` + `Context` rather than external state libraries. Immer was a dependency but is not directly used in the reducer.
+Uses React's `useReducer` + `Context`. No external state library.
 
 **State shape:**
 
 ```typescript
 interface State {
-    inventory: Inventory;           // Record<ItemType, Item>
+    inventory: Inventory;           // Record<ItemType, { type, quantity }>
     filesystemRoot: Directory;      // Root of the entire directory tree
-    cwd: Directory;                // Current working directory
-    file: File | null;             // Currently open file (null = directory view)
+    cwd: Directory;                 // Current working directory
+    file: File | null;              // Currently open file (null = directory view)
 }
 ```
 
@@ -225,7 +234,6 @@ class Directory {
     locked: boolean;
     hidden: boolean;
     // Computed: fullName, fileCount, contents, root
-    addDirectory(directory: Directory): Directory;
     createDirectory(name: string, meta?: Meta): Directory;
     createFile(name: string, content: string, meta?: Meta): File;
     fileExists(name: string): boolean;
@@ -239,18 +247,17 @@ class Directory {
 ```typescript
 type Meta = {
     [key: string]: any;
-    run?: (this: File, log: (line: string) => void) => void;  // Executable behavior
+    run?: (this: File, log: (line: string) => void) => void;
 };
 ```
 
-Used properties include: `key` (lock type), `selfDestruct` (hide after read), `corrupted` (garbled display), `password` (alternative lock mechanism, unused).
+Used properties: `key` (lock type), `selfDestruct` (hide after read), `corrupted` (garbled display).
 
 #### Inventory
 
 ```typescript
 type ItemType = string;
-type Item = { type: ItemType; quantity: number };
-type Inventory = Record<ItemType, Item>;
+type Inventory = Record<ItemType, { type: ItemType; quantity: number }>;
 ```
 
 Functions: `addItem(inventory, itemType)` increments quantity; `removeItem(inventory, itemType)` decrements and removes at zero.
@@ -299,78 +306,48 @@ Initial inventory: 2× `diary_entry`, 1× `sys`.
 
 ### Prerequisites
 
-- Node.js (v12+ recommended to match the `@types/node` version)
-- Yarn (v1.x)
+- Node.js 22+
+- pnpm
 
 ### Install
 
 ```bash
-yarn install
+pnpm install
 ```
 
-> **Note:** This project uses `node-sass` v4 which may require Python 2 and a C++ compiler. If you encounter build errors, consider upgrading to `sass` (dart-sass) or using a compatible Node version.
-
-### Start Development Server
+### Start Dev Server
 
 ```bash
-yarn start
+pnpm dev
 ```
 
-Opens the app at [http://localhost:3000](http://localhost:3000). Hot reloads on changes.
+Opens at [http://localhost:5173](http://localhost:5173). Hot reload on changes.
+
+### Run Quality Checks
+
+```bash
+pnpm check && pnpm knip && pnpm dupe && pnpm build
+```
+
+All four must pass with zero errors.
 
 ### Build for Production
 
 ```bash
-yarn build
+pnpm build
 ```
 
-Outputs optimized, minified assets to the `build/` directory with content hashes in filenames.
+Outputs to `dist/` — 54 KB gzipped JS, 2 KB gzipped CSS.
 
-### Running Tests
+## Deployment
 
-```bash
-yarn test
+Pushes to `master` automatically deploy to GitHub Pages via the workflow in `.github/workflows/deploy.yml`. The site is served at:
+
+```
+https://kaeruct.github.io/folder-game/
 ```
 
-Launches Jest in interactive watch mode.
-
-## Available Scripts
-
-| Script | Command | Description |
-|---|---|---|
-| `start` | `craco start` | Development server |
-| `build` | `craco build` | Production build |
-| `test` | `craco test` | Test runner (Jest) |
-| `eject` | `craco eject` | Eject CRA configuration |
-
-All scripts use `craco` (Create React App Configuration Override) instead of `react-scripts` directly, allowing the custom webpack configuration below.
-
-## Webpack Configuration
-
-The project uses **CRACO** (`@craco/craco`) to customize the Create React App webpack config without ejecting. The override in `craco.config.js` adds `raw-loader` for `.txt` files, placed before the default `file-loader`:
-
-```javascript
-// craco.config.js
-module.exports = {
-    plugins: [{
-        plugin: {
-            overrideWebpackConfig: ({ webpackConfig }) => {
-                addBeforeLoader(webpackConfig, loaderByName('file-loader'), {
-                    test: /\.txt$/i,
-                    use: 'raw-loader',
-                });
-                return webpackConfig;
-            }
-        }
-    }]
-};
-```
-
-This allows importing `.txt` files as raw strings in TypeScript:
-
-```typescript
-const instructions = require("../game-files/intro/instructions.txt").default;
-```
+The workflow uses `pnpm install --frozen-lockfile` → `pnpm build` → GitHub Pages artifact deployment. No branch juggling — deploys directly from the workflow run.
 
 ## License
 
