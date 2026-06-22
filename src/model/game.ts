@@ -4,10 +4,14 @@ import type { LogEntry } from "./log";
 import type { Storyline } from "./storyline";
 import echoesStoryline from "./storylines/echoes";
 import lockdownStoryline from "./storylines/lockdown";
+import restaurantStoryline from "./storylines/restaurant";
+import unsaidStoryline from "./storylines/unsaid";
 
 const storylines: Record<string, Storyline> = {
     echoes: echoesStoryline,
     lockdown: lockdownStoryline,
+    unsaid: unsaidStoryline,
+    restaurant: restaurantStoryline,
 };
 
 export function getAllStorylines(): Storyline[] {
