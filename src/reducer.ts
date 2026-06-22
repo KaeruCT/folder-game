@@ -128,24 +128,26 @@ export function reducer(state: State, action: Action): State {
         case "SET_FILE": {
             const file = action.payload as File;
             if (file) {
-                if (!readFiles.includes(file.fullName)) {
+                const isFirstRead = !readFiles.includes(file.fullName);
+                if (isFirstRead) {
                     readFiles = [...readFiles, file.fullName];
                 }
 
                 const ctx = makeRunContext(state);
 
-                if (file.meta.onRead) {
-                    file.meta.onRead(ctx);
-                }
-                if (file.meta.revealsOnRead) {
-                    for (const revealPath of file.meta.revealsOnRead) {
-                        const node = findNode(filesystemRoot, revealPath);
-                        if (node) node.hidden = false;
+                if (isFirstRead) {
+                    if (file.meta.onRead) {
+                        file.meta.onRead(ctx);
                     }
-                }
-
-                if (file.meta.selfDestruct) {
-                    file.hidden = true;
+                    if (file.meta.revealsOnRead) {
+                        for (const revealPath of file.meta.revealsOnRead) {
+                            const node = findNode(filesystemRoot, revealPath);
+                            if (node) node.hidden = false;
+                        }
+                    }
+                    if (file.meta.selfDestruct) {
+                        file.hidden = true;
+                    }
                 }
                 if (file.isExecutable) {
                     file.run(ctx);
@@ -172,7 +174,7 @@ export function reducer(state: State, action: Action): State {
                     }
                 }
             }
-            return { ...state, filesystemRoot, inventory };
+            return { ...state, filesystemRoot, inventory, revealCounter: state.revealCounter + 1 };
         }
         case "LOAD_GAME": {
             const snapshot = action.payload as SaveSnapshot;
