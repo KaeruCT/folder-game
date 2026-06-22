@@ -9,3 +9,7 @@
 .DS_Store
 *.local
 *.tsbuildinfo
+
+# Playwright
+/test-results/
+/playwright-report/

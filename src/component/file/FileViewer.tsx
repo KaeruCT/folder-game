@@ -1,8 +1,12 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import "./FileViewer.scss";
 import { AppStore } from "../../App";
 import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import type { File } from "../../model/files";
+
+// ---------------------------------------------------------------------------
+// Corrupted content (flickering)
+// ---------------------------------------------------------------------------
 
 function corruptContent(content: string): string {
     const chars = new Array<string>(content.length);
@@ -24,72 +28,85 @@ function corruptContent(content: string): string {
     return chars.join("");
 }
 
-interface ContentProps {
-    file: File;
-    content: string;
+// ---------------------------------------------------------------------------
+// Typewriter engine — reveals characters one at a time
+// ---------------------------------------------------------------------------
+
+// Typewriter speed. Set window.__TYPEWRITER_SPEED__ to override (e.g. 1 for tests).
+function getSpeed(): number {
+    // biome-ignore lint/suspicious/noExplicitAny: test-only window override
+    const override = (window as any).__TYPEWRITER_SPEED__;
+    return typeof override === "number" ? override : 12;
 }
 
-function FileContent({ file, content }: ContentProps) {
-    if (file.meta.corrupted) {
-        return <CorruptedFileContent content={content} file={file} />;
+function Typewriter({ content, className }: { content: string; className?: string }) {
+    const [revealed, setRevealed] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval>>();
+
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setRevealed((prev) => {
+                const next = prev + 1;
+                if (next >= content.length) {
+                    clearInterval(intervalRef.current);
+                }
+                return next < content.length ? next : prev;
+            });
+        }, getSpeed());
+        return () => clearInterval(intervalRef.current);
+    }, [content.length]);
+
+    const visible = content.slice(0, revealed);
+
+    if (className === "corrupted") {
+        return <CorruptedText content={visible} />;
     }
-    if (file.isExecutable || file.extension === "exe") {
-        return <pre>{content}</pre>;
-    }
-    return <div className="file-text">{content}</div>;
+
+    return <div className="file-text">{visible}</div>;
 }
 
-function CorruptedFileContent({ content }: ContentProps) {
+function CorruptedText({ content }: { content: string }) {
     const TIMEOUT = 400;
-    const [corruptedContent, setCorruptedContent] = useState(content);
+    const [glitched, setGlitched] = useState(content);
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setCorruptedContent(corruptContent(content));
+            setGlitched(corruptContent(content));
         }, TIMEOUT);
         return () => clearInterval(interval);
     }, [content]);
 
-    return <div className="file-text file-text--corrupted">{corruptedContent}</div>;
+    return <div className="file-text file-text--corrupted">{glitched}</div>;
 }
+
+// ---------------------------------------------------------------------------
+// Output components
+// ---------------------------------------------------------------------------
 
 interface OutputProps {
     file: File;
 }
 
-function ExeOutput({ file }: OutputProps) {
-    const TIMEOUT = 600;
-    const lines = useMemo(() => file.content.split("\n"), [file.content]);
-    const [line, setLine] = useState(0);
-    const intervalRef = useRef<ReturnType<typeof setInterval>>();
-
-    useEffect(() => {
-        intervalRef.current = setInterval(() => {
-            setLine((prev) => {
-                const next = prev + 1;
-                return next < lines.length ? next : prev;
-            });
-        }, TIMEOUT);
-        return () => clearInterval(intervalRef.current);
-    }, [lines.length]);
-
-    useEffect(() => {
-        if (line >= lines.length - 1 && intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-    }, [line, lines.length]);
-
+function PlainTextOutput({ file }: OutputProps) {
     return (
-        <div className="content file-content exe">
-            <FileContent content={lines.slice(0, line).join("\n")} file={file} />
+        <div className="content file-content">
+            <Typewriter key={file.content} content={file.content} />
         </div>
     );
 }
 
-function PlainTextOutput({ file }: OutputProps) {
+function ExeOutput({ file }: OutputProps) {
+    return (
+        <div className="content file-content exe">
+            <Typewriter key={file.content} content={file.content} />
+        </div>
+    );
+}
+
+function CorruptedOutput({ file }: OutputProps) {
     return (
         <div className="content file-content">
-            <FileContent content={file.content} file={file} />
+            <Typewriter key={file.content} content={file.content} className="corrupted" />
         </div>
     );
 }
@@ -122,8 +139,9 @@ function AudioResourceOutput({ file }: OutputProps) {
 
 function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
     const { dispatch } = useContext(AppStore);
-    // biome-ignore lint/suspicious/noExplicitAny: generic action payload from meta
-    const choices = file.meta.choices as { label: string; action: { type: string; payload: any } }[] | undefined;
+    const choices = file.meta.choices as { label: string; action: { type: string; payload: unknown } }[] | undefined;
+
+    const [typewriterDone, setTypewriterDone] = useState(false);
 
     if (!choices || choices.length === 0) {
         return <PlainTextOutput file={file} />;
@@ -131,31 +149,50 @@ function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
 
     return (
         <div className="content file-content">
-            <FileContent content={file.content} file={file} />
-            <div style={{ paddingTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
-                {choices.map((choice) => (
-                    <button
-                        key={choice.label}
-                        type="button"
-                        className="styled-button"
-                        onClick={() => {
-                            // biome-ignore lint/suspicious/noExplicitAny: generic action from meta
-                            dispatch(choice.action as any);
-                            onClose();
-                        }}
-                    >
-                        {choice.label}
-                    </button>
-                ))}
-            </div>
+            <Typewriter key={file.content} content={file.content} />
+            {/* Choices appear after a brief pause once typewriter finishes */}
+            {typewriterDone && (
+                <div style={{ paddingTop: 20, display: "flex", flexDirection: "column", gap: 10 }}>
+                    {choices.map((choice) => (
+                        <button
+                            key={choice.label}
+                            type="button"
+                            className="styled-button"
+                            onClick={() => {
+                                // biome-ignore lint/suspicious/noExplicitAny: generic action from meta
+                                dispatch(choice.action as any);
+                                onClose();
+                            }}
+                        >
+                            {choice.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {!typewriterDone && <ChoiceRevealTimer content={file.content} onDone={() => setTypewriterDone(true)} />}
         </div>
     );
 }
+
+/** Tiny invisible component that fires onDone after the typewriter finishes. */
+function ChoiceRevealTimer({ content, onDone }: { content: string; onDone: () => void }) {
+    useEffect(() => {
+        const delay = content.length * getSpeed() + 400; // 400ms extra pause
+        const id = setTimeout(onDone, delay);
+        return () => clearTimeout(id);
+    }, [content.length, onDone]);
+    return null;
+}
+
+// ---------------------------------------------------------------------------
+// FileViewer
+// ---------------------------------------------------------------------------
 
 interface Props {
     file: File;
     onClose: () => void;
 }
+
 function FileViewer({ file, onClose }: Props) {
     if (file.meta.choices) {
         return (
@@ -173,19 +210,15 @@ function FileViewer({ file, onClose }: Props) {
 
     let Output = PlainTextOutput;
 
-    if (file.isExecutable || file.extension === "exe") {
+    if (file.meta.corrupted) {
+        Output = CorruptedOutput;
+    } else if (file.isExecutable || file.extension === "exe") {
         Output = ExeOutput;
-    }
-
-    if (IMAGE_EXTENSIONS.includes(file.extension)) {
+    } else if (IMAGE_EXTENSIONS.includes(file.extension)) {
         Output = ImageResourceOutput;
-    }
-
-    if (VIDEO_EXTENSIONS.includes(file.extension)) {
+    } else if (VIDEO_EXTENSIONS.includes(file.extension)) {
         Output = VideoResourceOutput;
-    }
-
-    if (AUDIO_EXTENSIONS.includes(file.extension)) {
+    } else if (AUDIO_EXTENSIONS.includes(file.extension)) {
         Output = AudioResourceOutput;
     }
 

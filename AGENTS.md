@@ -7,7 +7,7 @@ See [STORYLINES.md](./STORYLINES.md) for how to author and register new storylin
 Before marking any task complete, run all four:
 
 ```sh
-pnpm check && pnpm knip && pnpm dupe && pnpm build
+pnpm check && pnpm knip && pnpm dupe && pnpm test && pnpm build
 ```
 
 All must pass with zero errors. If Biome, Knip, or dupehound fail, fix them. If the build fails, fix it. Never suppress issues without a comment explaining why.
