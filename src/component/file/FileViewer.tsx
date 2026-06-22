@@ -36,7 +36,7 @@ function corruptContent(content: string): string {
 function getSpeed(): number {
     // biome-ignore lint/suspicious/noExplicitAny: test-only window override
     const override = (window as any).__TYPEWRITER_SPEED__;
-    return typeof override === "number" ? override : 12;
+    return typeof override === "number" ? override : 4;
 }
 
 function Typewriter({ content, className }: { content: string; className?: string }) {
