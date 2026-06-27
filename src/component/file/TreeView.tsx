@@ -2,7 +2,7 @@ import { File, Folder, Lock } from "lucide-react";
 import { useContext, useMemo } from "react";
 import "./TreeView.scss";
 import { AppStore } from "../../App";
-import { Directory, type File as FileModel, type FileNode } from "../../model/files";
+import { compareFileNodes, Directory, type File as FileModel, type FileNode, isMediaFileNode } from "../../model/files";
 
 interface Props {
     onFileOpen: (file: FileModel) => void;
@@ -26,23 +26,16 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
             const isExpanded = expanded.has(node.fullName);
             const isCwd = node === cwd;
             const isLocked = node.locked;
+            const hasKey = typeof node.meta.key === "string" && Boolean(state.inventory[node.meta.key]);
+            const isNew = state.highlightedPaths.includes(node.fullName);
+            const isMedia = isMediaFileNode(node);
 
-            const children =
-                isDir && !isLocked
-                    ? node.contents
-                          .filter((c) => !c.hidden)
-                          .sort((a, b) => {
-                              const aIsDir = a instanceof Directory;
-                              const bIsDir = b instanceof Directory;
-                              if (aIsDir && !bIsDir) return -1;
-                              if (!aIsDir && bIsDir) return 1;
-                              return a.name.localeCompare(b.name);
-                          })
-                    : [];
+            const children = isDir && !isLocked ? node.contents.filter((c) => !c.hidden).sort(compareFileNodes) : [];
 
             function handleClick() {
                 if (isLocked) {
                     dispatch({ type: "UNLOCK_FILENODE", payload: node });
+                    if (!hasKey) return;
                     if (!isDir) {
                         onFileOpen(node as FileModel);
                     } else {
@@ -71,7 +64,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                 }
             }
 
-            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}`;
+            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}${isNew ? " tree-node--new" : ""}${isMedia ? " tree-node--media" : ""}`;
 
             const row = (
                 <div
@@ -83,7 +76,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                     tabIndex={0}
                     aria-expanded={isDir ? isExpanded : undefined}
                     aria-selected={isCwd}
-                    title={isLocked ? `${node.name} (locked)` : node.name}
+                    title={isLocked ? `${node.name} (${hasKey ? "locked" : "requires key"})` : node.name}
                 >
                     <span className="tree-node__arrow">
                         {isDir && !isLocked ? (isExpanded ? "▼" : children.length > 0 ? "▶" : " ") : " "}
@@ -98,6 +91,11 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                         )}
                     </span>
                     <span className="tree-node__name">{node.name}</span>
+                    {isNew && (
+                        <span className="tree-node__badge" aria-hidden="true">
+                            new
+                        </span>
+                    )}
                 </div>
             );
 

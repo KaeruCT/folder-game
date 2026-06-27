@@ -1,8 +1,8 @@
-import { Folder, FolderTree, PackageSearch, ScrollText, Settings } from "lucide-react";
+import { ArrowLeft, Folder, FolderTree, Home, PackageSearch, ScrollText, Settings } from "lucide-react";
 import { useCallback, useContext, useState } from "react";
 import "./HeaderBar.scss";
 import { AppStore } from "../../App";
-import { clearAllTimers } from "../../model/files";
+import { clearAllTimers, type Directory } from "../../model/files";
 import { deleteSave } from "../../model/save";
 import { deferredActions } from "../../reducer";
 
@@ -20,7 +20,7 @@ interface Props {
 
 function badge(count: number) {
     if (count <= 0) return null;
-    const label = count > 9 ? "*" : String(count);
+    const label = count > 9 ? "9+" : String(count);
     return <span className="header-bar__badge">{label}</span>;
 }
 
@@ -37,7 +37,7 @@ function HeaderBar({
     unreadInventoryCount,
     unreadLogCount,
 }: Props) {
-    const { dispatch } = useContext(AppStore);
+    const { state, dispatch } = useContext(AppStore);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const handleSave = useCallback(() => {
@@ -58,9 +58,57 @@ function HeaderBar({
         window.location.reload();
     }, []);
 
+    const ancestors: Directory[] = [];
+    let current: Directory | undefined = state.cwd;
+    while (current) {
+        ancestors.unshift(current);
+        current = current.parent;
+    }
+
+    const navigateTo = useCallback(
+        (directory: Directory) => {
+            dispatch({ type: "SET_CWD", payload: directory });
+        },
+        [dispatch],
+    );
+
     return (
         <div className="header-bar">
-            <span className="header-bar__title">{title}</span>
+            <button
+                type="button"
+                className="header-bar__btn header-bar__btn--nav"
+                onClick={() => state.cwd.parent && navigateTo(state.cwd.parent)}
+                disabled={!state.cwd.parent}
+                title="Back"
+            >
+                <ArrowLeft size={ICON_SIZE} strokeWidth={1.5} />
+            </button>
+
+            <button
+                type="button"
+                className="header-bar__btn header-bar__btn--nav"
+                onClick={() => navigateTo(state.filesystemRoot)}
+                disabled={state.cwd === state.filesystemRoot}
+                title="Root"
+            >
+                <Home size={ICON_SIZE} strokeWidth={1.5} />
+            </button>
+
+            <nav className="header-bar__title" aria-label="Current folder path" title={title}>
+                {ancestors.map((directory, index) => (
+                    <span key={directory.fullName} className="header-bar__crumb-group">
+                        {index > 0 && <span className="header-bar__crumb-separator">/</span>}
+                        <button
+                            type="button"
+                            className="header-bar__crumb"
+                            onClick={() => navigateTo(directory)}
+                            disabled={directory === state.cwd}
+                        >
+                            {index === 0 ? "root" : directory.name}
+                        </button>
+                    </span>
+                ))}
+            </nav>
 
             <button
                 type="button"

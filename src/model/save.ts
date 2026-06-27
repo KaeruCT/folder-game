@@ -8,6 +8,7 @@ export interface SaveSnapshot {
     readFiles: string[];
     logEntries: LogEntry[];
     inventory: Record<string, number>;
+    highlightedPaths?: string[];
     /** Paths where hidden state differs from fresh. value = current hidden state. */
     hiddenStates: Record<string, boolean>;
     unlockedPaths: string[];
@@ -29,6 +30,7 @@ export function buildSnapshot(
     readFiles: string[],
     logEntries: LogEntry[],
     inventory: Record<string, { quantity: number }>,
+    highlightedPaths: string[],
     freshRoot: Directory,
 ): SaveSnapshot {
     const snapshot: SaveSnapshot = {
@@ -38,6 +40,7 @@ export function buildSnapshot(
         readFiles: [...readFiles],
         logEntries: [...logEntries],
         inventory: {},
+        highlightedPaths: [...highlightedPaths],
         hiddenStates: {},
         unlockedPaths: [],
         modifiedContent: {},

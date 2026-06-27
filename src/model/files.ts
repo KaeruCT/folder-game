@@ -1,3 +1,4 @@
+import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "./data";
 import type { LogCategory } from "./log";
 
 const SEPARATOR = "/";
@@ -250,4 +251,26 @@ export function createDirectoryStructure(fullName: string): Directory {
 export function unlockFileNode(fileNode: FileNode): Directory {
     fileNode.locked = false;
     return fileNode.root;
+}
+
+export function isMediaFileNode(fileNode: FileNode): boolean {
+    return (
+        fileNode instanceof File &&
+        (IMAGE_EXTENSIONS.includes(fileNode.extension) ||
+            VIDEO_EXTENSIONS.includes(fileNode.extension) ||
+            AUDIO_EXTENSIONS.includes(fileNode.extension))
+    );
+}
+
+/** Keep folders first, story/action files next, and optional media last. */
+export function compareFileNodes(a: FileNode, b: FileNode): number {
+    const group = (node: FileNode) => {
+        if (node instanceof Directory) return 0;
+        if (isMediaFileNode(node)) return 2;
+        return 1;
+    };
+
+    const groupDelta = group(a) - group(b);
+    if (groupDelta !== 0) return groupDelta;
+    return a.name.localeCompare(b.name);
 }

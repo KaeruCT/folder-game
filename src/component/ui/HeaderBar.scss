@@ -12,15 +12,47 @@
 
     &__title {
         flex: 1;
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        overflow: hidden;
+        padding: 0 4px;
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         color: var(--text-secondary);
         white-space: nowrap;
+    }
+
+    &__crumb-group {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+    }
+
+    &__crumb-separator {
+        color: var(--text-muted);
+    }
+
+    &__crumb {
+        max-width: 120px;
+        padding: 4px 3px;
         overflow: hidden;
+        color: var(--text-secondary);
         text-overflow: ellipsis;
-        padding: 0 4px;
+        text-transform: uppercase;
+        border-radius: 2px;
+
+        &:not(:disabled):hover {
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        &:disabled {
+            color: var(--accent);
+            cursor: default;
+        }
     }
 
     &__btn {
@@ -37,9 +69,19 @@
             background 0.1s,
             color 0.1s;
 
-        &:hover {
+        &:hover:not(:disabled) {
             background: var(--bg-hover);
             color: var(--text-primary);
+        }
+
+        &:disabled {
+            cursor: default;
+            opacity: 0.35;
+        }
+
+        &--nav {
+            min-width: 30px;
+            min-height: 30px;
         }
 
         &--active {

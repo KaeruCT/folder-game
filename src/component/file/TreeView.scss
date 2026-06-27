@@ -56,6 +56,19 @@
         text-overflow: ellipsis;
     }
 
+    &__badge {
+        flex-shrink: 0;
+        margin-left: auto;
+        padding: 1px 4px;
+        border-radius: 2px;
+        background: var(--accent);
+        color: var(--bg-root);
+        font-size: 8px;
+        line-height: 1.2;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
     &--dir {
         color: var(--text-secondary);
 
@@ -81,6 +94,22 @@
 
     &--locked {
         opacity: 0.4;
+    }
+
+    &--new {
+        .tree-node__row {
+            background: var(--accent-dim);
+            box-shadow: inset 0 0 0 1px rgba(200, 150, 62, 0.18);
+        }
+
+        .tree-node__name,
+        .tree-node__icon {
+            color: var(--accent);
+        }
+    }
+
+    &--media {
+        color: var(--text-muted);
     }
 
     &__children {

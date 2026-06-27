@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import "./DirectoryView.scss";
-import { Directory, type File } from "../../model/files";
+import { AppStore } from "../../App";
+import { compareFileNodes, type Directory, type File } from "../../model/files";
 import DirectoryItem from "./DirectoryItem";
 
 interface Props {
@@ -11,21 +12,23 @@ interface Props {
 }
 
 function DirectoryView({ directory, onNavigate, onFileOpen, revealCounter }: Props) {
+    const { state } = useContext(AppStore);
+    const highlightedPaths = state.highlightedPaths ?? [];
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: revealCounter is a state primitive, changes trigger re-renders
     const fileNodes = useMemo(() => {
         const available = directory.contents.filter((fn) => !fn.hidden);
         const nodes = [...available].sort((a, b) => {
-            const aIsDir = a instanceof Directory;
-            const bIsDir = b instanceof Directory;
-            if (aIsDir && !bIsDir) return -1;
-            if (!aIsDir && bIsDir) return 1;
-            return a.name.localeCompare(b.name);
+            const newDelta =
+                Number(highlightedPaths.includes(b.fullName)) - Number(highlightedPaths.includes(a.fullName));
+            if (newDelta !== 0) return newDelta;
+            return compareFileNodes(a, b);
         });
         if (directory.parent) {
             nodes.unshift(directory.parent);
         }
         return nodes;
-    }, [directory, revealCounter]);
+    }, [directory, revealCounter, highlightedPaths]);
 
     return (
         <div className="window directory">

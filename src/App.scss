@@ -13,3 +13,73 @@
         position: relative;
     }
 }
+
+.current-goal,
+.completion-banner {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, var(--accent-dim), rgba(0, 0, 0, 0));
+    font-family: var(--font-mono);
+}
+
+.current-goal {
+    padding: 8px 12px;
+
+    span {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--accent);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.4px;
+        text-transform: uppercase;
+    }
+
+    strong {
+        display: block;
+        color: var(--text-primary);
+        font-size: 12px;
+        line-height: 1.45;
+        text-wrap: pretty;
+    }
+}
+
+.completion-banner {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+
+    strong,
+    span {
+        display: block;
+    }
+
+    strong {
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    span {
+        margin-top: 2px;
+        color: var(--text-secondary);
+        font-size: 11px;
+    }
+
+    button {
+        min-height: 32px;
+        padding: 0 10px;
+        border-radius: 2px;
+        background: var(--accent);
+        color: var(--bg-root);
+        font-size: 11px;
+        font-weight: 700;
+
+        &:hover {
+            box-shadow: var(--shadow-glow);
+        }
+    }
+}

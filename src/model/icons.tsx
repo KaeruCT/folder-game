@@ -1,4 +1,4 @@
-import { BookOpen, ClipboardList, Fingerprint, HelpCircle, MessageCircle, Settings } from "lucide-react";
+import { BookOpen, ClipboardList, Fingerprint, Heart, HelpCircle, Mail, MessageCircle, Settings } from "lucide-react";
 
 /** Resolves a Lucide icon name string to the actual component. */
 export function resolveIcon(name: string, size: number, strokeWidth = 1.5) {
@@ -12,6 +12,10 @@ export function resolveIcon(name: string, size: number, strokeWidth = 1.5) {
             return <Fingerprint {...props} />;
         case "MessageCircle":
             return <MessageCircle {...props} />;
+        case "Heart":
+            return <Heart {...props} />;
+        case "Mail":
+            return <Mail {...props} />;
         case "Settings":
             return <Settings {...props} />;
         default:

@@ -209,7 +209,7 @@ const storyline: Storyline = {
                 report += `NEWEST: ${newest}\n`;
                 parent.createFile(filename, report);
 
-                log(`report created succesfully`);
+                log(`report created successfully`);
             },
         });
 
@@ -300,6 +300,7 @@ const storyline: Storyline = {
 
     getInitialInventory(): Inventory {
         let inventory: Inventory = {};
+        inventory = addItem(inventory, "diary_entry");
         inventory = addItem(inventory, "diary_entry");
         inventory = addItem(inventory, "diary_entry");
         inventory = addItem(inventory, "sys");

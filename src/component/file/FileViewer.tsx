@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import "./FileViewer.scss";
 import { AppStore } from "../../App";
 import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
-import type { File } from "../../model/files";
+import { File, findNode } from "../../model/files";
 
 // ---------------------------------------------------------------------------
 // Corrupted content (flickering)
@@ -138,7 +138,7 @@ function AudioResourceOutput({ file }: OutputProps) {
 }
 
 function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
-    const { dispatch } = useContext(AppStore);
+    const { state, dispatch } = useContext(AppStore);
     const choices = file.meta.choices as { label: string; action: { type: string; payload: unknown } }[] | undefined;
 
     const [typewriterDone, setTypewriterDone] = useState(false);
@@ -159,8 +159,16 @@ function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
                             type="button"
                             className="styled-button"
                             onClick={() => {
+                                const revealedNode =
+                                    choice.action.type === "REVEAL_FILE"
+                                        ? findNode(state.filesystemRoot, choice.action.payload as string)
+                                        : undefined;
                                 // biome-ignore lint/suspicious/noExplicitAny: generic action from meta
                                 dispatch(choice.action as any);
+                                if (revealedNode instanceof File) {
+                                    dispatch({ type: "SET_FILE", payload: revealedNode });
+                                    return;
+                                }
                                 onClose();
                             }}
                         >

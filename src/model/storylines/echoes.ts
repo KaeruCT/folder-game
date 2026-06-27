@@ -341,7 +341,7 @@ const storyline: Storyline = {
                     "Kael's final message: the inner world's resources are finite. The religion is a tool to bring surface people below.",
                 );
                 ctx.log("milestone", "All the pieces are in place. Frank's plan is clear. You must decide what to do.");
-                ctx.log("goal", "Open resolve.txt to make your choice.");
+                ctx.log("goal", "Open resolve.exe to make your choice.");
             },
         });
         kaelDir.createFile("relay.exe", "", {
@@ -506,7 +506,7 @@ const storyline: Storyline = {
             hidden: true,
             onRead(ctx) {
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/the_void.jpg" });
-                ctx.dispatch({ type: "SET_PHASE", payload: 1 });
+                ctx.dispatch({ type: "SET_PHASE", payload: 99 });
                 ctx.log("milestone", "You chose to stay silent.");
                 ctx.log(
                     "story",

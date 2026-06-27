@@ -182,6 +182,10 @@ function App() {
     }
 
     const headerTitle = state.cwd.fullName;
+    const recentEntries = [...state.logEntries].reverse();
+    const currentGoal = recentEntries.find((entry) => entry.category === "goal")?.text;
+    const finalChoice = recentEntries.find((entry) => entry.category === "milestone")?.text;
+    const storyComplete = state.gamePhase >= 97;
 
     return (
         <ErrorBoundary>
@@ -198,6 +202,25 @@ function App() {
                         unreadInventoryCount={state.unreadInventoryCount}
                         unreadLogCount={state.unreadLogCount}
                     />
+                    {storyComplete ? (
+                        <div className="completion-banner">
+                            <div>
+                                <strong>Story complete</strong>
+                                <span>
+                                    {finalChoice ? `${finalChoice} · ` : ""}
+                                    {state.readFiles.length} files discovered
+                                </span>
+                            </div>
+                            <button type="button" onClick={handleStartOver}>
+                                Choose another storyline
+                            </button>
+                        </div>
+                    ) : currentGoal ? (
+                        <div className="current-goal" aria-live="polite">
+                            <span>Current goal</span>
+                            <strong>{currentGoal}</strong>
+                        </div>
+                    ) : null}
                     <div className="view-container">
                         <FilesystemViewer showTree={showTree} />
                     </div>

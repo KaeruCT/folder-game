@@ -35,7 +35,19 @@ const ITEM_REGISTRY: Record<string, ItemInfo> = {
         icon: "MessageCircle",
     },
 
-    // ── The Lockdown (legacy) ──
+    // ── The Things We Don't Say ──
+    elena_password: {
+        name: "Elena Password",
+        description: "Unlocks Daniel's journal",
+        icon: "Heart",
+    },
+    late_returns: {
+        name: "Late Returns Key",
+        description: "Unlocks Daniel's letters to Maya",
+        icon: "Mail",
+    },
+
+    // ── The Lockdown ──
     diary_entry: {
         name: "Diary Entry Key",
         description: "Unlocks Evan's personal diary entries",

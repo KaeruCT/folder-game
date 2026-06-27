@@ -31,8 +31,10 @@ export interface State {
     logEntries: LogEntry[];
     unreadInventoryCount: number;
     unreadLogCount: number;
-    /** Bumped on every REVEAL_FILE so directory/tree views re-filter hidden nodes. */
+    /** Bumped when visible filesystem state changes so directory/tree views re-filter hidden nodes. */
     revealCounter: number;
+    /** Recently revealed or created nodes that should be visually called out until opened. */
+    highlightedPaths: string[];
 }
 
 export interface Action {
@@ -45,6 +47,51 @@ export interface Action {
 export const deferredActions: Action[] = [];
 
 const activeTimers = new Set<ReturnType<typeof setTimeout>>();
+
+function collectVisiblePaths(root: Directory): Set<string> {
+    const paths = new Set<string>();
+
+    function visit(node: FileNode) {
+        if (node.hidden) return;
+        paths.add(node.fullName);
+        if (node instanceof Directory) {
+            for (const child of node.contents) visit(child);
+        }
+    }
+
+    visit(root);
+    return paths;
+}
+
+function addNewVisiblePaths(highlightedPaths: string[] | undefined, before: Set<string>, root: Directory): string[] {
+    const next = new Set(highlightedPaths ?? []);
+    for (const path of collectVisiblePaths(root)) {
+        if (path !== "/" && !before.has(path)) next.add(path);
+    }
+    return [...next];
+}
+
+function markPathSeen(highlightedPaths: string[] | undefined, path: string): string[] {
+    return (highlightedPaths ?? []).filter((highlightedPath) => highlightedPath !== path);
+}
+
+function findVisibleLockedPathsForKeys(root: Directory, keys: string[]): string[] {
+    const keySet = new Set(keys);
+    const paths: string[] = [];
+
+    function visit(node: FileNode) {
+        if (node.hidden) return;
+        if (node.locked && typeof node.meta.key === "string" && keySet.has(node.meta.key)) {
+            paths.push(node.fullName);
+        }
+        if (node instanceof Directory) {
+            for (const child of node.contents) visit(child);
+        }
+    }
+
+    visit(root);
+    return paths;
+}
 
 function scheduleDeferred(action: Action, delayMs: number): () => void {
     const id = setTimeout(() => {
@@ -91,20 +138,36 @@ export function reducer(state: State, action: Action): State {
             }
             return result;
         }
-        case "INVENTORY_ADD":
+        case "INVENTORY_ADD": {
+            const itemType = action.payload as string;
             return {
                 ...state,
-                inventory: addItem(inventory, action.payload),
+                inventory: addItem(inventory, itemType),
+                highlightedPaths: [
+                    ...new Set([
+                        ...(state.highlightedPaths ?? []),
+                        ...findVisibleLockedPathsForKeys(filesystemRoot, [itemType]),
+                    ]),
+                ],
                 unreadInventoryCount: state.unreadInventoryCount + 1,
             };
+        }
         case "INVENTORY_REMOVE":
             return { ...state, inventory: removeItem(inventory, action.payload) };
-        case "ADD_ITEMS":
+        case "ADD_ITEMS": {
+            const items = action.payload as Record<string, number>;
             return {
                 ...state,
-                inventory: addItems(inventory, action.payload),
+                inventory: addItems(inventory, items),
+                highlightedPaths: [
+                    ...new Set([
+                        ...(state.highlightedPaths ?? []),
+                        ...findVisibleLockedPathsForKeys(filesystemRoot, Object.keys(items)),
+                    ]),
+                ],
                 unreadInventoryCount: state.unreadInventoryCount + 1,
             };
+        }
         case "LOG_ADD":
             return {
                 ...state,
@@ -117,16 +180,24 @@ export function reducer(state: State, action: Action): State {
             return { ...state, unreadLogCount: 0 };
         case "SET_PHASE":
             return { ...state, gamePhase: action.payload as number };
-        case "SET_CWD":
-            return { ...state, cwd: action.payload as Directory };
+        case "SET_CWD": {
+            const cwd = action.payload as Directory;
+            return { ...state, cwd, highlightedPaths: markPathSeen(state.highlightedPaths, cwd.fullName) };
+        }
         case "REVEAL_FILE": {
             const path = action.payload as string;
             const node = findNode(filesystemRoot, path);
+            const wasHidden = node?.hidden === true;
             if (node) node.hidden = false;
-            return { ...state, filesystemRoot, revealCounter: state.revealCounter + 1 };
+            const highlightedPaths = wasHidden
+                ? [...new Set([...(state.highlightedPaths ?? []), node.fullName])]
+                : state.highlightedPaths;
+            return { ...state, filesystemRoot, highlightedPaths, revealCounter: state.revealCounter + 1 };
         }
         case "SET_FILE": {
-            const file = action.payload as File;
+            const file = action.payload as File | null;
+            let highlightedPaths = file ? markPathSeen(state.highlightedPaths, file.fullName) : state.highlightedPaths;
+            const beforeVisible = collectVisiblePaths(filesystemRoot);
             if (file) {
                 const isFirstRead = !readFiles.includes(file.fullName);
                 if (isFirstRead) {
@@ -152,11 +223,24 @@ export function reducer(state: State, action: Action): State {
                 if (file.isExecutable) {
                     file.run(ctx);
                 }
+                highlightedPaths = addNewVisiblePaths(highlightedPaths, beforeVisible, file.root);
             }
-            return { ...state, file, filesystemRoot: file ? file.root : filesystemRoot, readFiles };
+            return {
+                ...state,
+                file,
+                filesystemRoot: file ? file.root : filesystemRoot,
+                readFiles,
+                highlightedPaths,
+                revealCounter:
+                    highlightedPaths.join("\0") === (state.highlightedPaths ?? []).join("\0")
+                        ? state.revealCounter
+                        : state.revealCounter + 1,
+            };
         }
         case "UNLOCK_FILENODE": {
             const fileNode: FileNode = action.payload as FileNode;
+            const beforeVisible = collectVisiblePaths(filesystemRoot);
+            let highlightedPaths = markPathSeen(state.highlightedPaths, fileNode.fullName);
             const key: string = fileNode.meta.key;
             if (inventory[key]) {
                 inventory = removeItem(inventory, key);
@@ -173,8 +257,9 @@ export function reducer(state: State, action: Action): State {
                         if (node) node.hidden = false;
                     }
                 }
+                highlightedPaths = addNewVisiblePaths(highlightedPaths, beforeVisible, filesystemRoot);
             }
-            return { ...state, filesystemRoot, inventory, revealCounter: state.revealCounter + 1 };
+            return { ...state, filesystemRoot, inventory, highlightedPaths, revealCounter: state.revealCounter + 1 };
         }
         case "LOAD_GAME": {
             const snapshot = action.payload as SaveSnapshot;
@@ -208,6 +293,7 @@ export function reducer(state: State, action: Action): State {
                 unreadInventoryCount: 0,
                 unreadLogCount: 0,
                 revealCounter: 0,
+                highlightedPaths: snapshot.highlightedPaths ?? [],
             };
         }
         case "SAVE_GAME": {
@@ -220,6 +306,7 @@ export function reducer(state: State, action: Action): State {
                 state.readFiles,
                 state.logEntries,
                 state.inventory,
+                state.highlightedPaths,
                 freshRoot,
             );
             saveGame(snapshot);
@@ -246,6 +333,7 @@ export function getNullState(): State {
         unreadInventoryCount: 0,
         unreadLogCount: 0,
         revealCounter: 0,
+        highlightedPaths: [],
     };
 }
 
@@ -301,6 +389,7 @@ export function getInitialState(storylineId: string): State | string {
             unreadInventoryCount: 0,
             unreadLogCount: 0,
             revealCounter: 0,
+            highlightedPaths: snapshot.highlightedPaths ?? [],
         };
     }
 
@@ -320,5 +409,6 @@ export function getInitialState(storylineId: string): State | string {
         unreadInventoryCount: Object.keys(freshInventory).length,
         unreadLogCount: freshLogEntries.length,
         revealCounter: 0,
+        highlightedPaths: [],
     };
 }

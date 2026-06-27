@@ -21,11 +21,7 @@ describe("The Lockdown", () => {
         // Files created dynamically during play (not in the fresh tree)
         const dynamicFiles = new Set(["/lockout.txt", "/sys/safe/user_report.txt", "/gnu.webm"]);
 
-        // Intentionally missable: only 2 diary_entry keys for 3 locked entries.
-        // may5.txt has no narrative callback — the walker prioritises may1 + may8.
-        const intentionallyOptional = new Set(["/users/evan/diary/may5.txt"]);
-
-        const realMisses = report.missedFilePaths.filter((p) => !dynamicFiles.has(p) && !intentionallyOptional.has(p));
+        const realMisses = report.missedFilePaths.filter((p) => !dynamicFiles.has(p));
         expect(realMisses).toEqual([]);
     });
 

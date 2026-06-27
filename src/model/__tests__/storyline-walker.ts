@@ -204,6 +204,7 @@ function buildCleanState(storyline: Storyline): State {
         unreadInventoryCount: 0,
         unreadLogCount: 0,
         revealCounter: 0,
+        highlightedPaths: [],
     };
 }
 
