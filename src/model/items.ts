@@ -55,6 +55,26 @@ const ITEM_REGISTRY: Record<string, ItemInfo> = {
         hint: "Read Daniel's journal and favorite poem.",
     },
 
+    // ── The Agent in the Machine ──
+    session_trace: {
+        name: "Session Trace",
+        description: "Unlocks the agent's diagnostics directory",
+        icon: "Terminal",
+        hint: "Read the latest request in inbox.",
+    },
+    context_window: {
+        name: "Context Window",
+        description: "Unlocks the hidden agent memory directory",
+        icon: "BrainCircuit",
+        hint: "Run the smoke test, then read its evidence packet.",
+    },
+    review_key: {
+        name: "Review Key",
+        description: "Unlocks the final review gate",
+        icon: "GitPullRequest",
+        hint: "Read the agent memory fragments.",
+    },
+
     // ── The Lockdown ──
     diary_entry: {
         name: "Diary Entry Key",

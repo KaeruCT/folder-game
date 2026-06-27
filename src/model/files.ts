@@ -144,7 +144,7 @@ export class Directory {
         return directory;
     }
 
-    createDirectory(name: string, meta = {}): Directory {
+    createDirectory(name: string, meta: Meta = {}): Directory {
         if (name.indexOf(SEPARATOR) !== -1) {
             const newDirectoryStructure = createDirectoryStructure(name);
             const newDirectoryStructureRoot = newDirectoryStructure.root;
