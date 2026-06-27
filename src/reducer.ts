@@ -168,12 +168,15 @@ export function reducer(state: State, action: Action): State {
                 unreadInventoryCount: state.unreadInventoryCount + 1,
             };
         }
-        case "LOG_ADD":
+        case "LOG_ADD": {
+            const entry = action.payload as LogEntry;
+            const isImportant = entry.category === "goal" || entry.category === "milestone";
             return {
                 ...state,
-                logEntries: [...state.logEntries, action.payload as LogEntry],
-                unreadLogCount: state.unreadLogCount + 1,
+                logEntries: [...state.logEntries, entry],
+                unreadLogCount: state.unreadLogCount + (isImportant ? 1 : 0),
             };
+        }
         case "MARK_INVENTORY_READ":
             return { ...state, unreadInventoryCount: 0 };
         case "MARK_LOG_READ":
@@ -407,7 +410,8 @@ export function getInitialState(storylineId: string): State | string {
         gamePhase: 0,
         logEntries: freshLogEntries,
         unreadInventoryCount: Object.keys(freshInventory).length,
-        unreadLogCount: freshLogEntries.length,
+        unreadLogCount: freshLogEntries.filter((entry) => entry.category === "goal" || entry.category === "milestone")
+            .length,
         revealCounter: 0,
         highlightedPaths: [],
     };

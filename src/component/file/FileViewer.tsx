@@ -98,6 +98,10 @@ function PlainTextOutput({ file }: OutputProps) {
 function ExeOutput({ file }: OutputProps) {
     return (
         <div className="content file-content exe">
+            <div className="exe-status" aria-hidden="true">
+                <span className="exe-status__pulse" />
+                <span>process running</span>
+            </div>
             <Typewriter key={file.content} content={file.content} />
         </div>
     );

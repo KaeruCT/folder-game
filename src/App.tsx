@@ -16,7 +16,7 @@ import LogViewer from "./component/log/LogViewer";
 import StorylineSelect from "./component/storyline/StorylineSelect";
 import FloatingOverlay from "./component/ui/FloatingOverlay";
 import HeaderBar from "./component/ui/HeaderBar";
-import { clearAllTimers } from "./model/files";
+import { clearAllTimers, Directory, File, type FileNode } from "./model/files";
 import { deleteSave, loadSnapshot } from "./model/save";
 import { type Action, deferredActions, getInitialState, getNullState, reducer, type State } from "./reducer";
 
@@ -85,6 +85,12 @@ function resolveInitial(): State {
     return getNullState();
 }
 
+function countFiles(node: FileNode): number {
+    if (node instanceof File) return 1;
+    if (!(node instanceof Directory)) return 0;
+    return node.contents.reduce((total, child) => total + countFiles(child), 0);
+}
+
 function App() {
     const memoizedReducer = useCallback(reducer, []);
     const [state, dispatch] = useReducer(memoizedReducer, resolveInitial());
@@ -140,6 +146,63 @@ function App() {
         }
     }, [state]);
 
+    useEffect(() => {
+        if (state.storylineId === "") return;
+
+        function isEditableTarget(target: EventTarget | null): boolean {
+            if (!(target instanceof HTMLElement)) return false;
+            return (
+                target.isContentEditable || target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement
+            );
+        }
+
+        function onKeyDown(event: KeyboardEvent) {
+            if (
+                event.defaultPrevented ||
+                event.metaKey ||
+                event.ctrlKey ||
+                event.altKey ||
+                isEditableTarget(event.target)
+            ) {
+                return;
+            }
+
+            if (event.key === "Escape") {
+                if (state.file) {
+                    event.preventDefault();
+                    dispatch({ type: "SET_FILE", payload: null });
+                    return;
+                }
+                if (inventoryOpen) {
+                    event.preventDefault();
+                    setInventoryOpen(false);
+                    return;
+                }
+                if (logOpen) {
+                    event.preventDefault();
+                    setLogOpen(false);
+                }
+                return;
+            }
+
+            if (document.querySelector(".modal")) return;
+
+            if (event.key === "Backspace" && !state.file && state.cwd.parent) {
+                event.preventDefault();
+                dispatch({ type: "SET_CWD", payload: state.cwd.parent });
+                return;
+            }
+
+            if (event.key === "Home" && state.cwd !== state.filesystemRoot) {
+                event.preventDefault();
+                dispatch({ type: "SET_CWD", payload: state.filesystemRoot });
+            }
+        }
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [state.storylineId, state.file, state.cwd, state.filesystemRoot, inventoryOpen, logOpen]);
+
     const handleStartOver = useCallback(() => {
         clearAllTimers();
         deferredActions.length = 0;
@@ -185,7 +248,10 @@ function App() {
     const recentEntries = [...state.logEntries].reverse();
     const currentGoal = recentEntries.find((entry) => entry.category === "goal")?.text;
     const finalChoice = recentEntries.find((entry) => entry.category === "milestone")?.text;
+    const evidenceEntries = recentEntries.filter((entry) => entry.category === "milestone").slice(0, 4);
     const storyComplete = state.gamePhase >= 97;
+    const totalFileCount = countFiles(state.filesystemRoot);
+    const missedFileCount = Math.max(totalFileCount - new Set(state.readFiles).size, 0);
 
     return (
         <ErrorBoundary>
@@ -208,7 +274,8 @@ function App() {
                                 <strong>Story complete</strong>
                                 <span>
                                     {finalChoice ? `${finalChoice} · ` : ""}
-                                    {state.readFiles.length} files discovered
+                                    {state.readFiles.length}/{totalFileCount} files discovered · {missedFileCount}{" "}
+                                    optional secrets missed
                                 </span>
                             </div>
                             <button type="button" onClick={handleStartOver}>
@@ -219,6 +286,16 @@ function App() {
                         <div className="current-goal" aria-live="polite">
                             <span>Current goal</span>
                             <strong>{currentGoal}</strong>
+                            {evidenceEntries.length > 0 && (
+                                <div className="evidence-panel">
+                                    <span>Evidence collected</span>
+                                    <ul>
+                                        {evidenceEntries.map((entry) => (
+                                            <li key={entry.id}>{entry.text}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     ) : null}
                     <div className="view-container">

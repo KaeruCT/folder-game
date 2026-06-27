@@ -1,4 +1,4 @@
-import { File, Folder, Lock } from "lucide-react";
+import { CheckCircle2, File, Folder, Lock } from "lucide-react";
 import { useContext, useMemo } from "react";
 import "./TreeView.scss";
 import { AppStore } from "../../App";
@@ -28,6 +28,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
             const isLocked = node.locked;
             const hasKey = typeof node.meta.key === "string" && Boolean(state.inventory[node.meta.key]);
             const isNew = state.highlightedPaths.includes(node.fullName);
+            const isRead = !(node instanceof Directory) && state.readFiles.includes(node.fullName);
             const isMedia = isMediaFileNode(node);
 
             const children = isDir && !isLocked ? node.contents.filter((c) => !c.hidden).sort(compareFileNodes) : [];
@@ -64,7 +65,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                 }
             }
 
-            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}${isNew ? " tree-node--new" : ""}${isMedia ? " tree-node--media" : ""}`;
+            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}${isNew ? " tree-node--new" : ""}${isMedia ? " tree-node--media" : ""}${isRead ? " tree-node--read" : ""}`;
 
             const row = (
                 <div
@@ -91,6 +92,11 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                         )}
                     </span>
                     <span className="tree-node__name">{node.name}</span>
+                    {isRead && (
+                        <span className="tree-node__read-icon" aria-hidden="true">
+                            <CheckCircle2 size={12} strokeWidth={1.8} />
+                        </span>
+                    )}
                     {isNew && (
                         <span className="tree-node__badge" aria-hidden="true">
                             new

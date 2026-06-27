@@ -44,6 +44,32 @@
     }
 }
 
+.evidence-panel {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(200, 150, 62, 0.16);
+
+    span {
+        margin-bottom: 5px;
+        color: var(--color-milestone);
+    }
+
+    ul {
+        display: grid;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        color: var(--text-secondary);
+        font-size: 11px;
+        line-height: 1.4;
+        text-wrap: pretty;
+    }
+}
+
 .completion-banner {
     display: flex;
     gap: 12px;

@@ -1,6 +1,16 @@
 import { Fragment, useContext, useState } from "react";
 import "./DirectoryItem.scss";
-import { FileCode, File as FileIcon, FileImage, FileVideo, Folder, FolderUp, Lock, Trash2 } from "lucide-react";
+import {
+    CheckCircle2,
+    FileCode,
+    File as FileIcon,
+    FileImage,
+    FileVideo,
+    Folder,
+    FolderUp,
+    Lock,
+    Trash2,
+} from "lucide-react";
 import { AppStore } from "../../App";
 import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import { Directory, type File, type FileNode, isMediaFileNode } from "../../model/files";
@@ -69,25 +79,43 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
     }
 
     const name = isParent ? "" : fileNode.name;
-    const keyName = fileNode.meta.key ? getItemInfo(fileNode.meta.key).name : "key";
+    const itemInfo = fileNode.meta.key ? getItemInfo(fileNode.meta.key) : undefined;
+    const keyName = itemInfo?.name ?? "key";
     const hasKey = fileNode.meta.key ? Boolean(state.inventory[fileNode.meta.key]) : false;
     const nodeKind = fileNode instanceof Directory ? "folder" : "file";
     const isNew = state.highlightedPaths.includes(fileNode.fullName);
     const isMedia = isMediaFileNode(fileNode);
-    const className = `directory-item${fileNode.locked ? " locked" : ""}${isNew ? " directory-item--new" : ""}${isMedia ? " directory-item--media" : ""}`;
+    const isRead = !(fileNode instanceof Directory) && state.readFiles.includes(fileNode.fullName);
+    const className = `directory-item${fileNode.locked ? " locked" : ""}${isNew ? " directory-item--new" : ""}${isMedia ? " directory-item--media" : ""}${isRead ? " directory-item--read" : ""}`;
 
     return (
         <Fragment>
-            <Modal show={showModal} onConfirm={attemptUnlock} onCancel={() => setShowModal(false)}>
-                {hasKey
-                    ? `Unlock ${nodeKind} “${fileNode.name}” with ${keyName}?`
-                    : `“${fileNode.name}” requires ${keyName}. Find it, then come back.`}
+            <Modal
+                show={showModal}
+                onConfirm={hasKey ? attemptUnlock : undefined}
+                onCancel={() => setShowModal(false)}
+                cancelLabel={hasKey ? "Cancel" : "Close"}
+                confirmLabel="Unlock"
+            >
+                {hasKey ? (
+                    `Unlock ${nodeKind} “${fileNode.name}” with ${keyName}?`
+                ) : (
+                    <div className="missing-key-message">
+                        <strong>Needed: {keyName}</strong>
+                        <span>{itemInfo?.hint ?? "Keep exploring, then come back."}</span>
+                    </div>
+                )}
             </Modal>
             <button type="button" onClick={onClick} title={fileNode.name} className={className}>
                 <div className="directory-item__icon">
                     <NodeIcon fileNode={fileNode} isParent={isParent} />
                 </div>
                 <div className="directory-item__name">{name || "\u00A0"}</div>
+                {isRead && (
+                    <span className="directory-item__read-icon" aria-hidden="true">
+                        <CheckCircle2 size={13} strokeWidth={1.8} />
+                    </span>
+                )}
                 {isNew && (
                     <span className="directory-item__badge" aria-hidden="true">
                         new

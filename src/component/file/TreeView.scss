@@ -56,6 +56,13 @@
         text-overflow: ellipsis;
     }
 
+    &__read-icon {
+        display: flex;
+        flex-shrink: 0;
+        margin-left: auto;
+        color: var(--color-milestone);
+    }
+
     &__badge {
         flex-shrink: 0;
         margin-left: auto;
@@ -110,6 +117,18 @@
 
     &--media {
         color: var(--text-muted);
+    }
+
+    &--read:not(.tree-node--new) {
+        opacity: 0.7;
+
+        .tree-node__name {
+            color: var(--text-muted);
+        }
+    }
+
+    &--read:has(.tree-node__badge) .tree-node__read-icon {
+        margin-left: 4px;
     }
 
     &__children {
