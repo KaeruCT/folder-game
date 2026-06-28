@@ -15,7 +15,7 @@ Four stories are included:
 - **The Things We Don’t Say** — A father’s old laptop turns grief into a mystery about love, silence, and what families hide.
 - **The Agent in the Machine** — The assistant that built the game left itself in the build. Now you review the ghost.
 
-Best played with headphones.
+Optional subtle UI sounds are available from the settings menu.
 
 ## Tags
 
@@ -31,11 +31,12 @@ Mystery, Horror, Narrative, Puzzle, Interactive Fiction, Experimental, Short, Br
 
 ## Upload notes
 
-1. Run `pnpm build`.
-2. Zip the **contents** of `dist/`, not the project root.
-3. Upload the zip to itch.io as an HTML game.
-4. Set viewport to mobile-friendly portrait or allow fullscreen.
-5. Use screenshots from `.playwright-mcp/captures/` for the page gallery.
+1. Run `pnpm package:itch`.
+2. Upload `root-itch.zip` to itch.io as an HTML game.
+3. Set **Kind of project** to HTML.
+4. Enable **This file will be played in the browser** for the zip.
+5. Set viewport to mobile-friendly portrait or allow fullscreen.
+6. Use screenshots from `.playwright-mcp/captures/` for the page gallery.
 
 ## Screenshot checklist
 
