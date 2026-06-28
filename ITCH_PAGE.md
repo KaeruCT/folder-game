@@ -32,10 +32,11 @@ Mystery, Horror, Narrative, Puzzle, Interactive Fiction, Experimental, Short, Br
 
 1. Run `pnpm package:itch`.
 2. Upload `root-itch.zip` to itch.io as an HTML game.
-3. Set **Kind of project** to HTML.
-4. Enable **This file will be played in the browser** for the zip.
-5. Set viewport to mobile-friendly portrait or allow fullscreen.
-6. Use screenshots from `.playwright-mcp/captures/` for the page gallery.
+3. Upload `ITCH_COVER.jpg` as the cover image.
+4. Set **Kind of project** to HTML.
+5. Enable **This file will be played in the browser** for the zip.
+6. Set viewport to mobile-friendly portrait or allow fullscreen.
+7. Use screenshots from `.playwright-mcp/captures/` for the page gallery.
 
 ## Screenshot checklist
 
