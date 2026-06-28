@@ -44,3 +44,7 @@ Mystery, Horror, Narrative, Puzzle, Interactive Fiction, Experimental, Short, Br
 - A locked-folder dialog showing the needed key.
 - A corrupted/executable file moment.
 - A completion banner with ending/share text.
+
+## Credits
+
+Some story images are derived from Wikimedia Commons, NASA, The National Archives, Fortepan, and Commons-hosted Unsplash/Flickr source material. See `MEDIA_AUDIT.md` for source filenames and attribution notes.

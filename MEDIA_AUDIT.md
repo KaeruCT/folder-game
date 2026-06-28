@@ -1,19 +1,10 @@
 # Media audit
 
-Scope: all image/video/audio assets used by the storylines. The Lockdown assets were treated as the reference vibe: diegetic, weird, artifacted, and specific rather than generic stock-like images.
+Scope: all image/video/audio assets used by the storylines. The Lockdown assets were treated as the reference vibe: diegetic, weird, artifacted, and specific. Lockdown was left unchanged.
 
-## Findings
+## Direction
 
-| Story | Asset(s) | Fit before | Action |
-| --- | --- | --- | --- |
-| The Lockdown | `images/*`, `public/vid/*` | Strong. Feels like strange recovered internet/media artifacts. | Left unchanged. |
-| The Echoes Below | `metro_station.jpg`, `hollow_earth.jpg`, `inner_city.jpg`, `chamber.jpg`, `chiara_metaphor.jpg`, `the_void.jpg` | Too generic / stock-fantasy in places. Some files only vaguely matched their names. | Replaced with original diegetic expedition scans, CCTV stills, sonar returns, redacted subject evidence, and final void artifact. |
-| The Echoes Below | `cave_atmosphere.mp3`, `cave_deep.mp3` | Both were long, large, and too similar. | Rebuilt as distinct quiet cave/low-depth loops. |
-| The Things We Don't Say | all images | Too generic classroom/garden/graduation imagery. Did not feel like files from Daniel's laptop. | Replaced with original low-fi laptop artifacts: desk photo, security still, empty room, garden memory, graduation evidence, handwritten letter. |
-| The Things We Don't Say | `classroom_ambient.mp3`, `rain_soft.mp3` | Too short to work as ambience (`classroom_ambient` was ~0.23s, `rain_soft` was ~2.2s). | Rebuilt as subtle 32s/35s loops. |
-| The Agent in the Machine | borrowed Echoes media | Wrong story identity. | Added original `audit_room.jpg` and `ambient_hum.mp3`. |
-
-## Direction going forward
+The weak point was not the file names — it was that several non-Lockdown images looked like generic/generated illustrations. The replacement pass uses real photographic/public-domain or Commons source material, then applies light in-world treatment: lowered saturation, noise, CCTV/archive labels, redaction, and scanner-style degradation.
 
 Media should feel like it belongs inside the filesystem, not like an illustration of the filename.
 
@@ -23,11 +14,40 @@ Prefer:
 - terminal captures
 - corrupted photos
 - documents with annotations
-- diegetic evidence labels
+- real locations treated as evidence
 - low-fidelity artifacts
 
 Avoid:
 - clean stock photos
 - generic symbolic images
+- obviously generated art
 - images that only match the filename literally
 - polished fantasy art that does not look like a recovered file
+
+## Changes
+
+| Story | Asset(s) | Action |
+| --- | --- | --- |
+| The Lockdown | `images/*`, `public/vid/*` | Left unchanged. These already match the intended weird recovered-media vibe. |
+| The Echoes Below | `metro_station.jpg`, `hollow_earth.jpg`, `inner_city.jpg`, `chamber.jpg`, `chiara_metaphor.jpg`, `the_void.jpg` | Replaced generated/stock-like images with real Commons/NASA/Unsplash-source photographs, then filtered as CCTV, expedition, subject-file, and final-frame artifacts. |
+| The Things We Don't Say | all images | Replaced generated evidence images with real classroom, hallway, graduation, garden, and handwritten-letter source material, treated as laptop/photo archive files. |
+| The Agent in the Machine | `audit_room.jpg` | Replaced generated audit-room art with a real server-room photograph, treated as a process-capture artifact. |
+| Audio | non-Lockdown ambient loops | Existing generated ambient loops remain because they are subtle, non-literal, and not visually AI-looking. |
+
+## Source assets / attribution notes
+
+All replacement source images came from Wikimedia Commons file pages or Commons-hosted Unsplash/NASA/National Archives material. Keep this list if publishing the game publicly.
+
+- `Waiting for my train (Unsplash).jpg` — source for Echoes metro/CCTV image.
+- `Mammoth Cave Rotunda (USGS Lwt02830).jpg` — source for Echoes Hollow Earth cave image.
+- `Derinkuyu Underground City 9910 Nevit Enhancer.jpg` — source for Echoes inner-city image.
+- `Postojna cave 2008-02-01 interior 07.jpg` — source for Echoes chamber image.
+- `Green Cardigan, Red Hair, and a Galaxy Print Dress (17023029306).jpg` — source for Chiara subject-file image.
+- `Black hole (NASA).jpg` — source for Echoes final void image.
+- `School, man, teacher, blackboard, desk Fortepan 2278.jpg` — source for Daniel classroom/archive image.
+- `Ann Savage cultivates her own Victory Garden, 1944.jpg` — source for Elena garden image.
+- `Empty classroom.jpg` — source for empty classroom image.
+- `A new graduate and her mother at the Salish Kootenai College graduation. (14377680765).jpg` — source for Maya graduation image.
+- `Letter from Leonardo da Vinci to Ludovico Sforza.jpg` — source for handwritten letter scan.
+- `School hallway.jpg` — source for Westbrook hallway image.
+- `A view of the server room at The National Archives.jpg` — source for Agent audit-room image.

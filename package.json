@@ -9,7 +9,7 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "preview": "vite preview",
-    "package:itch": "pnpm build && cd dist && zip -r ../root-itch.zip .",
+    "package:itch": "rm -f root-itch.zip && pnpm build && cd dist && zip -r ../root-itch.zip .",
     "check": "biome check",
     "check:write": "biome check --write",
     "knip": "knip",
