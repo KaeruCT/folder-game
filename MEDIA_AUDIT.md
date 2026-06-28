@@ -1,6 +1,6 @@
 # Media audit
 
-Scope: all image/video/audio assets used by the storylines. The Lockdown assets were treated as the reference vibe: diegetic, weird, artifacted, and specific. Lockdown was left unchanged.
+Scope: all image/video assets used by the storylines. The Lockdown assets were treated as the reference vibe: diegetic, weird, artifacted, and specific. Lockdown was left unchanged.
 
 ## Direction
 
@@ -32,7 +32,7 @@ Avoid:
 | The Echoes Below | `metro_station.jpg`, `hollow_earth.jpg`, `inner_city.jpg`, `chamber.jpg`, `chiara_metaphor.jpg`, `the_void.jpg` | Replaced generated/stock-like images with real Commons/NASA/Unsplash-source photographs, then filtered as CCTV, expedition, subject-file, and final-frame artifacts. |
 | The Things We Don't Say | all images | Replaced generated evidence images with real classroom, hallway, graduation, garden, and handwritten-letter source material, treated as laptop/photo archive files. |
 | The Agent in the Machine | `audit_room.jpg` | Replaced generated audit-room art with a real server-room photograph, treated as a process-capture artifact. |
-| Audio | non-Lockdown ambient loops | Existing generated ambient loops remain because they are subtle, non-literal, and not visually AI-looking. |
+| Audio files | all storylines | Removed. They did not add enough to the game loop. |
 
 ## Source assets / attribution notes
 

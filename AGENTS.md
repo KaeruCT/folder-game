@@ -135,7 +135,7 @@ src/
 │   └── ui/           # Shared UI (Modal, HeaderBar, FloatingOverlay)
 ├── game-files/       # Static game content
 │   ├── intro/        #   Shared text files
-│   └── storylines/   #   Storyline-specific media (images, audio)
+│   └── storylines/   #   Storyline-specific media (images)
 ├── App.tsx           # Root: layout, header bar, overlays, auto-save, deferred drain
 ├── reducer.ts        # State + deferred action queue + all actions
 └── index.tsx         # Entry point (createRoot)

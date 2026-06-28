@@ -1,4 +1,3 @@
-import agentHumAudio from "../../game-files/storylines/agent/audio/ambient_hum.mp3";
 import auditRoomImg from "../../game-files/storylines/agent/images/audit_room.jpg";
 import { createDirectoryStructure, type Directory } from "../files";
 import type { Inventory } from "../inventory";
@@ -48,7 +47,6 @@ const storyline: Storyline = {
         });
         diagnostics.createFile("console_warning.txt", CONSOLE_WARNING, { corrupted: true });
         diagnostics.createFile("audit_room.jpg", auditRoomImg);
-        diagnostics.createFile("ambient_hum.mp3", agentHumAudio);
         diagnostics.createFile("smoke_test.exe", "", {
             run(log, _ctx) {
                 const timesRun = (this.runState.timesRun || 0) + 1;
@@ -350,7 +348,7 @@ Added a storyline that uses:
 - executable files with persistent run state,
 - dynamically created evidence and resolve files,
 - final choices with two endings,
-- media files marked as optional noise.
+- image files marked as optional noise.
 
 The diff is playable. That is the point.`;
 

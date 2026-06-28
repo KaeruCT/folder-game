@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import "./FileViewer.scss";
 import { AppStore } from "../../App";
-import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "../../model/data";
 import { File, findNode } from "../../model/files";
 
 // ---------------------------------------------------------------------------
@@ -133,15 +133,6 @@ function VideoResourceOutput({ file }: OutputProps) {
     );
 }
 
-function AudioResourceOutput({ file }: OutputProps) {
-    return (
-        <div className="content media-content" style={{ background: "transparent", padding: 20 }}>
-            {/* biome-ignore lint/a11y/useMediaCaption: game content, captions not applicable */}
-            <audio src={file.content} controls autoPlay style={{ width: "100%" }} />
-        </div>
-    );
-}
-
 function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
     const { state, dispatch, playSound } = useContext(AppStore);
     const choices = file.meta.choices as { label: string; action: { type: string; payload: unknown } }[] | undefined;
@@ -238,8 +229,6 @@ function FileViewer({ file, onClose }: Props) {
         Output = ImageResourceOutput;
     } else if (VIDEO_EXTENSIONS.includes(file.extension)) {
         Output = VideoResourceOutput;
-    } else if (AUDIO_EXTENSIONS.includes(file.extension)) {
-        Output = AudioResourceOutput;
     }
 
     return (

@@ -76,9 +76,8 @@ The player has an inventory of **items** (keyed by type with a quantity). Items 
 |---|---|
 | `jpg`, `jpeg`, `gif`, `png` | `<img>` |
 | `webm`, `mp4` | `<video>` player |
-| `mp3`, `ogg`, `wav`, `flac` | `<audio>` player |
 
-Media is organized per-storyline under `src/game-files/storylines/<id>/{images,audio}/`.
+Media is organized per-storyline under `src/game-files/storylines/<id>/images/` or `public/vid/`.
 
 ### Log & Notifications
 
@@ -215,7 +214,7 @@ root/
 │   │   │   ├── DirectoryItem.tsx    # Single file/directory entry in grid view
 │   │   │   ├── DirectoryView.tsx    # Flat directory contents listing
 │   │   │   ├── FilesystemViewer.tsx # Top-level: file viewer, directory, or tree view
-│   │   │   ├── FileViewer.tsx       # File renderer (text/image/video/audio/exe/choices)
+│   │   │   ├── FileViewer.tsx       # File renderer (text/image/video/exe/choices)
 │   │   │   └── TreeView.tsx         # Collapsible filesystem tree
 │   │   ├── inventory/          # Inventory overlay
 │   │   ├── log/                # Log overlay
@@ -224,7 +223,7 @@ root/
 │   ├── game-files/             # Static game content
 │   │   ├── intro/              #   Shared text files
 │   │   └── storylines/         #   Storyline-specific media
-│   │       ├── echoes/         #     images + audio for The Echoes Below
+│   │       ├── echoes/         #     images for The Echoes Below
 │   │       └── lockdown/       #     images for The Lockdown
 │   ├── model/                  # Core game logic and data structures
 │   │   ├── data.ts             #   Constants (user names, extension maps)
@@ -278,7 +277,6 @@ App (ErrorBoundary > AppStore.Provider)
 │       ├── PlainTextOutput
 │       ├── ImageResourceOutput
 │       ├── VideoResourceOutput
-│       ├── AudioResourceOutput
 │       └── ChoiceOutput           (button actions from meta)
 ```
 

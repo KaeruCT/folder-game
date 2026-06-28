@@ -333,4 +333,4 @@ When adding a new storyline:
 
 ## Media files
 
-Place storyline-specific images and audio under `src/game-files/storylines/<id>/{images,audio}/`. Import them in your storyline module and create them as files in the virtual filesystem. Media files render automatically based on their extension (see README for supported formats).
+Place storyline-specific images under `src/game-files/storylines/<id>/images/`. Import them in your storyline module and create them as files in the virtual filesystem. Image and video files render automatically based on their extension (see README for supported formats).

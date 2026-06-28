@@ -1,9 +1,3 @@
-// Audio
-import caveAtmoAudio from "../../game-files/storylines/echoes/audio/cave_atmosphere.mp3";
-import caveDeepAudio from "../../game-files/storylines/echoes/audio/cave_deep.mp3";
-import deepRumbleAudio from "../../game-files/storylines/echoes/audio/deep_rumble.mp3";
-import eerieDroneAudio from "../../game-files/storylines/echoes/audio/eerie_drone.mp3";
-import metroAudio from "../../game-files/storylines/echoes/audio/metro_station.mp3";
 import chamberImg from "../../game-files/storylines/echoes/images/chamber.jpg";
 import chiaraImg from "../../game-files/storylines/echoes/images/chiara_metaphor.jpg";
 // ── Echoes Below media ──
@@ -40,15 +34,10 @@ const storyline: Storyline = {
         // =========================================================================
 
         const diary = root.createDirectory("diary", { key: "diary_key" });
-        diary.createFile("metro_station.jpg", metroImg, {
-            hidden: true,
-            revealsOnRead: ["$ROOT/diary/metro_station.jpg", "$ROOT/diary/metro_station.mp3"],
-        });
-        diary.createFile("metro_station.mp3", metroAudio, { hidden: true });
+        diary.createFile("metro_station.jpg", metroImg, { hidden: true });
         diary.createFile("entry_01_first_sighting.txt", DIARY_01, {
             onRead(ctx) {
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro_station.jpg" });
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/diary/metro_station.mp3" });
                 ctx.log("story", "The 14th Street metro station. Chiara. Green coat. It started here.");
             },
         });
@@ -120,8 +109,6 @@ const storyline: Storyline = {
         const research = root.createDirectory("research");
         research.createFile("hollow_earth.jpg", hollowEarthImg);
         research.createFile("inner_city.jpg", innerCityImg);
-        research.createFile("ambient_log.mp3", caveAtmoAudio);
-        research.createFile("deep_ambient.mp3", caveDeepAudio);
         research.createFile("hollow_earth.txt", RESEARCH_HOLLOW_EARTH, {
             onRead(ctx) {
                 ctx.dispatch({ type: "ADD_ITEMS", payload: { diary_key: 1 } });
@@ -189,7 +176,6 @@ const storyline: Storyline = {
                 ctx.log("goal", "Open the sacred texts directory to read the decrypted fragments.");
             },
         });
-        restricted.createFile("deep_ambient.mp3", deepRumbleAudio);
         restricted.createFile("report_3.txt", EXPEDITION_3, {
             onRead(ctx) {
                 ctx.dispatch({ type: "ADD_ITEMS", payload: { kael_contact: 1 } });
@@ -332,12 +318,10 @@ const storyline: Storyline = {
             },
         });
         kaelDir.createFile("chamber.jpg", chamberImg, { hidden: true });
-        kaelDir.createFile("ritual_drone.mp3", eerieDroneAudio, { hidden: true });
         kaelDir.createFile("kael_03_final_warning.txt", KAEL_3, {
             hidden: true,
             onRead(ctx) {
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael/chamber.jpg" });
-                ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/messages/kael/ritual_drone.mp3" });
                 ctx.dispatch({ type: "REVEAL_FILE", payload: "$ROOT/resolve.exe" });
                 ctx.log(
                     "story",

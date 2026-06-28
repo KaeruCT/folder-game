@@ -1,8 +1,4 @@
 // ── The Things We Don't Say ──
-// Audio
-import classroomAmbient from "../../game-files/storylines/unsaid/audio/classroom_ambient.mp3";
-import quietPiano from "../../game-files/storylines/unsaid/audio/quiet_piano.mp3";
-import rainSoft from "../../game-files/storylines/unsaid/audio/rain_soft.mp3";
 // Images
 import classroomImg from "../../game-files/storylines/unsaid/images/daniel_classroom.jpg";
 import elenaImg from "../../game-files/storylines/unsaid/images/elena_garden.jpg";
@@ -58,7 +54,6 @@ const storyline: Storyline = {
         const classroom = root.createDirectory("classroom");
         classroom.createFile("school_hallway.jpg", hallwayImg);
         classroom.createFile("empty_classroom.jpg", emptyClassroomImg);
-        classroom.createFile("classroom_ambient.mp3", classroomAmbient);
 
         classroom.createFile("syllabus.txt", SYLLABUS, {
             onRead(ctx) {
@@ -120,7 +115,6 @@ const storyline: Storyline = {
 
         const journal = root.createDirectory("journal", { key: "elena_password" });
         journal.createFile("handwritten_letter.jpg", letterImg);
-        journal.createFile("rain_soft.mp3", rainSoft);
 
         journal.createFile("after_elena.txt", JOURNAL_AFTER_ELENA, {
             onRead(ctx) {
@@ -178,7 +172,6 @@ const storyline: Storyline = {
 
         const elena = root.createDirectory("elena", { hidden: true });
         elena.createFile("elena_in_the_garden.jpg", elenaImg);
-        elena.createFile("quiet_piano.mp3", quietPiano);
 
         elena.createFile("her_last_letter.txt", ELENA_LETTER, {
             onRead(ctx) {

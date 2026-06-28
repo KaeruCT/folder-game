@@ -1,4 +1,4 @@
-import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "./data";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS } from "./data";
 import type { LogCategory } from "./log";
 
 const SEPARATOR = "/";
@@ -256,9 +256,7 @@ export function unlockFileNode(fileNode: FileNode): Directory {
 export function isMediaFileNode(fileNode: FileNode): boolean {
     return (
         fileNode instanceof File &&
-        (IMAGE_EXTENSIONS.includes(fileNode.extension) ||
-            VIDEO_EXTENSIONS.includes(fileNode.extension) ||
-            AUDIO_EXTENSIONS.includes(fileNode.extension))
+        (IMAGE_EXTENSIONS.includes(fileNode.extension) || VIDEO_EXTENSIONS.includes(fileNode.extension))
     );
 }
 
