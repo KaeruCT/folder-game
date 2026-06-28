@@ -103,7 +103,8 @@
         opacity: 0.4;
     }
 
-    &--new {
+    &--new,
+    &--start {
         .tree-node__row {
             background: var(--accent-dim);
             box-shadow: inset 0 0 0 1px rgba(200, 150, 62, 0.18);
@@ -113,6 +114,10 @@
         .tree-node__icon {
             color: var(--accent);
         }
+    }
+
+    &--start .tree-node__row {
+        animation: start-here-pulse 1.6s ease-in-out infinite;
     }
 
     &--media {

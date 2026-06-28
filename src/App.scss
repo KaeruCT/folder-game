@@ -14,12 +14,43 @@
     }
 }
 
+.app--flash::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 250;
+    pointer-events: none;
+    background: radial-gradient(circle at center, rgba(200, 150, 62, 0.22), transparent 62%);
+    animation: story-flash 0.52s ease-out forwards;
+}
+
 .current-goal,
 .completion-banner {
     flex-shrink: 0;
     border-bottom: 1px solid var(--border);
     background: linear-gradient(90deg, var(--accent-dim), rgba(0, 0, 0, 0));
     font-family: var(--font-mono);
+}
+
+.feedback-toast {
+    position: absolute;
+    top: 52px;
+    left: 50%;
+    z-index: 500;
+    max-width: calc(100% - 32px);
+    padding: 9px 12px;
+    border: 1px solid rgba(200, 150, 62, 0.35);
+    border-radius: 2px;
+    background: var(--bg-elevated);
+    box-shadow: var(--shadow-elevated), var(--shadow-glow);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    transform: translateX(-50%);
+    animation: toast-in 0.18s ease-out;
 }
 
 .current-goal {
@@ -71,14 +102,14 @@
 }
 
 .completion-banner {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px;
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    animation: completion-pop 0.35s ease-out;
 
     strong,
-    span {
+    span,
+    code {
         display: block;
     }
 
@@ -95,6 +126,28 @@
         font-size: 11px;
     }
 
+    code {
+        margin-top: 6px;
+        padding: 6px;
+        border: 1px solid rgba(200, 150, 62, 0.16);
+        background: rgba(0, 0, 0, 0.18);
+        color: var(--text-primary);
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    &__ending {
+        color: var(--text-primary) !important;
+        font-size: 13px !important;
+        font-weight: 700;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
     button {
         min-height: 32px;
         padding: 0 10px;
@@ -107,5 +160,39 @@
         &:hover {
             box-shadow: var(--shadow-glow);
         }
+    }
+}
+
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes story-flash {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes completion-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

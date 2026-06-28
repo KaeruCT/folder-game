@@ -1,6 +1,7 @@
 import { Directory, type File, type FileNode, findNode, unlockFileNode } from "./model/files";
 import { getFilesystem, getInitialLogEntries, getInventory } from "./model/game";
 import { addItem, addItems, type Inventory, removeItem } from "./model/inventory";
+import { getItemInfo } from "./model/items";
 import { createLogEntry, type LogCategory, type LogEntry } from "./model/log";
 import { applySnapshot, buildSnapshot, loadSnapshot, type SaveSnapshot, saveGame } from "./model/save";
 
@@ -20,6 +21,14 @@ type ActionType =
     | "MARK_INVENTORY_READ"
     | "MARK_LOG_READ";
 
+type FeedbackKind = "item" | "unlock" | "ending";
+
+interface FeedbackEvent {
+    id: number;
+    kind: FeedbackKind;
+    text: string;
+}
+
 export interface State {
     storylineId: string;
     inventory: Inventory;
@@ -35,6 +44,8 @@ export interface State {
     revealCounter: number;
     /** Recently revealed or created nodes that should be visually called out until opened. */
     highlightedPaths: string[];
+    /** Latest transient UI feedback event. Not persisted. */
+    feedback: FeedbackEvent | null;
 }
 
 export interface Action {
@@ -73,6 +84,20 @@ function addNewVisiblePaths(highlightedPaths: string[] | undefined, before: Set<
 
 function markPathSeen(highlightedPaths: string[] | undefined, path: string): string[] {
     return (highlightedPaths ?? []).filter((highlightedPath) => highlightedPath !== path);
+}
+
+function makeFeedback(kind: FeedbackKind, text: string): FeedbackEvent {
+    return { id: Date.now() + Math.random(), kind, text };
+}
+
+function describeItems(items: Record<string, number>): string {
+    const names = Object.entries(items)
+        .filter(([, quantity]) => quantity > 0)
+        .map(([type, quantity]) => {
+            const name = getItemInfo(type).name;
+            return quantity > 1 ? `${name} ×${quantity}` : name;
+        });
+    return names.length === 1 ? `Acquired ${names[0]}` : `Acquired ${names.length} items`;
 }
 
 function findVisibleLockedPathsForKeys(root: Directory, keys: string[]): string[] {
@@ -150,6 +175,7 @@ export function reducer(state: State, action: Action): State {
                     ]),
                 ],
                 unreadInventoryCount: state.unreadInventoryCount + 1,
+                feedback: makeFeedback("item", `Acquired ${getItemInfo(itemType).name}`),
             };
         }
         case "INVENTORY_REMOVE":
@@ -166,6 +192,7 @@ export function reducer(state: State, action: Action): State {
                     ]),
                 ],
                 unreadInventoryCount: state.unreadInventoryCount + 1,
+                feedback: makeFeedback("item", describeItems(items)),
             };
         }
         case "LOG_ADD": {
@@ -182,7 +209,14 @@ export function reducer(state: State, action: Action): State {
         case "MARK_LOG_READ":
             return { ...state, unreadLogCount: 0 };
         case "SET_PHASE":
-            return { ...state, gamePhase: action.payload as number };
+            return {
+                ...state,
+                gamePhase: action.payload as number,
+                feedback:
+                    typeof action.payload === "number" && action.payload >= 97
+                        ? makeFeedback("ending", "Ending reached")
+                        : state.feedback,
+            };
         case "SET_CWD": {
             const cwd = action.payload as Directory;
             return { ...state, cwd, highlightedPaths: markPathSeen(state.highlightedPaths, cwd.fullName) };
@@ -245,9 +279,11 @@ export function reducer(state: State, action: Action): State {
             const beforeVisible = collectVisiblePaths(filesystemRoot);
             let highlightedPaths = markPathSeen(state.highlightedPaths, fileNode.fullName);
             const key: string = fileNode.meta.key;
+            let unlocked = false;
             if (inventory[key]) {
                 inventory = removeItem(inventory, key);
                 filesystemRoot = unlockFileNode(fileNode);
+                unlocked = true;
 
                 const ctx = makeRunContext(state);
 
@@ -262,7 +298,14 @@ export function reducer(state: State, action: Action): State {
                 }
                 highlightedPaths = addNewVisiblePaths(highlightedPaths, beforeVisible, filesystemRoot);
             }
-            return { ...state, filesystemRoot, inventory, highlightedPaths, revealCounter: state.revealCounter + 1 };
+            return {
+                ...state,
+                filesystemRoot,
+                inventory,
+                highlightedPaths,
+                revealCounter: state.revealCounter + 1,
+                feedback: unlocked ? makeFeedback("unlock", `Unlocked ${fileNode.name}`) : state.feedback,
+            };
         }
         case "LOAD_GAME": {
             const snapshot = action.payload as SaveSnapshot;
@@ -297,6 +340,7 @@ export function reducer(state: State, action: Action): State {
                 unreadLogCount: 0,
                 revealCounter: 0,
                 highlightedPaths: snapshot.highlightedPaths ?? [],
+                feedback: null,
             };
         }
         case "SAVE_GAME": {
@@ -337,6 +381,7 @@ export function getNullState(): State {
         unreadLogCount: 0,
         revealCounter: 0,
         highlightedPaths: [],
+        feedback: null,
     };
 }
 
@@ -393,6 +438,7 @@ export function getInitialState(storylineId: string): State | string {
             unreadLogCount: 0,
             revealCounter: 0,
             highlightedPaths: snapshot.highlightedPaths ?? [],
+            feedback: null,
         };
     }
 
@@ -414,5 +460,6 @@ export function getInitialState(storylineId: string): State | string {
             .length,
         revealCounter: 0,
         highlightedPaths: [],
+        feedback: null,
     };
 }

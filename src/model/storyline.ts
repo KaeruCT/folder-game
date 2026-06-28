@@ -6,6 +6,9 @@ export interface Storyline {
     id: string;
     name: string;
     description: string;
+    hook?: string;
+    playtime?: string;
+    tags?: string[];
     buildFilesystem(): Directory;
     getInitialInventory(): Inventory;
     getInitialLogEntries?(): LogEntry[];

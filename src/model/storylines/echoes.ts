@@ -21,6 +21,9 @@ const storyline: Storyline = {
     name: "The Echoes Below",
     description:
         "Frank Nicholas vanished into the Hollow Earth. His server holds the answers. Uncover his obsession, his discoveries, and the terrible choice that awaits.",
+    hook: "A missing researcher, an impossible city, and files that should not know your name.",
+    playtime: "15–20 min",
+    tags: ["cosmic horror", "investigation", "choice"],
 
     buildFilesystem(): Directory {
         const rootDir = createDirectoryStructure("$ROOT");
@@ -30,7 +33,7 @@ const storyline: Storyline = {
         // SERVER INFO
         // =========================================================================
 
-        root.createFile("server_info.txt", SERVER_INFO);
+        root.createFile("server_info.txt", SERVER_INFO, { startHere: true });
 
         // =========================================================================
         // DIARY — locked behind diary_key

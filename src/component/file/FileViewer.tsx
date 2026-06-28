@@ -49,8 +49,9 @@ function Typewriter({ content, className }: { content: string; className?: strin
                 const next = prev + 1;
                 if (next >= content.length) {
                     clearInterval(intervalRef.current);
+                    return content.length;
                 }
-                return next < content.length ? next : prev;
+                return next;
             });
         }, getSpeed());
         return () => clearInterval(intervalRef.current);
@@ -142,7 +143,7 @@ function AudioResourceOutput({ file }: OutputProps) {
 }
 
 function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
-    const { state, dispatch } = useContext(AppStore);
+    const { state, dispatch, playSound } = useContext(AppStore);
     const choices = file.meta.choices as { label: string; action: { type: string; payload: unknown } }[] | undefined;
 
     const [typewriterDone, setTypewriterDone] = useState(false);
@@ -163,6 +164,7 @@ function ChoiceOutput({ file, onClose }: { file: File; onClose: () => void }) {
                             type="button"
                             className="styled-button"
                             onClick={() => {
+                                playSound("choice");
                                 const revealedNode =
                                     choice.action.type === "REVEAL_FILE"
                                         ? findNode(state.filesystemRoot, choice.action.payload as string)
@@ -206,12 +208,18 @@ interface Props {
 }
 
 function FileViewer({ file, onClose }: Props) {
+    const { playSound } = useContext(AppStore);
+    const close = () => {
+        playSound("close");
+        onClose();
+    };
+
     if (file.meta.choices) {
         return (
             <div className="window file-viewer">
                 <div className="title">
                     {file.name}
-                    <button type="button" className="close-button" onClick={() => onClose()} title="close">
+                    <button type="button" className="close-button" onClick={close} title="close">
                         &times;
                     </button>
                 </div>
@@ -238,7 +246,7 @@ function FileViewer({ file, onClose }: Props) {
         <div className="window file-viewer">
             <div className="title">
                 {file.name}
-                <button type="button" className="close-button" onClick={() => onClose()} title="close">
+                <button type="button" className="close-button" onClick={close} title="close">
                     &times;
                 </button>
             </div>

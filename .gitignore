@@ -4,6 +4,7 @@
 
 # build
 /dist
+/root-itch.zip
 
 # misc
 .DS_Store

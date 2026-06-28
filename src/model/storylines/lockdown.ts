@@ -19,6 +19,9 @@ const storyline: Storyline = {
     name: "The Lockdown",
     description:
         "Evan's deadman switch triggered. Hackers are infiltrating his system. Lock them out and uncover the truth he died to protect.",
+    hook: "A deadman switch is live. You have one compromised filesystem and too many open doors.",
+    playtime: "10–15 min",
+    tags: ["thriller", "hacking", "secrets"],
 
     buildFilesystem(): Directory {
         const lockFile = "lucky7.exe";
@@ -26,6 +29,7 @@ const storyline: Storyline = {
         const help = createDirectoryStructure("$ROOT/help");
         const root = help.root;
         help.createFile("instructions.txt", instructions, {
+            startHere: true,
             selfDestruct: true,
             onRead(ctx) {
                 ctx.log("story", "Instructions found: Evan published access credentials for hackers to find.");

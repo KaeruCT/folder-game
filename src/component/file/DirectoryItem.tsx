@@ -51,7 +51,7 @@ function NodeIcon({ fileNode, isParent }: { fileNode: FileNode; isParent: boolea
 }
 
 function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
-    const { state, dispatch } = useContext(AppStore);
+    const { state, dispatch, playSound } = useContext(AppStore);
     const [showModal, setShowModal] = useState(false);
 
     function attemptUnlock() {
@@ -67,14 +67,17 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
 
     function onClick() {
         if (fileNode.locked) {
+            playSound(hasKey ? "toggle" : "locked");
             setShowModal(true);
             return;
         }
 
         if (fileNode instanceof Directory) {
+            playSound(isParent ? "close" : "folder");
             return onNavigate(fileNode);
         }
 
+        playSound("file");
         onFileOpen(fileNode as File);
     }
 
@@ -86,7 +89,8 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
     const isNew = state.highlightedPaths.includes(fileNode.fullName);
     const isMedia = isMediaFileNode(fileNode);
     const isRead = !(fileNode instanceof Directory) && state.readFiles.includes(fileNode.fullName);
-    const className = `directory-item${fileNode.locked ? " locked" : ""}${isNew ? " directory-item--new" : ""}${isMedia ? " directory-item--media" : ""}${isRead ? " directory-item--read" : ""}`;
+    const isStartHere = fileNode.meta.startHere === true && !isRead;
+    const className = `directory-item${fileNode.locked ? " locked" : ""}${isNew ? " directory-item--new" : ""}${isMedia ? " directory-item--media" : ""}${isRead ? " directory-item--read" : ""}${isStartHere ? " directory-item--start" : ""}`;
 
     return (
         <Fragment>
@@ -116,11 +120,15 @@ function DirectoryItem({ fileNode, isParent, onNavigate, onFileOpen }: Props) {
                         <CheckCircle2 size={13} strokeWidth={1.8} />
                     </span>
                 )}
-                {isNew && (
+                {isStartHere ? (
+                    <span className="directory-item__badge" aria-hidden="true">
+                        start here
+                    </span>
+                ) : isNew ? (
                     <span className="directory-item__badge" aria-hidden="true">
                         new
                     </span>
-                )}
+                ) : null}
                 {isMedia && (
                     <span className="directory-item__meta" aria-hidden="true">
                         media

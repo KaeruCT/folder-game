@@ -21,8 +21,19 @@ function StorylineSelect({ dispatch }: Props) {
                         className="storyline-card"
                         onClick={() => dispatch({ type: "SELECT_STORYLINE", payload: storyline.id })}
                     >
-                        <div className="storyline-card__name">{storyline.name}</div>
+                        <div className="storyline-card__topline">
+                            <div className="storyline-card__name">{storyline.name}</div>
+                            {storyline.playtime && <div className="storyline-card__time">{storyline.playtime}</div>}
+                        </div>
+                        {storyline.hook && <div className="storyline-card__hook">{storyline.hook}</div>}
                         <div className="storyline-card__desc">{storyline.description}</div>
+                        {storyline.tags && (
+                            <div className="storyline-card__tags">
+                                {storyline.tags.map((tag) => (
+                                    <span key={tag}>{tag}</span>
+                                ))}
+                            </div>
+                        )}
                     </button>
                 ))}
             </div>

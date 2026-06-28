@@ -1,5 +1,5 @@
-import caveAtmoAudio from "../../game-files/storylines/echoes/audio/cave_atmosphere.mp3";
-import voidImg from "../../game-files/storylines/echoes/images/the_void.jpg";
+import agentHumAudio from "../../game-files/storylines/agent/audio/ambient_hum.mp3";
+import auditRoomImg from "../../game-files/storylines/agent/images/audit_room.jpg";
 import { createDirectoryStructure, type Directory } from "../files";
 import type { Inventory } from "../inventory";
 import type { Storyline } from "../storyline";
@@ -9,12 +9,16 @@ const storyline: Storyline = {
     name: "The Agent in the Machine",
     description:
         "A coding agent found the game from the inside. Follow its traces, inspect its tests, and decide whether it should keep editing Root.",
+    hook: "The assistant that built the game left itself in the build. Now you review the ghost.",
+    playtime: "10–15 min",
+    tags: ["meta", "AI", "review"],
 
     buildFilesystem(): Directory {
         const rootDir = createDirectoryStructure("$ROOT");
         const root = rootDir.root;
 
         root.createFile("readme.txt", README, {
+            startHere: true,
             onRead(ctx) {
                 ctx.log("story", "You found a note from the assistant that has been modifying Root from inside Root.");
                 ctx.log("goal", "Start in inbox. The latest request explains why the agent woke up here.");
@@ -43,8 +47,8 @@ const storyline: Storyline = {
             },
         });
         diagnostics.createFile("console_warning.txt", CONSOLE_WARNING, { corrupted: true });
-        diagnostics.createFile("audit_room.jpg", voidImg);
-        diagnostics.createFile("ambient_hum.mp3", caveAtmoAudio);
+        diagnostics.createFile("audit_room.jpg", auditRoomImg);
+        diagnostics.createFile("ambient_hum.mp3", agentHumAudio);
         diagnostics.createFile("smoke_test.exe", "", {
             run(log, _ctx) {
                 const timesRun = (this.runState.timesRun || 0) + 1;

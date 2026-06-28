@@ -16,6 +16,8 @@ interface Props {
     logOpen: boolean;
     unreadInventoryCount: number;
     unreadLogCount: number;
+    soundEnabled: boolean;
+    onToggleSound: () => void;
 }
 
 function badge(count: number) {
@@ -36,14 +38,17 @@ function HeaderBar({
     logOpen,
     unreadInventoryCount,
     unreadLogCount,
+    soundEnabled,
+    onToggleSound,
 }: Props) {
-    const { state, dispatch } = useContext(AppStore);
+    const { state, dispatch, playSound } = useContext(AppStore);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const handleSave = useCallback(() => {
+        playSound("toggle");
         dispatch({ type: "SAVE_GAME", payload: null });
         setSettingsOpen(false);
-    }, [dispatch]);
+    }, [dispatch, playSound]);
 
     const handleReset = useCallback(() => {
         clearAllTimers();
@@ -77,9 +82,15 @@ function HeaderBar({
             <button
                 type="button"
                 className="header-bar__btn header-bar__btn--nav"
-                onClick={() => state.cwd.parent && navigateTo(state.cwd.parent)}
+                onClick={() => {
+                    if (state.cwd.parent) {
+                        playSound("close");
+                        navigateTo(state.cwd.parent);
+                    }
+                }}
                 disabled={!state.cwd.parent}
                 title="Back"
+                aria-label="Go back"
             >
                 <ArrowLeft size={ICON_SIZE} strokeWidth={1.5} />
             </button>
@@ -87,9 +98,13 @@ function HeaderBar({
             <button
                 type="button"
                 className="header-bar__btn header-bar__btn--nav"
-                onClick={() => navigateTo(state.filesystemRoot)}
+                onClick={() => {
+                    playSound("folder");
+                    navigateTo(state.filesystemRoot);
+                }}
                 disabled={state.cwd === state.filesystemRoot}
                 title="Root"
+                aria-label="Go to root folder"
             >
                 <Home size={ICON_SIZE} strokeWidth={1.5} />
             </button>
@@ -101,7 +116,10 @@ function HeaderBar({
                         <button
                             type="button"
                             className="header-bar__crumb"
-                            onClick={() => navigateTo(directory)}
+                            onClick={() => {
+                                playSound("folder");
+                                navigateTo(directory);
+                            }}
                             disabled={directory === state.cwd}
                         >
                             {index === 0 ? "root" : directory.name}
@@ -113,8 +131,12 @@ function HeaderBar({
             <button
                 type="button"
                 className="header-bar__btn"
-                onClick={onToggleTree}
+                onClick={() => {
+                    playSound("toggle");
+                    onToggleTree();
+                }}
                 title={showTree ? "Directory view" : "Tree view"}
+                aria-label={showTree ? "Switch to directory view" : "Switch to tree view"}
             >
                 {showTree ? (
                     <Folder size={ICON_SIZE} strokeWidth={1.5} />
@@ -128,8 +150,13 @@ function HeaderBar({
             <button
                 type="button"
                 className={`header-bar__btn${inventoryOpen ? " header-bar__btn--active" : ""}`}
-                onClick={onToggleInventory}
+                onClick={() => {
+                    playSound("toggle");
+                    onToggleInventory();
+                }}
                 title="Inventory"
+                aria-label="Open inventory"
+                aria-pressed={inventoryOpen}
             >
                 <PackageSearch size={ICON_SIZE} strokeWidth={1.5} />
                 {inventoryOpen ? null : badge(unreadInventoryCount)}
@@ -138,8 +165,13 @@ function HeaderBar({
             <button
                 type="button"
                 className={`header-bar__btn${logOpen ? " header-bar__btn--active" : ""}`}
-                onClick={onToggleLog}
+                onClick={() => {
+                    playSound("toggle");
+                    onToggleLog();
+                }}
                 title="Log"
+                aria-label="Open log"
+                aria-pressed={logOpen}
             >
                 <ScrollText size={ICON_SIZE} strokeWidth={1.5} />
                 {logOpen ? null : badge(unreadLogCount)}
@@ -148,8 +180,13 @@ function HeaderBar({
             <button
                 type="button"
                 className={`header-bar__btn${settingsOpen ? " header-bar__btn--active" : ""}`}
-                onClick={() => setSettingsOpen((prev) => !prev)}
+                onClick={() => {
+                    playSound("toggle");
+                    setSettingsOpen((prev) => !prev);
+                }}
                 title="Settings"
+                aria-label="Open settings"
+                aria-expanded={settingsOpen}
             >
                 <Settings size={ICON_SIZE} strokeWidth={1.5} />
             </button>
@@ -158,10 +195,19 @@ function HeaderBar({
                 <>
                     {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop dismiss */}
                     {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop dismiss */}
-                    <div className="floating-backdrop" onClick={() => setSettingsOpen(false)} />
+                    <div
+                        className="floating-backdrop"
+                        onClick={() => {
+                            playSound("close");
+                            setSettingsOpen(false);
+                        }}
+                    />
                     <div className="settings-menu">
                         <button type="button" className="settings-menu__item" onClick={handleSave}>
                             Save Now
+                        </button>
+                        <button type="button" className="settings-menu__item" onClick={onToggleSound}>
+                            Sound {soundEnabled ? "On" : "Off"}
                         </button>
                         <button
                             type="button"

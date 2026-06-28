@@ -20,6 +20,9 @@ const storyline: Storyline = {
     name: "The Things We Don't Say",
     description:
         "Your father passed three weeks ago. His old laptop holds a truth you were never meant to find — about love, loss, and the silence between the people who know you best.",
+    hook: "A father's old laptop turns grief into a mystery about love, silence, and what families hide.",
+    playtime: "12–18 min",
+    tags: ["emotional", "family", "memory"],
 
     buildFilesystem(): Directory {
         const rootDir = createDirectoryStructure("$ROOT");
@@ -30,6 +33,7 @@ const storyline: Storyline = {
         // ================================================================
 
         root.createFile("readme.txt", README, {
+            startHere: true,
             onRead(ctx) {
                 ctx.log(
                     "story",

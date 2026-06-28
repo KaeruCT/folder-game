@@ -1,8 +1,10 @@
 import { CheckCircle2, File, Folder, Lock } from "lucide-react";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import "./TreeView.scss";
 import { AppStore } from "../../App";
 import { compareFileNodes, Directory, type File as FileModel, type FileNode, isMediaFileNode } from "../../model/files";
+import { getItemInfo } from "../../model/items";
+import Modal from "../ui/Modal";
 
 interface Props {
     onFileOpen: (file: FileModel) => void;
@@ -12,10 +14,11 @@ interface Props {
 }
 
 function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props) {
-    const { dispatch } = useContext(AppStore);
+    const { dispatch, playSound } = useContext(AppStore);
     const { state } = useContext(AppStore);
     const root = state.filesystemRoot;
     const cwd = state.cwd;
+    const [missingKeyNode, setMissingKeyNode] = useState<FileNode | null>(null);
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: revealCounter is a state primitive, changes trigger re-renders
     const tree = useMemo(() => {
@@ -30,13 +33,18 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
             const isNew = state.highlightedPaths.includes(node.fullName);
             const isRead = !(node instanceof Directory) && state.readFiles.includes(node.fullName);
             const isMedia = isMediaFileNode(node);
+            const isStartHere = node.meta.startHere === true && !isRead;
 
             const children = isDir && !isLocked ? node.contents.filter((c) => !c.hidden).sort(compareFileNodes) : [];
 
             function handleClick() {
                 if (isLocked) {
                     dispatch({ type: "UNLOCK_FILENODE", payload: node });
-                    if (!hasKey) return;
+                    if (!hasKey) {
+                        playSound("locked");
+                        setMissingKeyNode(node);
+                        return;
+                    }
                     if (!isDir) {
                         onFileOpen(node as FileModel);
                     } else {
@@ -46,6 +54,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                     return;
                 }
                 if (isDir) {
+                    playSound(isExpanded ? "close" : "folder");
                     if (isExpanded) {
                         const parent = (node as Directory).parent;
                         if (parent) dispatch({ type: "SET_CWD", payload: parent });
@@ -54,6 +63,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                     }
                     onToggleExpand(node.fullName);
                 } else {
+                    playSound("file");
                     onFileOpen(node as FileModel);
                 }
             }
@@ -65,7 +75,7 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                 }
             }
 
-            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}${isNew ? " tree-node--new" : ""}${isMedia ? " tree-node--media" : ""}${isRead ? " tree-node--read" : ""}`;
+            const className = `tree-node tree-node--${isDir ? "dir" : "file"}${isCwd ? " tree-node--cwd" : ""}${isLocked ? " tree-node--locked" : ""}${isNew ? " tree-node--new" : ""}${isMedia ? " tree-node--media" : ""}${isRead ? " tree-node--read" : ""}${isStartHere ? " tree-node--start" : ""}`;
 
             const row = (
                 <div
@@ -97,11 +107,15 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
                             <CheckCircle2 size={12} strokeWidth={1.8} />
                         </span>
                     )}
-                    {isNew && (
+                    {isStartHere ? (
+                        <span className="tree-node__badge" aria-hidden="true">
+                            start
+                        </span>
+                    ) : isNew ? (
                         <span className="tree-node__badge" aria-hidden="true">
                             new
                         </span>
-                    )}
+                    ) : null}
                 </div>
             );
 
@@ -124,12 +138,34 @@ function TreeView({ onFileOpen, expanded, onToggleExpand, revealCounter }: Props
 
         // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: <ul role="tree"> is the WAI-ARIA recommended tree pattern
         return <ul role="tree">{renderNode(root, 0)}</ul>;
-    }, [root, cwd, expanded, onFileOpen, onToggleExpand, revealCounter]);
+    }, [
+        root,
+        cwd,
+        expanded,
+        onFileOpen,
+        onToggleExpand,
+        playSound,
+        revealCounter,
+        state.inventory,
+        state.highlightedPaths,
+        state.readFiles,
+    ]);
+
+    const itemInfo = missingKeyNode?.meta.key ? getItemInfo(missingKeyNode.meta.key) : undefined;
+    const keyName = itemInfo?.name ?? "key";
 
     return (
-        <div className="window tree">
-            <div className="content tree-content">{tree}</div>
-        </div>
+        <>
+            <Modal show={Boolean(missingKeyNode)} onCancel={() => setMissingKeyNode(null)} cancelLabel="Close">
+                <div className="missing-key-message">
+                    <strong>Needed: {keyName}</strong>
+                    <span>{itemInfo?.hint ?? "Keep exploring, then come back."}</span>
+                </div>
+            </Modal>
+            <div className="window tree">
+                <div className="content tree-content">{tree}</div>
+            </div>
+        </>
     );
 }
 
