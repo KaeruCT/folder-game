@@ -8,11 +8,10 @@ A haunted filesystem mystery game. Open files, collect clues, unlock folders, an
 
 Root is a short narrative puzzle game told through a corrupted desktop filesystem. Every folder is a room. Every file is evidence. Read old notes, recover keys, run strange executables, and follow each trail to an ending that says as much about you as it does about the machine.
 
-Four stories are included:
+Three stories are included:
 
 - **The Echoes Below** — A missing researcher, an impossible city, and files that should not know your name.
 - **The Lockdown** — A deadman switch is live. You have one compromised filesystem and too many open doors.
-- **The Things We Don’t Say** — A father’s old laptop turns grief into a mystery about love, silence, and what families hide.
 - **The Agent in the Machine** — The assistant that built the game left itself in the build. Now you review the ghost.
 
 Optional subtle UI sounds are available from the settings menu.
@@ -40,7 +39,7 @@ Mystery, Horror, Narrative, Puzzle, Interactive Fiction, Experimental, Short, Br
 
 ## Screenshot checklist
 
-- Storyline select with all four cards.
+- Storyline select with all three cards.
 - A folder with the “start here” hint.
 - A locked-folder dialog showing the needed key.
 - A corrupted/executable file moment.

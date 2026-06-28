@@ -8,14 +8,14 @@ import lockdownStoryline from "./storylines/lockdown";
 import unsaidStoryline from "./storylines/unsaid";
 
 const storylines: Record<string, Storyline> = {
-    agent: agentStoryline,
     echoes: echoesStoryline,
     lockdown: lockdownStoryline,
-    unsaid: unsaidStoryline,
+    agent: agentStoryline,
+    unsaid: { ...unsaidStoryline, hidden: true },
 };
 
 export function getAllStorylines(): Storyline[] {
-    return Object.values(storylines);
+    return Object.values(storylines).filter((storyline) => !storyline.hidden);
 }
 
 export function getFilesystem(storylineId: string): Directory {
